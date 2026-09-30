@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es-CR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Galería de sprites · CHOCO</title>
+    <style>
+      body { background: #10131f; color: #f4f1ea; font: 13px monospace; margin: 16px; }
+      h2 { color: #43d9ff; font-size: 14px; margin: 18px 0 6px; }
+      .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+      figure { margin: 0; text-align: center; }
+      canvas { image-rendering: pixelated; background: #1b2033; display: block; }
+      figcaption { color: #8a8aa0; font-size: 11px; margin-top: 2px; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { ANIMS, chocoFrame, chocoMelt, withShootArms } from '../src/art/choco.js';
+      import { itemSprites } from '../src/art/items.js';
+      import { bytelingSprites } from '../src/art/enemies/byteling.js';
+      import { loadingTiles } from '../src/art/tiles/loading.js';
+
+      const S = 6;
+      const app = document.getElementById('app');
+      function section(title) {
+        const h = document.createElement('h2');
+        h.textContent = title;
+        const row = document.createElement('div');
+        row.className = 'row';
+        app.append(h, row);
+        return row;
+      }
+      function show(row, src, label, scale = S) {
+        const c = document.createElement('canvas');
+        c.width = src.width * scale;
+        c.height = src.height * scale;
+        const x = c.getContext('2d');
+        x.imageSmoothingEnabled = false;
+        x.drawImage(src, 0, 0, c.width, c.height);
+        const f = document.createElement('figure');
+        const cap = document.createElement('figcaption');
+        cap.textContent = label;
+        f.append(c, cap);
+        row.append(f);
+      }
+
+      for (const [name, anim] of Object.entries(ANIMS)) {
+        const row = section(`Choco · ${name} (${anim.frames.length} frames, ${anim.fps} fps)`);
+        anim.frames.forEach((f, i) => show(row, chocoFrame(f, 'normal', true).normal, `${name}[${i}]`));
+      }
+      const faces = section('Choco · caras');
+      for (const face of ['normal', 'blink', 'determined', 'hurt', 'panic', 'happy', 'glare0', 'glare1', 'glare2']) {
+        show(faces, chocoFrame(ANIMS.idle.frames[0], face, true).normal, face);
+      }
+      const extra = section('Choco · correr disparando / flash / volteado');
+      show(extra, chocoFrame(withShootArms(ANIMS.run.frames[0]), 'normal', true).normal, 'run+shoot');
+      show(extra, chocoFrame(ANIMS.idle.frames[0], 'normal', true).white, 'flash');
+      show(extra, chocoFrame(ANIMS.idle.frames[0], 'normal', true).flipped, 'volteado');
+      show(extra, chocoFrame(ANIMS.idle.frames[0], 'normal', false).normal, 'sin báculo');
+      const melt = section('Choco · derretirse (8 frames)');
+      for (let k = 0; k < 8; k++) show(melt, chocoMelt(k).normal, `melt[${k}]`);
+
+      const items = section('Objetos y disparos');
+      const it = itemSprites();
+      for (const k of Object.keys(it)) show(items, it[k].normal, k);
+
+      const en = section('Byteling');
+      const b = bytelingSprites(false);
+      const bt = bytelingSprites(true);
+      b.walk.forEach((s, i) => show(en, s.normal, `walk[${i}]`));
+      show(en, b.squashed.normal, 'squashed');
+      bt.walk.forEach((s, i) => show(en, s.normal, `test[${i}]`));
+
+      const tl = section('Tiles · Pantalla de Carga');
+      const t = loadingTiles();
+      for (const k of Object.keys(t)) show(tl, t[k].normal, k);
+    </script>
+  </body>
+</html>

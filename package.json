@@ -1,0 +1,17 @@
+{
+  "name": "choco-codigo-fuente",
+  "private": true,
+  "version": "0.1.0",
+  "description": "CHOCO: CÓDIGO FUENTE — CHC Studio. Creador: Stward Serrano.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  }
+}
