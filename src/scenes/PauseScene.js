@@ -32,7 +32,7 @@ export class PauseScene extends Scene {
         { id: 'restart', label: T.restart },
         { id: 'options', label: T.options },
         { id: 'controls', label: T.controls },
-        { id: 'map', label: T.toMap },
+        { id: 'map', label: level.quitLabel || T.toMap },
       ],
       { x: 16, y: 44, spacing: 14 },
     );
@@ -68,7 +68,7 @@ export class PauseScene extends Scene {
     else if (r === 'controls') g.push(new ControlsScene(g, { readOnly: true }));
     else if (r === 'map') {
       g.push(
-        new ConfirmScene(g, T.toMapAsk, () => {
+        new ConfirmScene(g, this.level.quitAsk || T.toMapAsk, () => {
           g.pop();
           this.level.quitToMap();
         }),

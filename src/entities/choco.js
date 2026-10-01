@@ -25,6 +25,8 @@ export class Choco {
     this.hurtT = 0;
     this.flashT = 0;
     this.state = 'play'; // 'play' | 'dead' | 'victory' | 'frozen'
+    this.forceAnim = null; // cinemáticas: animación forzada
+    this.faceOverride = null; // cinemáticas: cara forzada
     this.deathCause = null;
     this.deadT = 0;
 
@@ -55,6 +57,24 @@ export class Choco {
     // Bufanda de envoltura (movimiento secundario)
     this.scarf = [];
     for (let i = 0; i < CHOCO_FX.SCARF_SEGMENTS; i++) this.scarf.push({ x: footX - 5, y: footY - 12 + i * 2 });
+  }
+
+  // Mueve a Choco solo (cinemáticas): walk(dir) camina, jump() salta una vez.
+  autoplay() {
+    this.stopCharge();
+    this.state = 'auto';
+    const a = { dir: 0, jump: false, hold: false };
+    this.auto = a;
+    this.autoInput = {
+      moveX: () => a.dir,
+      buffered: (k) => k === 'jump' && a.jump,
+      pressed: () => false,
+      down: (k) => k === 'jump' && a.hold,
+      consume: (k) => {
+        if (k === 'jump') a.jump = false;
+      },
+    };
+    return a;
   }
 
   get footX() {
@@ -105,6 +125,8 @@ export class Choco {
       return;
     }
 
+    // Movimiento guionado en cinemáticas: un "control" falso en lugar del teclado
+    if (this.state === 'auto') inp = this.autoInput;
     if (this.hurtT > 0) this.hurtT -= dt;
     const control = this.hurtT <= 0;
     const moveX = control ? inp.moveX() : 0;
@@ -292,6 +314,11 @@ export class Choco {
       this.particles.burst(this.cx, this.cy, 16, { speedMin: 40, speedMax: 110, colors: ['#FFD27A', '#F6DE8A', '#FFFFFF'], gravity: 200, lifeMin: 0.3, lifeMax: 0.6 });
       return true;
     }
+    // Prólogo: sin muerte posible (el golpe empuja y parpadea, pero no quita vida)
+    if (this.scene.noDeath) {
+      playSfx(this.audio, 'hurt');
+      return true;
+    }
     this.hp -= damage;
     this.scene.onChocoDamaged?.(this.hp);
     playSfx(this.audio, 'hurt');
@@ -383,6 +410,7 @@ export class Choco {
 
   selectAnim(moveX) {
     const b = this.body;
+    if (this.forceAnim) return this.forceAnim;
     if (this.state === 'victory') return 'victory';
     if (this.hurtT > 0) return 'hurt';
     if (!b.onGround) {
@@ -449,6 +477,7 @@ export class Choco {
   }
 
   currentFace() {
+    if (this.faceOverride) return this.faceOverride;
     if (this.hurtT > 0) return 'hurt';
     if (!this.body.onGround && this.body.vy > 250) return 'panic';
     if (this.blinkT > 0) return 'blink';

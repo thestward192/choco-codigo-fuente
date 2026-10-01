@@ -4,8 +4,8 @@ import { defaultSlot } from '../core/save.js';
 import { LEVELS, FOUNDERS, levelById } from '../data/levels.js';
 import { HEALTH } from '../config/balance.js';
 
-// Partida nueva. Mientras el prólogo no existe (Hito 3), se da por jugado:
-// Choco empieza con el Báculo y el nivel 1 disponible.
+// Partida nueva. Con el prólogo construido, Choco empieza sin objetos (el Báculo se encuentra
+// en la Pantalla de Carga). Sin prólogo, se da por jugado: Báculo y nivel 1 disponible.
 export function newGameData({ prologueBuilt = false } = {}) {
   const d = defaultSlot();
   if (!prologueBuilt) {
@@ -20,9 +20,9 @@ export function isCompleted(d, id) {
   return d.levelsCompleted.includes(id);
 }
 
-// El nivel 1 siempre está disponible; los demás, si el anterior está completo.
+// El prólogo siempre está disponible; cada nivel, si el anterior (o el prólogo) está completo.
 export function isUnlocked(d, id) {
-  if (id <= 1) return true;
+  if (id <= 0) return true;
   return isCompleted(d, id - 1);
 }
 
@@ -98,6 +98,13 @@ export function setCheckpoint(d, level, id) {
   const out = structuredClone(d);
   out.checkpoint = { level, id };
   out.lastLevel = level;
+  return out;
+}
+
+// Game Over: el nivel se reintenta desde el inicio (docs/03_mecanicas.md), se olvida el checkpoint
+export function clearCheckpoint(d) {
+  const out = structuredClone(d);
+  out.checkpoint = null;
   return out;
 }
 

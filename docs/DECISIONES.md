@@ -54,3 +54,51 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Retratos y sprites de los fundadores** (32×32 con 5 expresiones y 16×24 caminando) se generan con un pintor de grillas (`src/art/painter.js`), y quedan en el mismo formato de arreglos de strings que el resto del arte.
 - **Depuración:** F8 muestra el HUD completo de prueba (barra de jefe, DEADLINE, cargas de vapor, termómetro, escudo y lazo).
 - **Herramientas de prueba (solo desarrollo, no entran al build):** `tools/harness.js` y el endpoint `/__snap` de Vite, que guarda capturas del juego en `.snaps/` para revisar pantallas.
+
+## Hito 3 · Prólogo y Nivel 1
+
+### Prólogo
+
+- **Nueva partida arranca el prólogo** con su tarjeta de título. El nombre de la tarjeta es "Deploy de medianoche" (el número ya dice PRÓLOGO). Choco empieza sin objetos: el Báculo se encuentra en la Pantalla de Carga y se guarda al cruzar el portal.
+- **Pausa en el prólogo:** como todavía no hay mapa, la opción es "Salir al título". Si se continúa una partida con el prólogo a medias, el prólogo empieza de nuevo.
+- **El cuarto** (30×11 tiles): además de la foto, la refri, la laptop, el estante y la consola, la **guitarra** de la esquina también se puede tocar (la menciona `docs/01_historia.md`). Recorrido hasta la consola: banquito (1 tile) → cama (1) → respaldo (2) → mueble de la tele (2).
+- **Globo de controles:** aparece una vez junto a Choco y se va solo cuando ya se movió y saltó. El ícono "↑" aparece sobre lo que se puede usar (solo el más cercano).
+- **N.U.L.L. escribe en minúsculas cuando está tranquila** (como dice `docs/02_personajes.md`) aunque la historia muestre las frases con mayúscula inicial; la amenaza a los fundadores la grita en MAYÚSCULAS. El texto de la tele sale en un panel verde abajo (para no tapar la pantalla) y avanza solo o con Enter.
+- **"La barra rota":** Choco camina hasta el lado de la tele para que se vea la pantalla. Los 4 cuadritos salen en cámara lenta con la estela de su color y entran a la tele. El sprite de Choco no cambia de tamaño (el cuerpo es fijo, como dice el documento); la pérdida se ve en la barra del HUD de la Pantalla de Carga (1 cuadrito).
+- **Iluminación del cuarto:** capa de oscuridad con "agujeros" de luz en bandas duras (`src/core/lighting.js`), con una luz suave alrededor de Choco para que siempre se lea.
+- **Pantalla de Carga:** los golpes empujan y parpadean pero no quitan vida; caer al vacío devuelve a la última plataforma con un glitch. El Báculo se toma con ↑/E (como en el cuarto) y la roca queda como punto de reaparición.
+- **Zona de práctica:** los Bytelings TEST están quietos. El muro agrietado **bloquea todo el paso** (no se puede saltar), así que hay que aprender el disparo cargado; encima del muro se ve el báculo cargándose con un anillo que se llena y la tecla de disparo. Los disparos normales rebotan en él con un "tink".
+- **Discurso de N.U.L.L.:** se activa al llegar a la explanada; la cámara se desplaza para mostrar el portal que se abre.
+
+### Nivel 1 · Mundo Cartucho
+
+- **Tamaños:** 1-A Pradera 106 tiles, 1-B Cuevas 86, 1-C Castillo 78, más la sala secreta (20) y la arena del jefe (20). Las cuevas y el castillo miden 12 filas para que el techo se vea.
+- **Paso entre secciones:** 1-A → 1-B por una tubería de datos (pararse encima y ↓); 1-B → 1-C por una puerta (↑/E); la doble puerta del jefe se abre sola con un glitch al acercarse.
+- **Checkpoints (banderas):** al inicio de las cuevas, al inicio del castillo y **en la antesala del jefe** (este último no estaba en el documento: así el jefe se puede aprender en 2–3 intentos sin repetir todo el castillo). Al morir, la sección se reconstruye (enemigos y bloques vuelven), pero las Y doradas tomadas en el intento no reaparecen.
+- **Game Over** borra el checkpoint del nivel: reintentar es desde el inicio, como dice `docs/03_mecanicas.md`. "Salir al mapa" desde la pausa lo conserva.
+- **La rampa del Disquete** son escalones (la física de tiles no tiene pendientes): el disco baja escalón por escalón y entra a una zanja con 4 Bytelings.
+- **Bloques Y:** de bit, de Grano de Cacao, de Trozo de Cacao y de varios bits (hasta 6 golpes o 4 s). Golpear un bloque elimina al enemigo parado encima.
+- **Lo que sale de un bloque Y** (Grano o Trozo de Cacao) salta hacia el lado de Choco y cae hasta el suelo, para que siempre se pueda tomar aunque el bloque esté alto. Las filas de bloques de la pradera están a 3 tiles del suelo: se camina por debajo y se golpean saltando. Desde el suelo el salto (≈48 px con los valores del documento) no alcanza para subirse encima, así que la primera fila tiene un bloque de escalón a la izquierda.
+- **Y dorada 1:** el primer bloque invisible (marcado por un bit suelto) revela en cascada la escalera completa hasta las nubes.
+- **Y dorada 2:** la "tubería falsa" del secreto y la "tubería secreta" de la Y son la misma: lleva a una sala de bits con la Y.
+- **Y dorada 3:** el hueco detrás de la pared agrietada se dibuja como muro hasta romperla.
+- **Disquete:** los disparos le rebotan; pisado queda como disco, que se patea tocándolo o pisándolo; pateado elimina enemigos y, después de 0.3 s, también golpea a Choco. Si nadie lo patea, se despierta a los 7 s.
+- **Blindado:** los disparos (normales y cargados) rebotan girando hacia atrás, sin dañar a Choco.
+- **Mosquitos:** vuelan 40 px de ida y vuelta con onda senoidal; la formación es de 3 con la onda desfasada.
+- **Bloque spam:** cae cuando Choco pasa a menos de 22 px; al aterrizar queda como plataforma (sólida por arriba). Los de la lluvia del jefe se rompen al tocar el piso.
+- **Peligros del castillo:** el pozo en sí es vacío (muerte); la estática que sube y baja es un géiser que burbujea 0.8 s antes. Las barras de estática de la sala clave dejan una zona segura sobre cada pilar: el peligro está en los saltos.
+- **Enemigos que se activan al acercarse a la cámara**, para que no se adelanten antes de que el jugador los vea.
+- **Corrupción progresiva en la pradera:** destellos cortos de tiles con paleta glitch y nubes con texto de N.U.L.L. ("te veo", "∅") a medida que se avanza.
+- **Guardián del Slot:** las fases se interpretan así: tras el **primer** pisotón, embestida doble; tras el **segundo**, la lluvia se combina con el salto aplastante (el tercer pisotón lo derrota). Tocarlo de costado mientras está aturdido no duele. Los disparos lo empujan 6 px con un "tink". Su música es una variación más rápida del tema del castillo.
+- **Rescate de Óscar:** la jaula está hecha de caracteres (| # [ ]) en magenta. Orden: diálogo → Óscar se vuelve luz rosada y entra a la barra (+1 cuadrito con animación en el HUD) → pantalla de las Botas → resultados. Al rejugar el nivel con Óscar ya rescatado no hay jaula.
+- **Rótulos sin Y:** el hueco "_" reemplaza también la conjunción ("pisá el disquete _ pateálo"). Óscar suspira junto a esos rótulos cuando ya fue rescatado (al rejugar).
+- **Vida extra por bits:** al llegar a 100 aparece "¡VIDA EXTRA!".
+
+### Música
+
+- Cuarto (lo-fi con marimba lejana), Pantalla de Carga (ambiente de "cargando"), motivo de N.U.L.L. (4 notas disonantes, para sus apariciones) y Mundo Cartucho con cuatro variaciones: pradera, cuevas (más grave y espaciada), castillo (en menor) y Guardián.
+
+### Desarrollo
+
+- Atajos nuevos: `?scene=prologue`, `?scene=loading` y `?scene=level1`; también están en el menú de desarrollo (`?scene=dev`).
+- La lógica común de los niveles de plataformas vive en `src/levels/PlatformLevel.js` (la sala de pruebas también la usa). Los mapas se arman con `src/levels/mapBuilder.js`.

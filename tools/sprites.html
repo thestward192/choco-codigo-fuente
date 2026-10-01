@@ -19,6 +19,10 @@
       import { itemSprites } from '../src/art/items.js';
       import { bytelingSprites } from '../src/art/enemies/byteling.js';
       import { loadingTiles } from '../src/art/tiles/loading.js';
+      import { cartuchoEnemySprites } from '../src/art/enemies/cartucho.js';
+      import { guardianSprite } from '../src/art/bosses/guardian.js';
+      import { cartuchoTiles } from '../src/art/tiles/cartucho.js';
+      import { founderSprite } from '../src/art/portraits.js';
 
       const S = 6;
       const app = document.getElementById('app');
@@ -74,6 +78,30 @@
       const tl = section('Tiles · Pantalla de Carga');
       const t = loadingTiles();
       for (const k of Object.keys(t)) show(tl, t[k].normal, k);
+
+      // ---------- Hito 3 ----------
+      const ce = cartuchoEnemySprites();
+      const e1 = section('Enemigos del Mundo Cartucho');
+      ce.disk.walk.forEach((s, i) => show(e1, s.normal, `disquete[${i}]`));
+      ce.disk.shell.forEach((s, i) => show(e1, s.normal, `disco[${i}]`));
+      ce.mosquito.forEach((s, i) => show(e1, s.normal, `mosquito[${i}]`));
+      ce.armor.forEach((s, i) => show(e1, s.normal, `blindado[${i}]`));
+      show(e1, ce.spam.normal, 'bloque spam');
+
+      const gb = section('Guardián del Slot (×3)');
+      for (const pose of ['stand', 'walk1', 'crouch', 'air']) show(gb, guardianSprite(pose, 'normal').normal, pose, 3);
+      for (const eye of ['angry', 'stun', 'closed']) show(gb, guardianSprite('stand', eye).normal, eye, 3);
+
+      const fo = section('Óscar (16×24)');
+      for (let i = 0; i < 6; i++) show(fo, founderSprite('oscar', i).normal, `oscar[${i}]`);
+
+      for (const theme of ['pradera', 'cuevas', 'castillo']) {
+        const row = section(`Tiles · ${theme}`);
+        const tt = cartuchoTiles(theme);
+        for (const k of ['top', 'fill', 'block', 'oneway', 'cloud', 'used', 'cracked', 'spikes', 'topCorrupt']) show(row, tt[k].normal, k);
+        tt.y.forEach((s, i) => show(row, s.normal, `y[${i}]`));
+        for (const k of Object.keys(tt.pipe)) show(row, tt.pipe[k].normal, `pipe ${k}`);
+      }
     </script>
   </body>
 </html>

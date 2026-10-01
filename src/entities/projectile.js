@@ -2,6 +2,7 @@
 import { STAFF } from '../config/balance.js';
 import { itemSprites } from '../art/items.js';
 import { fxRng } from '../core/rng.js';
+import { playSfx } from '../audio/sfx.js';
 
 const R = fxRng;
 
@@ -49,12 +50,30 @@ export class Shot {
     const TS = 16;
     const tx = Math.floor((this.dir > 0 ? this.x + this.w - 1 : this.x) / TS);
     const ty = Math.floor(this.cy / TS);
-    if (map.isSolid(tx, ty)) {
+    if (!this.reflected && map.isSolid(tx, ty)) {
       this.x = this.dir > 0 ? tx * TS - this.w : (tx + 1) * TS;
+      // El nivel puede reaccionar (bloques que se rompen con disparo cargado)
+      scene.onShotHitTile?.(tx, ty, this);
       this.kill(scene, true);
       return;
     }
+    if (this.reflected) {
+      this.vy += 400 * dt;
+      if (this.t - this.reflectedAt > 0.5) this.kill(scene, false);
+    }
     if (this.dist >= this.range) this.kill(scene, false);
+  }
+
+  // Rebota en un casco (Blindados, jefes): vuelve hacia atrás girando y se desvanece, sin daño.
+  reflect(scene) {
+    if (this.reflected) return;
+    this.reflected = true;
+    this.reflectedAt = this.t;
+    this.dir *= -1;
+    this.vx = this.dir * 120;
+    this.vy = -110;
+    scene.particles.burst(this.cx, this.cy, 6, { speedMin: 30, speedMax: 80, colors: ['#FFFFFF', '#FFD23F'], lifeMin: 0.1, lifeMax: 0.2 });
+    playSfx(scene.game.audio, 'tink');
   }
 
   kill(scene, wall) {

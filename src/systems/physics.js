@@ -2,6 +2,7 @@
 // Lógica pura: no dibuja ni lee el teclado; recibe un "intent" con lo que quiere el jugador.
 import { SCREEN, PLATFORMER } from '../config/balance.js';
 import { approach } from '../core/tween.js';
+import { T } from './tilemap.js';
 
 const TS = SCREEN.TILE;
 const EPS = 0.001;
@@ -24,6 +25,8 @@ export function createBody(x, y, w, h) {
     hitWall: 0, // -1 izquierda, 1 derecha
     hitCeiling: false,
     dropTimer: 0,
+    platform: null, // plataforma dinámica sobre la que está parado
+    ceilTile: null, // tile del techo golpeado en este paso {tx, ty}
   };
 }
 
@@ -66,6 +69,7 @@ export function moveX(body, dx, map) {
 // Mueve en Y. Aterriza en sólidos y en plataformas de un sentido (si viene de arriba).
 export function moveY(body, dy, map) {
   body.hitCeiling = false;
+  body.ceilTile = null;
   if (dy === 0) return false;
   let remaining = dy;
   while (remaining !== 0) {
@@ -89,19 +93,76 @@ export function moveY(body, dy, map) {
           return true;
         }
       }
+      // Plataformas dinámicas (solo sólidas por arriba)
+      const p = landingPlatform(body, map, prevBottom);
+      if (p) {
+        body.y = p.y - body.h;
+        body.vy = 0;
+        body.onGround = true;
+        body.onOneWay = true;
+        body.platform = p;
+        return true;
+      }
     } else {
       const ty = Math.floor(body.y / TS);
+      const prevTop = body.y - step;
       for (let tx = x0; tx <= x1; tx++) {
-        if (map.isSolid(tx, ty)) {
+        // Bloques invisibles: solo detienen si se los golpea desde abajo
+        const hidden = map.typeAt(tx, ty) === T.HIDDEN && prevTop >= (ty + 1) * TS - EPS;
+        if (map.isSolid(tx, ty) || hidden) {
           body.y = (ty + 1) * TS;
           body.vy = 0;
           body.hitCeiling = true;
+          body.ceilTile = ceilingTile(body, map, ty, hidden ? T.HIDDEN : null);
           return true;
         }
       }
     }
   }
   return false;
+}
+
+// Si el cuerpo está parado sobre una plataforma dinámica, se mueve con ella.
+export function carryOnPlatform(body, map) {
+  const p = body.platform;
+  body.platform = null;
+  if (!p || p.active === false || !body.onGround) return;
+  if (body.x + body.w <= p.x || body.x >= p.x + p.w) return;
+  if (p.dx) moveX(body, p.dx, map);
+  body.y = p.y - body.h;
+  body.platform = p;
+}
+
+// Plataforma dinámica en la que aterriza el cuerpo este sub-paso (si viene de arriba).
+function landingPlatform(body, map, prevBottom) {
+  if (!map.platforms || body.dropTimer > 0) return null;
+  const bottom = body.y + body.h;
+  for (const p of map.platforms) {
+    if (p.active === false) continue;
+    if (body.x + body.w <= p.x || body.x >= p.x + p.w) continue;
+    if (prevBottom <= p.y + EPS + Math.max(0, p.dy || 0) && bottom >= p.y) return p;
+  }
+  return null;
+}
+
+// Tile del techo golpeado: el que está más cerca del centro del cuerpo (para los bloques Y).
+function ceilingTile(body, map, ty, onlyType) {
+  const cx = body.x + body.w / 2;
+  const x0 = Math.floor(body.x / TS);
+  const x1 = Math.floor((body.x + body.w - EPS) / TS);
+  let best = null;
+  let bestD = Infinity;
+  for (let tx = x0; tx <= x1; tx++) {
+    const t = map.typeAt(tx, ty);
+    const ok = onlyType !== null ? t === onlyType : map.isSolid(tx, ty);
+    if (!ok) continue;
+    const d = Math.abs(tx * TS + TS / 2 - cx);
+    if (d < bestD) {
+      bestD = d;
+      best = { tx, ty };
+    }
+  }
+  return best;
 }
 
 function anySolidBelow(body, map, ty) {
@@ -126,6 +187,7 @@ export function createJumpState() {
 // intent: { moveX (-1..1), jumpBuffered (bool), jumpHeld (bool), down (bool), speedMult (1) }
 export function stepPlatformer(body, js, intent, dt, map, P = PLATFORMER) {
   const ev = js.events;
+  carryOnPlatform(body, map);
   ev.jumped = ev.doubleJumped = ev.landed = ev.consumedJump = ev.dropped = false;
   ev.landVy = 0;
 
@@ -199,6 +261,7 @@ export function stepPlatformer(body, js, intent, dt, map, P = PLATFORMER) {
   const fallingVy = body.vy;
   body.onGround = false;
   body.onOneWay = false;
+  body.platform = null;
   moveY(body, body.vy * dt, map);
   if (body.onGround && !wasGround) {
     ev.landed = true;

@@ -1,4 +1,4 @@
-// Menú de desarrollo temporal (Hitos 0 y 1). En el Hito 2 lo reemplaza el flujo real de menús.
+// Menú de desarrollo (solo con ?scene=dev): acceso directo a las escenas de cada hito.
 import { Scene } from '../core/game.js';
 import { drawText } from '../art/font.js';
 import { SCREEN } from '../config/balance.js';
@@ -9,6 +9,9 @@ import { playSfx } from '../audio/sfx.js';
 import { TechTestScene } from './TechTestScene.js';
 import { TestRoomScene } from './TestRoomScene.js';
 import { Flow } from '../game/flow.js';
+import { RoomScene } from '../levels/level0_prologo/RoomScene.js';
+import { LoadingScene } from '../levels/level0_prologo/LoadingScene.js';
+import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
 
 export class DevMenuScene extends Scene {
   constructor(game, selected = 1) {
@@ -35,6 +38,9 @@ export class DevMenuScene extends Scene {
       if (id === 'tech') g.changeScene(() => new TechTestScene(g), { type: 'fade' });
       else if (id === 'room') g.changeScene(() => new TestRoomScene(g), { type: 'glitch' });
       else if (id === 'title') Flow.toTitle(g);
+      else if (id === 'prologue') g.changeScene(() => new RoomScene(g), { type: 'fade' });
+      else if (id === 'loading') g.changeScene(() => new LoadingScene(g), { type: 'fade' });
+      else if (id === 'level1') g.changeScene(() => new Level1Scene(g), { type: 'iris' });
     }
   }
 

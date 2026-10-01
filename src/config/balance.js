@@ -155,10 +155,107 @@ export const ENEMIES = {
   },
 };
 
+// Enemigos del Mundo Cartucho — docs/02_personajes.md y docs/niveles/nivel_1_mundo_cartucho.md
+Object.assign(ENEMIES, {
+  DISK: {
+    SPEED: 26,
+    W: 12,
+    H: 12,
+    SHELL_SPEED: 190, // disco pateado
+    KICK_GRACE: 0.3, // tras patearlo, no daña a Choco este tiempo
+    SHELL_WAKE: 7, // si nadie lo patea, se vuelve a parar
+    WALK_FPS: 6,
+  },
+  MOSQUITO: {
+    W: 10,
+    H: 9,
+    HP: 1,
+    SPEED: 22, // avance horizontal
+    RANGE: 40, // ida y vuelta desde su punto de origen
+    WAVE_AMP: 9, // onda senoidal
+    WAVE_PERIOD: 1.5,
+    WING_FPS: 18,
+  },
+  ARMOR: {
+    SPEED: 22,
+    W: 12,
+    H: 12,
+    WALK_FPS: 5,
+  },
+  SPAM: {
+    TRIGGER_DX: 22, // Choco a esta distancia horizontal debajo lo activa
+    SHAKE_TIME: 0.4, // telegrafiado
+    GRAVITY: 900,
+    MAX_FALL: 340,
+    SHADOW_TIME: 0.7, // lluvia del jefe: sombra previa en el suelo
+  },
+  CABLE: {
+    TELEGRAPH: 0.6, // chispas antes de salir
+    UP_TIME: 1.0,
+    DOWN_TIME: 1.4,
+    RISE_SPEED: 160, // px/s
+    HEIGHT: 30,
+  },
+});
+
+// Peligros y plataformas del nivel 1
+export const HAZARDS = {
+  STATIC_BAR: { BALL_SPACING: 8, BALL_R: 3, HIT_R: 3, SPEED: 1.5 }, // rad/s
+  GEYSER: { WARN: 0.8, UP: 1.1, DOWN: 1.6, HEIGHT: 56, SPEED: 220 },
+  FALLING_PLATFORM: { DELAY: 0.45, GRAVITY: 700, RESPAWN: 3 },
+  MOVING_PLATFORM: { SPEED: 38 },
+};
+
+// Bloques Y (golpear desde abajo)
+export const YBLOCK = {
+  BUMP_TIME: 0.18,
+  BUMP_HEIGHT: 5,
+  MULTI_HITS: 6, // bloque de bits múltiples
+  MULTI_WINDOW: 4, // segundos para sacarle todos los bits
+};
+
+// Mini-jefe: Guardián del Slot (48×48)
+export const GUARDIAN = {
+  W: 34,
+  H: 40,
+  HP: 3,
+  SPEED_UP: 1.2, // +20 % tras cada pisotón
+  IDLE_TIME: 0.9,
+  CROUCH_TIME: 0.6, // telegrafiado del salto aplastante
+  JUMP_VY: -360,
+  JUMP_TIME: 0.75, // tiempo de vuelo hacia la posición de Choco
+  SHOCKWAVE_SPEED: 130,
+  SHOCKWAVE_H: 10,
+  SCRAPE_TIME: 0.8, // telegrafiado de la embestida
+  CHARGE_SPEED: 170,
+  STUN_TIME: 2,
+  RAIN_WINDUP: 0.5,
+  RAIN_BLOCKS: [3, 5],
+  RAIN_INTERVAL: 0.28,
+  SHOT_PUSH: 6, // los disparos no hacen daño, pero lo empujan
+  HURT_TIME: 0.8,
+  INTRO_TIME: 1.6,
+};
+
+// Prólogo
+export const PROLOGUE = {
+  SQUARE_STAGGER: 0.28,
+  SQUARE_FLIGHT: 1.9, // cámara lenta
+  SUCK_TIME: 1.0,
+  CRT_OFF_TIME: 1.0,
+  TV_LINE_HOLD: 1.4,
+  WIRE_REVEAL_DIST: 120, // a esta distancia los wireframes se empiezan a rellenar
+  WIRE_REVEAL_FULL: 56,
+};
+
 export const PICKUPS = {
   BOB_AMPLITUDE: 2,
   BOB_SPEED: 3,
   HEAL: 1,
+  // Lo que sale de un bloque Y salta hacia un lado y cae al suelo
+  DROP_VX: 45,
+  DROP_VY: -140,
+  DROP_GRAVITY: 700,
 };
 
 // Vista Debug (Laptop) — se usa en hitos posteriores; aquí para las plataformas fantasma

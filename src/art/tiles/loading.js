@@ -81,7 +81,9 @@ export function loadingTiles() {
 }
 
 // Dibuja los tiles visibles del mapa.
-export function drawLoadingTiles(ctx, map, camX, camY, time, ghostActive) {
+// reveal(tx, ty) → 0..1 (opcional): los tiles a medio renderizar se ven como wireframe
+// y se rellenan de arriba hacia abajo (Pantalla de Carga del prólogo).
+export function drawLoadingTiles(ctx, map, camX, camY, time, ghostActive, reveal = null) {
   const t = loadingTiles();
   const x0 = Math.max(0, Math.floor(camX / TS));
   const y0 = Math.max(0, Math.floor(camY / TS));
@@ -93,6 +95,15 @@ export function drawLoadingTiles(ctx, map, camX, camY, time, ghostActive) {
       const type = map.typeAt(tx, ty);
       const px = tx * TS - camX;
       const py = ty * TS - camY;
+      const rv = reveal && (type === T.SOLID || type === T.ONEWAY) ? reveal(tx, ty) : 1;
+      if (rv < 1) {
+        drawWire(ctx, px, py, type, rv, t, map.charAt(tx, ty) === 'K');
+        continue;
+      }
+      if (type === T.SOLID && map.charAt(tx, ty) === 'K') {
+        drawCracked(ctx, px, py, time, tx);
+        continue;
+      }
       if (type === T.SOLID) {
         ctx.drawImage(t.solid.normal, px, py);
         // Bordes expuestos
@@ -135,6 +146,50 @@ export function drawLoadingTiles(ctx, map, camX, camY, time, ghostActive) {
       }
     }
   }
+}
+
+// Tile a medio renderizar: contorno de alambre y relleno parcial desde arriba
+function drawWire(ctx, px, py, type, rv, t, cracked) {
+  const h = Math.round(TS * rv);
+  if (type === T.ONEWAY) {
+    ctx.fillStyle = LOADING.wire;
+    ctx.fillRect(px, py, TS, 1);
+    for (let x = 0; x < TS; x += 4) ctx.fillRect(px + x, py + 3, 2, 1);
+    if (rv > 0.5) ctx.drawImage(t.oneway.normal, 0, 0, TS, 5, px, py, TS, 5);
+    return;
+  }
+  if (h > 0) ctx.drawImage(t.solid.normal, 0, 0, TS, h, px, py, TS, h);
+  ctx.fillStyle = cracked ? '#5A2A44' : '#24304A';
+  ctx.fillRect(px, py, TS, 1);
+  ctx.fillRect(px, py + TS - 1, TS, 1);
+  ctx.fillRect(px, py, 1, TS);
+  ctx.fillRect(px + TS - 1, py, 1, TS);
+  for (let i = 0; i < TS; i += 2) ctx.fillRect(px + i, py + i, 1, 1);
+  if (h > 0 && h < TS) {
+    ctx.fillStyle = LOADING.cyan;
+    ctx.fillRect(px, py + h, TS, 1);
+  }
+}
+
+// Bloque corrupto que solo se rompe con un disparo cargado
+function drawCracked(ctx, px, py, time, tx) {
+  ctx.fillStyle = '#1A0E1E';
+  ctx.fillRect(px, py, TS, TS);
+  ctx.fillStyle = '#3A1630';
+  ctx.fillRect(px + 1, py + 1, TS - 2, TS - 2);
+  ctx.fillStyle = '#8C1D52';
+  ctx.fillRect(px + 3, py + 2, 1, 4);
+  ctx.fillRect(px + 4, py + 6, 1, 3);
+  ctx.fillRect(px + 5, py + 9, 3, 1);
+  ctx.fillRect(px + 10, py + 3, 1, 5);
+  ctx.fillRect(px + 11, py + 8, 2, 1);
+  ctx.fillRect(px + 9, py + 12, 1, 3);
+  const pulse = Math.sin(time * 4 + tx) > 0;
+  ctx.fillStyle = pulse ? '#FF2E88' : '#8C1D52';
+  ctx.fillRect(px, py, TS, 1);
+  ctx.fillRect(px, py + TS - 1, TS, 1);
+  ctx.fillRect(px, py, 1, TS);
+  ctx.fillRect(px + TS - 1, py, 1, TS);
 }
 
 // Fondo en capas con parallax: barra de carga gigante al 99 % (0.1) y cuadrícula wireframe (0.3).

@@ -12,6 +12,7 @@ export const T = {
   VOID: 4, // agua / vacío: muerte
   GHOST: 5, // sólido solo con Vista Debug activa
   SHADE: 6, // sombra (nivel 4), sin colisión
+  HIDDEN: 7, // bloque invisible: solo choca si se golpea desde abajo (y entonces se revela)
 };
 
 // Leyenda por defecto: carácter → tipo. Los niveles pueden extenderla.
@@ -19,11 +20,13 @@ export const DEFAULT_LEGEND = {
   '.': T.EMPTY,
   ' ': T.EMPTY,
   '#': T.SOLID,
+  K: T.SOLID, // agrietado: se rompe con disparo cargado
   '=': T.ONEWAY,
   '^': T.SPIKES,
   '~': T.VOID,
   g: T.GHOST,
   s: T.SHADE,
+  i: T.HIDDEN,
 };
 
 export class Tilemap {
@@ -46,6 +49,9 @@ export class Tilemap {
       }
     }
     this.ghostSolid = false; // Vista Debug activa
+    // Plataformas dinámicas (móviles, que caen, bloques spam): rectángulos sólidos solo por arriba
+    // { x, y, w, h, dx, dy, active }
+    this.platforms = [];
   }
 
   inBounds(tx, ty) {

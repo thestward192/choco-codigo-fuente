@@ -21,7 +21,7 @@ export const TEXTS = {
   title: {
     subtitle: 'CÓDIGO FUENTE',
     pressEnter: 'Presioná Enter',
-    version: 'v0.2 · Hito 2',
+    version: 'v0.3 · Hito 3',
   },
 
   mainMenu: {
@@ -74,7 +74,7 @@ export const TEXTS = {
 
   // Nombres y subtítulos de cada nivel
   levels: {
-    0: { name: 'Prólogo', subtitle: 'Deploy de medianoche' },
+    0: { name: 'Deploy de medianoche', subtitle: 'Santa Cruz, Guanacaste · 11:58 p. m.' },
     1: { name: 'Mundo Cartucho', subtitle: 'Todo se ve normal. Todo.' },
     2: { name: 'La UNA', subtitle: 'Pasillos que compilan recuerdos' },
     3: { name: 'Novacomp', subtitle: 'De noche, nadie te ve si no hacés ruido' },
@@ -223,6 +223,7 @@ export const TEXTS = {
     cacaoDesc: 'Una cobertura brillante que aguanta un golpe.',
     heal: 'TROZO DE CACAO',
     goldenY: '¡Y DORADA!',
+    oneUp: '¡VIDA EXTRA!',
   },
 
   characters: {
@@ -246,10 +247,39 @@ export const TEXTS = {
   hud: {
     battery: 'Q',
     deadline: 'DEADLINE',
+    interact: '↑',
+  },
+
+  // Nivel 1 · Mundo Cartucho. Desde aquí los rótulos del mundo salen sin la letra Y (se la llevó N.U.L.L.)
+  level1: {
+    signs: {
+      pradera: 'PRADERA DE PÍXELES · Ha_ bits por todos lados.',
+      ramp: 'Ensa_o de física: pisá el disquete _ pateálo cuesta abajo.',
+      pipe: 'Tubería a las cuevas: parate encima _ presioná ↓.',
+      cuevas: 'CUEVAS DEL CARTUCHO · Pro_ecto en mantenimiento.',
+      fakePipe: 'Tubería decorativa. No ha_ nada que ver aquí.',
+      castillo: 'CASTILLO DE SILICIO · Re_ del cartucho: N.U.L.L.',
+      boss: '¡Ho_ es tu último día! —N.U.L.L.',
+    },
+    bossName: 'GUARDIÁN DEL SLOT',
+    bossSub: 'El cartucho que no quería que lo sacaran',
+    oscarSigh: 'Óscar: ay, mi Y...',
+  },
+
+  // Prólogo
+  prologue: {
+    move: 'mover',
+    jump: 'saltar',
+    shoot: 'disparar',
+    tvHeader: '> /tmp/null.exe',
+    loadingWorld: 'CARGANDO MUNDO... 99 %',
+    toTitle: 'Salir al título',
+    toTitleAsk: '¿Salir al título? El prólogo empieza de nuevo la próxima vez.',
   },
 
   testRoom: {
     title: 'SALA DE PRUEBAS',
+    loading: 'CARGANDO SALA DE PRUEBAS... 99 %',
     signs: {
       welcome: '← → mover · ESPACIO saltar (mantené para más altura)',
       steps: 'Escalones de 1, 2 y 3 tiles. El salto llega justo a 3.',
@@ -286,6 +316,9 @@ export const TEXTS = {
       { id: 'tech', label: 'Hito 0 · Escena de prueba técnica' },
       { id: 'room', label: 'Hito 1 · Sala de pruebas de Choco' },
       { id: 'title', label: 'Hito 2 · Pantalla de título' },
+      { id: 'prologue', label: 'Hito 3 · Prólogo: el cuarto' },
+      { id: 'loading', label: 'Hito 3 · Prólogo: Pantalla de Carga' },
+      { id: 'level1', label: 'Hito 3 · Nivel 1: Mundo Cartucho' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },
@@ -317,6 +350,43 @@ export const TEXTS = {
 // ============================================================================
 
 export const DIALOGUES = {
+  // ---------- Prólogo · el cuarto de Choco ----------
+  roomPhoto: [{ who: 'choco', face: 'happy', text: 'CHC Studio. Algún día vamos a ser grandes, maes.' }],
+  roomFridge: [{ who: 'choco', face: 'worried', text: 'Leche, agua y... un chocolate. No. Eso sería raro.' }],
+  roomLaptop: [
+    { who: 'system', face: 'normal', text: 'Deploy exitoso ✔' },
+    { who: 'choco', face: 'happy', text: 'Ya está en producción. Ahora sí, a jugar.' },
+  ],
+  roomShelf: [{ who: 'choco', face: 'normal', text: 'Aquí va a ir un trofeo algún día.' }],
+  roomGuitar: [{ who: 'choco', face: 'happy', text: 'Tres acordes y ya me siento en las fiestas de Santa Cruz.' }],
+  roomTv: [{ who: 'choco', face: 'happy', text: 'Un ratito nada más. Mañana hay daily a las nueve.' }],
+  // Texto verde en la tele (se escribe letra por letra)
+  nullIntro: [
+    { who: 'null', face: 'normal', text: 'hola, choco.' },
+    { who: 'null', face: 'normal', text: '¿te acordás de mí?' },
+    { who: 'null', face: 'normal', text: 'yo sí me acuerdo de vos. tuve mucho tiempo para acordarme.' },
+  ],
+  // ---------- Nivel 1 · rescate de Óscar ----------
+  oscarRescue: [
+    { who: 'oscar', face: 'surprised', text: '¡Choco! ¡Se la llevó! ¡Se llevó a la Y!' },
+    { who: 'choco', face: 'surprised', text: '¿A quién?' },
+    { who: 'oscar', face: 'worried', text: 'A la Y, mae. La letra. Mi letra. Nadie la entiende como yo.' },
+    { who: 'oscar', face: 'happy', text: 'Es vocal y consonante a la vez. Es... es perfecta.' },
+    { who: 'oscar', face: 'worried', text: 'Sin ella nada se lee bien. Fijate en los rótulos.' },
+    { who: 'oscar', face: 'happy', text: 'Tomá estas botas. Las hice con resortes de teclado mecánico.' },
+    { who: 'oscar', face: 'happy', text: 'Switches azules. Suenan riquísimo.' },
+  ],
+  oscarAfter: [{ who: 'choco', face: 'happy', text: 'Gracias, Óscar. Vamos por los demás... y por la Y.' }],
+
+  // ---------- Prólogo · Pantalla de Carga ----------
+  nullLoading: [
+    { who: 'null', face: 'normal', text: 'me dejaste en `/tmp`, choco. ¿sabés lo que es vivir en `/tmp`? todo se borra. menos yo.' },
+    { who: 'null', face: 'normal', text: 'ahora voy a salir. tus recuerdos son el puente perfecto hacia la red real.' },
+    { who: 'null', face: 'normal', text: 'la U, el trabajo, tu casa... los voy a reescribir uno por uno.' },
+    { who: 'null', face: 'angry', text: 'Y TUS AMIGUITOS SE QUEDAN CONMIGO. DE REHENES.' },
+    { who: 'null', face: 'normal', text: 'qué bonito, ¿verdad?' },
+  ],
+
   // Prueba de diálogos de la sala de pruebas (Hito 2)
   testTerminal: [
     { who: 'null', face: 'normal', text: 'hola, choco. ¿probando tus juguetitos?' },

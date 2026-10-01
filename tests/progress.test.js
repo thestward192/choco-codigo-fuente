@@ -10,6 +10,8 @@ import {
   recordAttempt,
   setCheckpoint,
   formatTime,
+  isCompleted,
+  clearCheckpoint,
 } from '../src/game/progress.js';
 
 describe('Progreso de la partida', () => {
@@ -73,6 +75,26 @@ describe('Progreso de la partida', () => {
     expect(c.checkpoint).toEqual({ level: 2, id: 4 });
     // Completar el nivel borra el checkpoint
     expect(completeLevel(c, 2, { time: 1, deaths: 0, goldenY: [] }).data.checkpoint).toBeNull();
+  });
+
+  it('con el prólogo construido: sin objetos y el nivel 1 bloqueado hasta terminarlo', () => {
+    const d = newGameData({ prologueBuilt: true });
+    expect(d.items).toEqual([]);
+    expect(isUnlocked(d, 0)).toBe(true);
+    expect(isUnlocked(d, 1)).toBe(false);
+    const r = completeLevel(d, 0, { time: 200, deaths: 0, goldenY: [] });
+    expect(r.rewards).toEqual({ founder: null, item: 'staff' });
+    expect(r.data.items).toEqual(['staff']);
+    expect(isCompleted(r.data, 0)).toBe(true);
+    expect(isUnlocked(r.data, 1)).toBe(true);
+    expect(nextLevel(r.data)).toBe(1);
+  });
+
+  it('Game Over olvida el checkpoint (se reintenta desde el inicio)', () => {
+    const c = setCheckpoint(newGameData(), 1, 2);
+    const d = clearCheckpoint(c);
+    expect(d.checkpoint).toBeNull();
+    expect(c.checkpoint).toEqual({ level: 1, id: 2 });
   });
 
   it('formatea tiempos', () => {

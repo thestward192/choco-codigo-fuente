@@ -2,7 +2,7 @@
 // subtítulo, y desde el nivel 3 Stward rapea 2 líneas. 3 s, saltable.
 import { Scene } from '../core/game.js';
 import { SCREEN } from '../config/balance.js';
-import { drawText } from '../art/font.js';
+import { drawText, measureText } from '../art/font.js';
 import { TEXTS } from '../data/dialogues.js';
 import { UI, ACCENTS } from '../art/palettes.js';
 import { levelById } from '../data/levels.js';
@@ -68,7 +68,10 @@ export class LevelTitleScene extends Scene {
     // Nombre: entra desde la derecha
     const p2 = Ease.outBack(Math.min(1, Math.max(0, (this.t - 0.2) / 0.5)));
     const nameX = Math.round(SCREEN.W + 160 - (SCREEN.W / 2 + 160) * p2);
-    drawText(ctx, TEXTS.levels[this.id].name.toUpperCase(), nameX, 60, { align: 'center', bold: true, scale: 3, color: UI.text, shadow: '#000' });
+    // Nombres largos ("Deploy de medianoche") bajan a escala 2 para caber
+    const name = TEXTS.levels[this.id].name.toUpperCase();
+    const scale = measureText(name, true) * 3 <= SCREEN.W - 10 ? 3 : 2;
+    drawText(ctx, name, nameX, scale === 3 ? 60 : 66, { align: 'center', bold: true, scale, color: UI.text, shadow: '#000' });
     // Subtítulo
     const a = Math.min(1, Math.max(0, (this.t - 0.8) / 0.4));
     ctx.globalAlpha = a;

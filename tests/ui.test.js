@@ -82,7 +82,8 @@ describe('Textos', () => {
 
   it('las rimas de Stward y los nombres de nivel caben en pantalla', () => {
     for (const lines of Object.values(TEXTS.stwardRaps)) for (const l of lines) expect(measureText(l)).toBeLessThanOrEqual(236);
-    for (const l of Object.values(TEXTS.levels)) expect(measureText(l.name.toUpperCase(), true) * 3).toBeLessThanOrEqual(310);
+    // La tarjeta usa escala 3, o 2 para los nombres largos
+    for (const l of Object.values(TEXTS.levels)) expect(measureText(l.name.toUpperCase(), true) * 2).toBeLessThanOrEqual(310);
   });
 });
 

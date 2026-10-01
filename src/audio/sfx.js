@@ -110,6 +110,157 @@ export const SFX = {
     for (let i = 0; i < 5; i++) a.tone({ wave: 'pulse12', f0: 200 + Math.random() * 2000, dur: 0.03, vol: 0.08, at: i * 0.03 });
     a.noise({ dur: 0.18, vol: 0.12, type: 'bandpass', freq: 3000, q: 4 });
   },
+
+  // --- Hito 3: prólogo ---
+  oneUp: (a) => [72, 76, 79, 84, 79, 84].forEach((m, i) => a.tone({ wave: 'pulse50', f0: N(m), dur: 0.09, vol: 0.12, at: i * 0.07 })),
+  tink: (a) => {
+    a.tone({ wave: 'triangle', f0: a.vary(2400), f1: 2000, dur: 0.08, vol: 0.18 });
+    a.tone({ wave: 'pulse12', f0: a.vary(3600), dur: 0.03, vol: 0.06 });
+  },
+  // Rasgueo de guitarra: notas de un acorde en cascada
+  strum: (a) => [52, 57, 62, 67, 71, 76].forEach((m, i) => a.tone({ wave: 'triangle', f0: N(m), dur: 0.9 - i * 0.06, vol: 0.14, at: i * 0.025, attack: 0.002 })),
+  cricket: (a) => {
+    const f = a.vary(4300);
+    for (let i = 0; i < 3; i++) a.tone({ wave: 'sine', f0: f, dur: 0.025, vol: 0.025, at: i * 0.045 });
+  },
+  tvOn: (a) => {
+    a.noise({ dur: 0.05, vol: 0.2, type: 'highpass', freq: 2000 });
+    a.tone({ wave: 'sine', f0: 15700, dur: 0.6, vol: 0.02, at: 0.02 });
+    a.tone({ wave: 'triangle', f0: 60, f1: 120, dur: 0.25, vol: 0.2 });
+  },
+  staticBurst: (a) => a.noise({ dur: 0.12, vol: 0.05, type: 'bandpass', freq: a.vary(3000), q: 0.6 }),
+  // Tecla mecánica (texto de N.U.L.L. en la tele)
+  key: (a) => {
+    a.noise({ dur: 0.015, vol: 0.16, type: 'highpass', freq: a.vary(3200) });
+    a.tone({ wave: 'pulse12', f0: a.vary(1900), dur: 0.012, vol: 0.05 });
+  },
+  nullAppear: (a) => {
+    [64, 65, 71, 70].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), f1: N(m) * 0.97, dur: 0.22, vol: 0.12, at: i * 0.16 }));
+    a.noise({ dur: 0.5, vol: 0.12, type: 'bandpass', freq: 1500, freq1: 400, q: 2 });
+  },
+  beam: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 90, f1: 900, dur: 0.7, vol: 0.18, curve: 'lin' });
+    a.tone({ wave: 'pulse12', f0: 1800, f1: 400, dur: 0.7, vol: 0.08, vibrato: 60 });
+    a.noise({ dur: 0.7, vol: 0.15, type: 'bandpass', freq: 2500, q: 1 });
+  },
+  detach: (a) => {
+    a.tone({ wave: 'triangle', f0: 200, f1: 40, dur: 0.6, vol: 0.4 });
+    a.noise({ dur: 0.4, vol: 0.3, type: 'lowpass', freq: 3000, freq1: 200 });
+    a.tone({ wave: 'pulse25', f0: 900, f1: 300, dur: 1.2, vol: 0.08, at: 0.1, curve: 'lin', vibrato: 20 });
+  },
+  squareIn: (a) => a.tone({ wave: 'pulse25', f0: a.vary(700), f1: 1600, dur: 0.12, vol: 0.1 }),
+  gulp: (a) => {
+    a.tone({ wave: 'pulse50', f0: 300, f1: 180, dur: 0.12, vol: 0.12 });
+    a.tone({ wave: 'pulse50', f0: 260, f1: 140, dur: 0.12, vol: 0.1, at: 0.18 });
+  },
+  suck: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 120, f1: 1400, dur: 1.0, vol: 0.14 });
+    a.noise({ dur: 1.0, vol: 0.2, type: 'bandpass', freq: 400, freq1: 4000, q: 2 });
+  },
+  // Consola apagándose: zumbido que cae y un "pop" final
+  crtOff: (a) => {
+    a.tone({ wave: 'sine', f0: 900, f1: 30, dur: 0.6, vol: 0.2 });
+    a.noise({ dur: 0.08, vol: 0.25, type: 'lowpass', freq: 1500, at: 0.55 });
+    a.tone({ wave: 'triangle', f0: 70, f1: 30, dur: 0.15, vol: 0.3, at: 0.58 });
+  },
+  // "Compilación exitosa"
+  compile: (a) => {
+    for (let i = 0; i < 6; i++) a.noise({ dur: 0.012, vol: 0.12, type: 'highpass', freq: 3000, at: i * 0.05 });
+    [72, 79, 84, 88].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), dur: 0.16, vol: 0.12, at: 0.32 + i * 0.07 }));
+    a.tone({ wave: 'triangle', f0: N(60), dur: 0.5, vol: 0.25, at: 0.32 });
+  },
+  portalOpen: (a) => {
+    a.tone({ wave: 'pulse25', f0: 100, f1: 800, dur: 0.9, vol: 0.12, vibrato: 30 });
+    a.noise({ dur: 0.9, vol: 0.15, type: 'bandpass', freq: 600, freq1: 3000, q: 3 });
+  },
+  portalEnter: (a) => {
+    a.tone({ wave: 'pulse12', f0: 400, f1: 2400, dur: 0.4, vol: 0.12 });
+    a.tone({ wave: 'triangle', f0: 200, f1: 60, dur: 0.5, vol: 0.25 });
+  },
+
+  // --- Hito 3: Mundo Cartucho ---
+  blockBump: (a) => {
+    a.tone({ wave: 'triangle', f0: 180, f1: 90, dur: 0.08, vol: 0.3 });
+    a.noise({ dur: 0.03, vol: 0.12, type: 'lowpass', freq: 1000 });
+  },
+  blockBreak: (a) => {
+    a.noise({ dur: 0.3, vol: 0.35, type: 'lowpass', freq: 3000, freq1: 150 });
+    a.tone({ wave: 'pulse25', f0: 300, f1: 60, dur: 0.25, vol: 0.14 });
+  },
+  kick: (a) => {
+    a.tone({ wave: 'pulse50', f0: 220, f1: 660, dur: 0.07, vol: 0.18 });
+    a.noise({ dur: 0.04, vol: 0.2, type: 'highpass', freq: 2000 });
+  },
+  diskBounce: (a) => a.tone({ wave: 'pulse25', f0: a.vary(500), f1: 300, dur: 0.05, vol: 0.12 }),
+  stompMetal: (a) => {
+    a.tone({ wave: 'triangle', f0: 1200, f1: 900, dur: 0.15, vol: 0.18 });
+    a.tone({ wave: 'pulse50', f0: a.vary(400), f1: 120, dur: 0.12, vol: 0.18 });
+  },
+  buzz: (a) => a.tone({ wave: 'sawtooth', f0: a.vary(330), f1: 300, dur: 0.25, vol: 0.025, vibrato: 25 }),
+  spamShake: (a) => {
+    for (let i = 0; i < 4; i++) a.noise({ dur: 0.03, vol: 0.12, type: 'bandpass', freq: 900, q: 2, at: i * 0.08 });
+  },
+  thud: (a) => {
+    a.tone({ wave: 'triangle', f0: 120, f1: 40, dur: 0.15, vol: 0.35 });
+    a.noise({ dur: 0.08, vol: 0.2, type: 'lowpass', freq: 600 });
+  },
+  spark: (a) => {
+    for (let i = 0; i < 6; i++) a.noise({ dur: 0.02, vol: 0.12, type: 'highpass', freq: 4000 + Math.random() * 3000, at: i * 0.07 + Math.random() * 0.03 });
+  },
+  zap: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 120, f1: 80, dur: 0.35, vol: 0.12, vibrato: 40 });
+    a.noise({ dur: 0.3, vol: 0.12, type: 'bandpass', freq: 3500, q: 1 });
+  },
+  crackle: (a) => a.noise({ dur: 0.05, vol: 0.05, type: 'highpass', freq: a.vary(5000) }),
+  bubble: (a) => [0, 0.12, 0.22, 0.3, 0.4].forEach((t) => a.tone({ wave: 'sine', f0: a.vary(300), f1: 700, dur: 0.06, vol: 0.08, at: t })),
+  geyser: (a) => a.noise({ dur: 0.5, vol: 0.2, type: 'bandpass', freq: 800, freq1: 2500, q: 0.8 }),
+  crumble: (a) => {
+    for (let i = 0; i < 4; i++) a.noise({ dur: 0.04, vol: 0.12, type: 'lowpass', freq: 900, at: i * 0.09 });
+  },
+  pipe: (a) => [60, 55, 48].forEach((m, i) => a.tone({ wave: 'pulse50', f0: N(m), f1: N(m - 5), dur: 0.12, vol: 0.12, at: i * 0.1 })),
+  doorOpen: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 70, f1: 50, dur: 0.9, vol: 0.12 });
+    a.noise({ dur: 0.9, vol: 0.15, type: 'lowpass', freq: 500 });
+    a.tone({ wave: 'pulse25', f0: N(64), dur: 0.2, vol: 0.1, at: 0.9 });
+    a.tone({ wave: 'pulse25', f0: N(65), dur: 0.3, vol: 0.1, at: 1.05 });
+  },
+  sigh: (a) => {
+    a.tone({ wave: 'triangle', f0: 600, f1: 380, dur: 0.6, vol: 0.08, attack: 0.08 });
+    a.noise({ dur: 0.5, vol: 0.03, type: 'bandpass', freq: 1200, q: 1 });
+  },
+
+  // --- Guardián del Slot ---
+  bossCrouch: (a) => a.tone({ wave: 'pulse50', f0: 300, f1: 150, dur: 0.5, vol: 0.12, curve: 'lin' }),
+  bossLand: (a) => {
+    a.tone({ wave: 'triangle', f0: 140, f1: 30, dur: 0.35, vol: 0.5 });
+    a.noise({ dur: 0.3, vol: 0.35, type: 'lowpass', freq: 1200, freq1: 100 });
+  },
+  scrape: (a) => {
+    for (let i = 0; i < 4; i++) a.noise({ dur: 0.1, vol: 0.18, type: 'bandpass', freq: 1800, q: 3, at: i * 0.2 });
+  },
+  wallHit: (a) => {
+    a.tone({ wave: 'triangle', f0: 100, f1: 30, dur: 0.4, vol: 0.5 });
+    a.noise({ dur: 0.35, vol: 0.4, type: 'lowpass', freq: 2500, freq1: 100 });
+    [84, 88, 91].forEach((m, i) => a.tone({ wave: 'pulse12', f0: N(m), dur: 0.08, vol: 0.06, at: 0.3 + i * 0.1 }));
+  },
+  bossHurt: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 500, f1: 80, dur: 0.4, vol: 0.2 });
+    a.noise({ dur: 0.25, vol: 0.3, type: 'bandpass', freq: 1500, q: 1 });
+  },
+  bossDie: (a) => {
+    for (let i = 0; i < 8; i++) a.noise({ dur: 0.18, vol: 0.3, type: 'lowpass', freq: 3000 - i * 300, freq1: 100, at: i * 0.12 });
+    a.tone({ wave: 'sawtooth', f0: 400, f1: 30, dur: 1.2, vol: 0.18 });
+  },
+  cageDrop: (a) => {
+    a.tone({ wave: 'triangle', f0: 1400, f1: 1300, dur: 0.4, vol: 0.12 });
+    a.tone({ wave: 'triangle', f0: 120, f1: 50, dur: 0.25, vol: 0.4 });
+  },
+  cageOpen: (a) => [76, 79, 83, 88].forEach((m, i) => a.tone({ wave: 'pulse12', f0: N(m), dur: 0.08, vol: 0.1, at: i * 0.05 })),
+  // Un fundador se une a la barra
+  join: (a) => {
+    [60, 64, 67, 72, 76, 79, 84].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), dur: 0.12, vol: 0.12, at: i * 0.06 }));
+    a.tone({ wave: 'triangle', f0: N(48), dur: 0.8, vol: 0.3, at: 0.36 });
+  },
 };
 
 export function playSfx(audio, name) {

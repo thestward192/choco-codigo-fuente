@@ -5,6 +5,7 @@ import { createBody, moveX, moveY } from '../../systems/physics.js';
 import { PLATFORMER, SCREEN } from '../../config/balance.js';
 import { bytelingSprites, BYTELING_COLORS } from '../../art/enemies/byteling.js';
 import { playSfx } from '../../audio/sfx.js';
+import { drawText } from '../../art/font.js';
 
 const CFG = ENEMIES.BYTELING;
 const TS = SCREEN.TILE;
@@ -12,12 +13,13 @@ const TS = SCREEN.TILE;
 let spritesCache = {};
 
 export class Byteling {
-  // opts: { dir: -1|1, turnAtEdges: bool, test: bool }
+  // opts: { dir: -1|1, turnAtEdges: bool, test: bool (práctica del prólogo), speed }
   constructor(x, footY, opts = {}) {
     this.body = createBody(x - CFG.W / 2, footY - CFG.H, CFG.W, CFG.H);
     this.dir = opts.dir ?? -1;
     this.turnAtEdges = opts.turnAtEdges ?? true;
     this.test = !!opts.test;
+    this.speed = opts.speed ?? CFG.SPEED;
     this.hp = CFG.HP;
     this.state = 'walk'; // 'walk' | 'squashed' | 'dead'
     this.t = Math.random();
@@ -54,8 +56,11 @@ export class Byteling {
     }
     if (this.state !== 'walk') return;
     const b = this.body;
+    // Se activa al acercarse a la cámara (no se adelanta antes de que el jugador lo vea)
+    if (!this.awake && (!scene.camera || scene.camera.isVisible(b.x, b.y, b.w, b.h, 48))) this.awake = true;
+    if (!this.awake) return;
     const map = scene.map;
-    b.vx = this.dir * CFG.SPEED;
+    b.vx = this.dir * this.speed;
     b.vy = Math.min(b.vy + PLATFORMER.GRAVITY_DOWN * dt, PLATFORMER.MAX_FALL);
     // ¿Borde adelante?
     if (this.turnAtEdges && b.onGround) {
@@ -65,7 +70,7 @@ export class Byteling {
       const ty = Math.floor(belowY / TS);
       if (!map.isSolid(tx, ty) && !map.isOneWay(tx, ty)) this.dir *= -1;
     }
-    moveX(b, this.dir * CFG.SPEED * dt, map);
+    moveX(b, this.dir * this.speed * dt, map);
     if (b.hitWall) this.dir *= -1;
     b.onGround = false;
     moveY(b, b.vy * dt, map);
@@ -128,5 +133,7 @@ export class Byteling {
     const dh = Math.round(16 * this.sy);
     // El sprite de 16×16 tiene los pies en la última fila; la hitbox es de 12×12
     ctx.drawImage(spr.get(flip, this.flashT > 0), footX - Math.round(dw / 2), footY - dh, dw, dh);
+    // Etiqueta "TEST" sobre los de práctica
+    if (this.test && this.state === 'walk') drawText(ctx, 'TEST', footX, footY - 26 + (Math.floor(this.t * 2) % 2), { align: 'center', color: '#43D9FF', shadow: '#07070C' });
   }
 }
