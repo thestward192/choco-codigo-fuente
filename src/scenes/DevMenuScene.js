@@ -14,6 +14,7 @@ import { LoadingScene } from '../levels/level0_prologo/LoadingScene.js';
 import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
 import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
 import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
+import { Level4Scene } from '../levels/level4_santacruz/Level4Scene.js';
 import { DevBattleScene } from './DevBattleScene.js';
 
 export class DevMenuScene extends Scene {
@@ -49,6 +50,8 @@ export class DevMenuScene extends Scene {
       else if (id === 'boss1') g.changeScene(() => new Level1Scene(g, { start: 'arena' }), { type: 'iris' });
       else if (id === 'level3') g.changeScene(() => new Level3Scene(g), { type: 'iris' });
       else if (id === 'terraza' || id === 'deadline' || id === 'escudo') g.changeScene(() => new Level3Scene(g, { start: id }), { type: 'iris' });
+      else if (id === 'level4') g.changeScene(() => new Level4Scene(g), { type: 'iris' });
+      else if (['plaza', 'redondel', 'ruinas', 'torito', 'lazo'].includes(id)) g.changeScene(() => new Level4Scene(g, { start: id }), { type: 'iris' });
     }
   }
 

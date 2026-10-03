@@ -33,7 +33,8 @@ async function start() {
   // ?scene=boss1 (directo al Guardián del Slot), ?scene=level2 (La UNA), ?scene=auditorio (con los
   // 3 carnés, frente a MC Stack Overflow), ?scene=battle (batallas de prueba), ?scene=rap,
   // ?scene=level3 (Novacomp), ?scene=terraza (rescate de Hezron), ?scene=deadline (jefe),
-  // ?scene=escudo (práctica del Escudo Firewall)
+  // ?scene=escudo (práctica del Escudo Firewall), ?scene=level4 (Santa Cruz), ?scene=plaza,
+  // ?scene=redondel, ?scene=ruinas, ?scene=torito (jefe), ?scene=lazo (práctica del lazo)
   let next = () => new SplashScene(game);
   const direct = import.meta.env.DEV ? new URLSearchParams(location.search).get('scene') : null;
   if (direct === 'room') {
@@ -51,6 +52,9 @@ async function start() {
   } else if (['level3', 'terraza', 'deadline', 'escudo'].includes(direct)) {
     const { Level3Scene } = await import('./levels/level3_novacomp/Level3Scene.js');
     next = () => new Level3Scene(game, { start: direct === 'level3' ? null : direct });
+  } else if (['level4', 'plaza', 'redondel', 'ruinas', 'torito', 'lazo'].includes(direct)) {
+    const { Level4Scene } = await import('./levels/level4_santacruz/Level4Scene.js');
+    next = () => new Level4Scene(game, { start: direct === 'level4' ? null : direct });
   } else if (direct === 'battle' || direct === 'rap') {
     const { DevBattleScene } = await import('./scenes/DevBattleScene.js');
     next = () => new DevBattleScene(game, direct);

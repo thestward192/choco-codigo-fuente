@@ -21,7 +21,7 @@ export const TEXTS = {
   title: {
     subtitle: 'CÓDIGO FUENTE',
     pressEnter: 'Presioná Enter',
-    version: 'v0.5 · Hito 5',
+    version: 'v0.6 · Hito 6',
   },
 
   mainMenu: {
@@ -408,6 +408,70 @@ export const TEXTS = {
     },
   },
 
+  // Nivel 4 · Santa Cruz. Los rótulos del mundo siguen sin la letra Y.
+  level4: {
+    sections: {
+      A: 'ENTRADA AL PUEBLO',
+      B: 'PLAZA Y FIESTAS',
+      C: 'EL REDONDEL',
+      D: 'RUINAS DEL CAMPANARIO',
+      arena: 'LA CIMA DEL CAMPANARIO',
+      E: 'ATARDECER',
+    },
+    signs: {
+      entrada: 'SANTA CRUZ · Ciudad Folclórica. Ho_ ha_ fiestas.',
+      sombra: 'Aviso: el sol pega duro. Caminá por la sombrita de los guanacastes.',
+      sabanero: 'Cuidado con el sabanero: su lazo jala. Disparale a la cuerda.',
+      plaza: 'PLAZA · Comidas típicas, marimba _ bombetas.',
+      techos: 'Techos en reparación. Algunas tablas solo se ven con la laptop.',
+      redondel: 'REDONDEL · Ho_: toros glitcheados. Entrada libre (la salida no).',
+      ruinas: 'RUINAS DEL CAMPANARIO · Ladrillos flojos. Subí con cuidado.',
+      barranco: 'Barranco · Nodos de fibra óptica. No ha_ baranda.',
+    },
+    checkpoint: 'CHECKPOINT',
+    checkpointSub: 'Progreso guardado',
+    heatHint: 'Al sol te derretís: buscá la sombra',
+    heatHintSub: 'El agua de los bebederos te enfría de una vez',
+    burn: '¡QUEMA!',
+    water: '¡AGUA!',
+    // Misión de Fabiola: la rosquilla perfecta
+    foods: {
+      chorreada: { name: 'Chorreada', comment: 'Muy dulces para mí.' },
+      tanela: { name: 'Tanela', comment: '¿Qué queso es ese? No sé si me cae bien.' },
+      arroz: { name: 'Arroz de maíz', comment: 'Tiene demasiadas cosas juntas.' },
+      empanada: { name: 'Empanada', comment: '¿De qué es? Mejor no me digás.' },
+      rosquilla: { name: 'Rosquilla perfecta', comment: 'Sin partes quemaditas. ¡Esta sí!' },
+    },
+    carrying: (name) => `Llevás: ${name}`,
+    future: (comment) => `Fabiola (más tarde): "${comment}"`,
+    swap: 'Choco solo puede llevar una comida a la vez.',
+    recipe: 'RECETA DE LA ABUELA',
+    recipeSub: 'En el nivel 5 empezás con cobertura de cacao',
+    // El Redondel
+    redondel: {
+      wave: (n) => `OLEADA ${n}/3`,
+      goal: 'Aguantá 60 s o derrotá 6 toros',
+      counter: (sec, kills, max) => `${sec} s · Toros ${kills}/${max}`,
+      done: '¡REDONDEL SUPERADO!',
+      doneSub: 'Se abrió la puerta hacia las ruinas',
+    },
+    boss: {
+      name: 'EL TORITO KERNEL',
+      sub: 'Hecho de carretas y rencor',
+      hint: 'Hacelo chocar contra una columna',
+      hintSub: 'Aturdido, mirale la espalda con la Vista Debug (Q)',
+      shootHere: '¡AQUÍ!',
+      phase2: '¡EL SOL QUEMA MÁS!',
+      phase2Sub: 'Las columnas no van a aguantar mucho',
+    },
+    lasso: {
+      hint: (k) => `Mantené ${k} cerca de un nodo · Soltá para salir disparado`,
+      reel: '↑ ↓ acortar o alargar la cuerda · ← → columpiarse',
+      challenges: ['RETO 1 · De nodo en nodo', 'RETO 2 · Lazo + doble salto', 'RETO 3 · Cadena de 5 nodos'],
+      portal: 'Portal al Código Puro',
+    },
+  },
+
   // Batallas por turnos
   battle: {
     appear: (name) => `¡${name} te bloquea el paso!`,
@@ -608,7 +672,7 @@ export const TEXTS = {
 
   debug: {
     on: 'DEBUG',
-    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2) / Hezron (nivel 3)',
+    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2) / Hezron (nivel 3) / rosquilla (nivel 4)',
     invincible: 'INVENCIBLE',
     infiniteLives: 'VIDAS INFINITAS',
     stepping: 'CUADRO A CUADRO (F7 avanza)',
@@ -634,6 +698,12 @@ export const TEXTS = {
       { id: 'terraza', label: 'Hito 5 · Nivel 3: terraza (Hezron)' },
       { id: 'deadline', label: 'Hito 5 · Nivel 3: jefe DEADLINE' },
       { id: 'escudo', label: 'Hito 5 · Nivel 3: práctica del escudo' },
+      { id: 'level4', label: 'Hito 6 · Nivel 4: Santa Cruz' },
+      { id: 'plaza', label: 'Hito 6 · Nivel 4: plaza (rosquilla)' },
+      { id: 'redondel', label: 'Hito 6 · Nivel 4: el Redondel' },
+      { id: 'ruinas', label: 'Hito 6 · Nivel 4: ruinas del campanario' },
+      { id: 'torito', label: 'Hito 6 · Nivel 4: jefe Torito Kernel' },
+      { id: 'lazo', label: 'Hito 6 · Nivel 4: práctica del lazo' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },
@@ -820,6 +890,51 @@ export const DIALOGUES = {
   practiceDone: [
     { who: 'hezron', face: 'happy', text: 'Eso. Parry perfecto. Sabor victoria con limón.' },
     { who: 'choco', face: 'happy', text: 'Tres cuadritos. Vamos por Fabiola.' },
+  ],
+
+  // ---------- Nivel 4 · Santa Cruz ----------
+  level4Intro: [
+    { who: 'choco', face: 'happy', text: 'Santa Cruz. Mi casa... en plenas fiestas.' },
+    { who: 'choco', face: 'worried', text: 'Pero los toros tienen los ojos rojos. Y el sol... me estoy derritiendo.' },
+    { who: 'hezron', face: 'normal', text: 'Tranqui. Caminá por la sombrita de los guanacastes. Y si te calentás, agua.' },
+  ],
+  plazaIntro: [
+    { who: 'oscar', face: 'normal', text: 'Fabiola tiene que andar cerca. Y si la conozco, no ha comido nada.' },
+    { who: 'choco', face: 'happy', text: 'Le llevo algo de la plaza. Aunque ella le encuentra un pero a todo...' },
+  ],
+  ovenFind: [
+    { who: 'choco', face: 'surprised', text: 'Una rosquilla dorada parejita. Sin partes quemaditas.' },
+    { who: 'stward', face: 'happy', text: 'Rosquilla perfecta, sin nada tostado; si esa no le gusta, nada le ha gustado.' },
+  ],
+  redondelIntro: [
+    { who: 'choco', face: 'surprised', text: '¡Se cerraron las puertas!' },
+    { who: 'hezron', face: 'normal', text: 'Tranqui. Aguantá un minuto o bajate seis toros. Arriba, bajo las gradas, hay sombra.' },
+  ],
+  toritoIntro: [
+    { who: 'fabiola', face: 'worried', text: '¡Choco! Aquí arriba. Ese toro no me deja bajar.' },
+    { who: 'choco', face: 'surprised', text: '¡Fabiola! ¿Qué es esa cosa?' },
+    { who: 'fabiola', face: 'normal', text: 'Lo armaron con carretas viejas. Tiene un chip en la espalda, pero solo se ve con la laptop.' },
+  ],
+  fabiolaRescue: [
+    { who: 'fabiola', face: 'happy', text: 'Gracias, Choco. Tres horas aquí y no me pude comer nada.' },
+    { who: 'fabiola', face: 'worried', text: 'Todo tenía cebolla, o estaba muy dulce, o tenía la textura rara.' },
+  ],
+  fabiolaRosquilla: [
+    { who: 'fabiola', face: 'surprised', text: '¿Me trajiste una rosquilla sin las partes quemaditas?' },
+    { who: 'fabiola', face: 'happy', text: 'Choco... sos lo máximo.' },
+    { who: 'fabiola', face: 'happy', text: 'Tomá, la receta de mi abuela. Con esto aguantás un golpe más.' },
+  ],
+  fabiolaLasso: [
+    { who: 'fabiola', face: 'normal', text: 'Me lo dio un sabanero antes de que lo glitchearan. Es fibra óptica trenzada.' },
+    { who: 'fabiola', face: 'happy', text: 'Se engancha en cualquier nodo brillante. Probalo en el barranco.' },
+  ],
+  lassoIntro: [
+    { who: 'fabiola', face: 'normal', text: 'Mantené V cerca de un nodo. Columpiate con ← → y soltá para salir volando.' },
+    { who: 'fabiola', face: 'happy', text: 'Con ↑ y ↓ acortás o alargás la cuerda. Despacito, que el barranco es hondo.' },
+  ],
+  lassoDone: [
+    { who: 'choco', face: 'happy', text: 'Cuatro cuadritos y el núcleo. La barra completa.' },
+    { who: 'fabiola', face: 'happy', text: 'Ahora sí, vamos por la Y. Y después, a comer algo. Sin cebolla.' },
   ],
 
   // Prueba de diálogos de la sala de pruebas (Hito 2)

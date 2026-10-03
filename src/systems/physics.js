@@ -206,7 +206,9 @@ export function stepPlatformer(body, js, intent, dt, map, P = PLATFORMER) {
   if (Math.abs(body.vx) > Math.abs(target) && Math.sign(body.vx) === Math.sign(target || body.vx)) {
     accel = body.onGround ? P.DECEL_GROUND : P.DECEL_AIR;
   }
-  body.vx = approach(body.vx, target, accel * dt);
+  // Recién lanzado por el lazo: en el aire conserva el impulso (solo frena si se pide lo contrario)
+  const keep = intent.keepMomentum && !body.onGround && Math.abs(body.vx) > Math.abs(target) && (intent.moveX === 0 || Math.sign(intent.moveX) === Math.sign(body.vx));
+  if (!keep) body.vx = approach(body.vx, target, accel * dt);
 
   // --- Coyote time y recarga del doble salto ---
   if (body.onGround) {

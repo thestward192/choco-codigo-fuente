@@ -1,8 +1,9 @@
 // Choco en modo plataformas: física, báculo, vida, animación y efectos secundarios.
-import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD } from '../config/balance.js';
+import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO } from '../config/balance.js';
 import { createShield, shieldPress, shieldUpdate, shieldOn, shieldBlock } from '../systems/shield.js';
+import { pickNode, createSwing, swingStep, releaseVelocity } from '../systems/lasso.js';
 import { drawShieldBubble } from '../art/shield.js';
-import { createBody, createJumpState, stepPlatformer, stompBounce, moveY } from '../systems/physics.js';
+import { createBody, createJumpState, stepPlatformer, stompBounce, moveX as moveBodyX, moveY } from '../systems/physics.js';
 import { ANIMS, FRAME_W, FRAME_H, LED_POS, SCARF_ANCHOR, chocoFrame, chocoMelt, withShootArms } from '../art/choco.js';
 import { playSfx } from '../audio/sfx.js';
 import { fxRng } from '../core/rng.js';
@@ -49,6 +50,13 @@ export class Choco {
     // Escudo Firewall
     this.shield = createShield();
     this.parryFlash = 0;
+
+    // Lazo de Fibra Óptica: lasso = { phase: 'throw' | 'swing', node, tip, swing }
+    this.lasso = null;
+    this.lassoTarget = null;
+    this.launchT = 0; // tras soltar el lazo conserva el impulso en el aire
+    // Jalón del lazo de un Sabanero: { x, speed }
+    this.tether = null;
 
     // Cara y detalles
     this.blinkIn = R.range(CHOCO_FX.BLINK_MIN, CHOCO_FX.BLINK_MAX);
@@ -127,6 +135,8 @@ export class Choco {
       return;
     }
     if (this.state === 'victory' || this.state === 'frozen') {
+      if (this.lasso) this.detachLasso(false);
+      this.tether = null;
       this.updateSquash(dt);
       this.updateAnim(dt, 0);
       this.updateScarf(dt);
@@ -136,10 +146,25 @@ export class Choco {
     // Movimiento guionado en cinemáticas: un "control" falso en lugar del teclado
     if (this.state === 'auto') inp = this.autoInput;
     if (this.hurtT > 0) this.hurtT -= dt;
+    if (this.launchT > 0) this.launchT -= dt;
     const control = this.hurtT <= 0;
-    const moveX = control ? inp.moveX() : 0;
+    let moveX = control ? inp.moveX() : 0;
     this.moveInput = moveX;
     this.js.hasBoots = this.items.boots;
+
+    // Lazo: lanzar, columpiarse y soltar (mientras se columpia no corre la física normal)
+    if (this.updateLasso(dt, inp, control)) {
+      this.finishUpdate(dt, inp, control, moveX);
+      return;
+    }
+
+    // Atado por el lazo de un Sabanero: lo jala hacia él y no puede saltar
+    let speedMult = (this.charging && this.chargeT > STAFF.CHARGE_VISIBLE_AFTER ? STAFF.CHARGE_MOVE_MULT : 1) * (shieldOn(this.shield) ? SHIELD.MOVE_MULT : 1);
+    const tied = !!this.tether;
+    if (tied) {
+      moveX = Math.sign(this.tether.x - this.footX) || 0;
+      speedMult = this.tether.speed / PLATFORMER.MAX_SPEED;
+    }
 
     const b = this.body;
     const ev = stepPlatformer(
@@ -147,10 +172,11 @@ export class Choco {
       this.js,
       {
         moveX,
-        jumpBuffered: control && inp.buffered('jump'),
+        jumpBuffered: control && !tied && inp.buffered('jump'),
         jumpHeld: inp.down('jump'),
         down: inp.down('down'),
-        speedMult: (this.charging && this.chargeT > STAFF.CHARGE_VISIBLE_AFTER ? STAFF.CHARGE_MOVE_MULT : 1) * (shieldOn(this.shield) ? SHIELD.MOVE_MULT : 1),
+        speedMult,
+        keepMomentum: this.launchT > 0,
       },
       dt,
       this.scene.map,
@@ -166,6 +192,11 @@ export class Choco {
     if (b.onGround && !this.scene.map.touchesSpikes(b.x - 4, b.y, b.w + 8, b.h + 1)) {
       this.safe = { x: this.footX, y: this.footY };
     }
+    this.finishUpdate(dt, inp, control, moveX);
+  }
+
+  // Lo que corre siempre después de moverse: escudo, báculo, peligros y animación
+  finishUpdate(dt, inp, control, moveX) {
     // Escudo Firewall (C): mientras está activo no se dispara
     if (control && this.items.shield && inp.pressed('shield') && shieldPress(this.shield)) {
       this.stopCharge();
@@ -182,6 +213,117 @@ export class Choco {
     this.updateFace(dt);
     this.updateScarf(dt);
     this.updateGroundFx(dt);
+  }
+
+  // ---------- Lazo de Fibra Óptica ----------
+  hand() {
+    return { x: this.footX, y: this.footY + LASSO.HAND_Y };
+  }
+
+  // Devuelve true si Choco está colgado del lazo (y ya se movió en este paso)
+  updateLasso(dt, inp, control) {
+    const nodes = this.scene.lassoNodes;
+    if (!this.items.lasso || !nodes || this.state !== 'play') {
+      this.lassoTarget = null;
+      if (this.lasso) this.detachLasso(false);
+      return false;
+    }
+    const map = this.scene.map;
+    const isSolid = (tx, ty) => map.isSolid(tx, ty);
+    const L = this.lasso;
+    if (!L) {
+      this.lassoTarget = this.tether ? null : pickNode(nodes, this.hand(), this.facing, isSolid);
+      if (control && this.lassoTarget && inp.pressed('lasso')) {
+        const h = this.hand();
+        this.lasso = { phase: 'throw', node: this.lassoTarget, tip: { x: h.x, y: h.y } };
+        this.stopCharge();
+        playSfx(this.audio, 'lassoThrow');
+      }
+      return false;
+    }
+    this.lassoTarget = null;
+    if (!inp.down('lasso') || !control) {
+      // Soltar V antes de engancharse cancela; colgado, sale disparado
+      this.detachLasso(L.phase === 'swing');
+      return false;
+    }
+    if (L.phase === 'throw') {
+      // La punta viaja hasta el nodo; mientras tanto la física sigue normal
+      const dx = L.node.x - L.tip.x;
+      const dy = L.node.y - L.tip.y;
+      const d = Math.hypot(dx, dy);
+      const step = LASSO.THROW_SPEED * dt;
+      if (d <= step) {
+        const h = this.hand();
+        L.phase = 'swing';
+        L.swing = createSwing(L.node, h.x, h.y, this.body.vx, this.body.vy);
+        this.js.canDoubleJump = this.items.boots;
+        this.body.onGround = false;
+        this.body.platform = null;
+        L.node.hooked = 0.3;
+        playSfx(this.audio, 'lassoHook');
+        this.setSquash({ X: 0.85, Y: 1.15 });
+        this.particles.burst(L.node.x, L.node.y, 8, { speedMin: 20, speedMax: 60, colors: ['#FFFFFF', '#43D9FF', '#8AE8FF'], lifeMin: 0.15, lifeMax: 0.35 });
+      } else {
+        L.tip.x += (dx / d) * step;
+        L.tip.y += (dy / d) * step;
+      }
+      return false;
+    }
+    // Colgado: saltar suelta con impulso
+    if (inp.pressed('jump')) {
+      inp.consume('jump');
+      this.detachLasso(true);
+      return false;
+    }
+    const s = L.swing;
+    const reel = inp.down('up') ? -1 : inp.down('down') ? 1 : 0;
+    const mx = inp.moveX();
+    swingStep(s, dt, { moveX: mx, reel });
+    // Mover el cuerpo hasta la nueva posición de la mano, chocando con los tiles
+    const b = this.body;
+    const hx = b.x + b.w / 2;
+    const hy = b.y + b.h + LASSO.HAND_Y;
+    moveBodyX(b, s.px - hx, map);
+    if (b.hitWall) s.vx = 0;
+    b.onGround = false;
+    moveY(b, s.py - hy, map);
+    if (b.hitCeiling) s.vy = Math.max(0, s.vy);
+    // Tocar el suelo colgado: se suelta sin impulso
+    if (b.onGround) {
+      b.vx = s.vx;
+      b.vy = 0;
+      this.detachLasso(false);
+      return false;
+    }
+    s.px = b.x + b.w / 2;
+    s.py = b.y + b.h + LASSO.HAND_Y;
+    b.vx = s.vx;
+    b.vy = s.vy;
+    if (Math.abs(s.vx) > 20) this.facing = Math.sign(s.vx);
+    if (b.y > map.pxH + HEALTH.FALL_DEATH_MARGIN) this.die('fall');
+    return true;
+  }
+
+  // withImpulse: sale disparado con la velocidad tangencial y el impulso hacia arriba
+  detachLasso(withImpulse) {
+    const L = this.lasso;
+    this.lasso = null;
+    if (!L || L.phase !== 'swing') return;
+    if (withImpulse) {
+      const v = releaseVelocity(L.swing);
+      this.body.vx = v.vx;
+      this.body.vy = v.vy;
+      this.js.canDoubleJump = this.items.boots;
+      this.js.jumping = false;
+      this.launchT = LASSO.KEEP_MOMENTUM;
+      this.setSquash({ X: 0.8, Y: 1.2 });
+      playSfx(this.audio, 'lassoRelease');
+    }
+  }
+
+  get swinging() {
+    return this.lasso?.phase === 'swing';
   }
 
   handleMoveEvents(ev) {
@@ -305,11 +447,12 @@ export class Choco {
   }
 
   // Recibe un golpe desde la posición x de la fuente. Devuelve true si hizo efecto.
-  hurt(sourceX, { fromBelow = false, damage = 1, projectile = null } = {}) {
+  // ignoreShield: el calor no se bloquea. knockback: false para daño sin empujón.
+  hurt(sourceX, { fromBelow = false, damage = 1, projectile = null, ignoreShield = false, knockback = true } = {}) {
     if (this.state !== 'play' || this.invuln > 0) return false;
     if (this.scene.game.debug?.invincible) return false;
     // El escudo bloquea golpes y proyectiles; activado justo antes, refleja (parry)
-    const blocked = shieldBlock(this.shield);
+    const blocked = ignoreShield ? null : shieldBlock(this.shield);
     if (blocked) {
       if (blocked === 'parry') {
         this.parryFlash = 1;
@@ -319,18 +462,22 @@ export class Choco {
         projectile?.reflect?.(this.scene);
       } else playSfx(this.audio, 'shieldBlock');
       this.particles.burst(this.cx, this.cy, blocked === 'parry' ? 16 : 8, { speedMin: 30, speedMax: 110, colors: ['#FFFFFF', '#8AE8FF', '#43D9FF'], lifeMin: 0.15, lifeMax: 0.4 });
-      this.body.vx = Math.sign(this.cx - sourceX || -this.facing) * 60;
-      return false;
+      if (!this.swinging) this.body.vx = Math.sign(this.cx - sourceX || -this.facing) * 60;
+      return blocked;
     }
     const dir = Math.sign(this.cx - sourceX) || -this.facing;
     this.invuln = HEALTH.INVINCIBLE_TIME;
-    this.hurtT = HEALTH.HURT_POSE_TIME;
+    this.hurtT = knockback ? HEALTH.HURT_POSE_TIME : 0;
     this.flashT = CHOCO_FX.HIT_FLASH_TIME;
     this.stopCharge();
-    this.body.vx = dir * HEALTH.KNOCKBACK_X;
-    this.body.vy = fromBelow ? HEALTH.KNOCKBACK_Y * 1.3 : HEALTH.KNOCKBACK_Y;
-    this.body.onGround = false;
-    this.js.jumping = false;
+    if (this.lasso) this.detachLasso(false);
+    this.tether = null;
+    if (knockback) {
+      this.body.vx = dir * HEALTH.KNOCKBACK_X;
+      this.body.vy = fromBelow ? HEALTH.KNOCKBACK_Y * 1.3 : HEALTH.KNOCKBACK_Y;
+      this.body.onGround = false;
+      this.js.jumping = false;
+    }
     this.setSquash(SQUASH.HURT);
     this.fx.hitstop(HEALTH.HURT_HITSTOP_FRAMES);
     this.fx.shake(EFFECTS.SHAKE_HURT);
@@ -362,6 +509,8 @@ export class Choco {
       this.scene.onChocoFell?.(this);
       return;
     }
+    if (this.lasso) this.detachLasso(false);
+    this.tether = null;
     this.state = 'dead';
     this.deathCause = cause;
     this.hp = 0;
@@ -626,6 +775,8 @@ export class Choco {
       ctx.fillRect(dx + Math.floor((lx * dw) / FRAME_W), dy + Math.floor(((LED_POS.y + f.dy) * dh) / FRAME_H), 1, 1);
     }
 
+    if (this.lasso) this.drawLasso(ctx, camX, camY);
+
     // Burbuja del Escudo Firewall
     if (shieldOn(this.shield) || this.parryFlash > 0) {
       drawShieldBubble(ctx, footX, footY - 11, { t: this.t, left: this.shield.active > 0 ? this.shield.active : undefined, parry: Math.max(0, this.parryFlash), r: SHIELD.RADIUS + 2 });
@@ -648,6 +799,29 @@ export class Choco {
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(mx - 1, my - 1, 2, 2);
     }
+  }
+
+  // Cuerda de fibra óptica: cian con pulsos de luz que viajan hacia el nodo
+  drawLasso(ctx, camX, camY) {
+    const L = this.lasso;
+    const h = this.hand();
+    const end = L.phase === 'throw' ? L.tip : L.node;
+    const x0 = h.x - camX;
+    const y0 = h.y - camY;
+    const x1 = end.x - camX;
+    const y1 = end.y - camY;
+    const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+    const pulse = (this.t * 90) % 12;
+    for (let i = 0; i <= n; i++) {
+      const k = i / n;
+      const x = Math.round(x0 + (x1 - x0) * k);
+      const y = Math.round(y0 + (y1 - y0) * k);
+      ctx.fillStyle = Math.abs((i % 12) - pulse) < 1.5 ? '#FFFFFF' : i % 2 ? '#43D9FF' : '#2AA8D8';
+      ctx.fillRect(x, y, 1, 1);
+    }
+    // Punta: un gancho brillante
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(Math.round(x1) - 1, Math.round(y1) - 1, 2, 2);
   }
 
   drawScarf(ctx, camX, camY) {

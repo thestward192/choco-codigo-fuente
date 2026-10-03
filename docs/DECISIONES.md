@@ -219,3 +219,114 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 
 - Atajos: `?scene=level3`, `?scene=terraza`, `?scene=deadline` (en los servidores, con Hezron) y `?scene=escudo` (sala de práctica). También están en `?scene=dev`, que ahora tiene scroll.
 - F10 en el nivel 3: Hezron se une al instante (con 3 cargas).
+
+## Hito 6 · Nivel 4 (Santa Cruz)
+
+### Estructura
+
+- Secciones en orden: 4-A Entrada al pueblo (72 tiles) → 4-B Plaza (96) → 4-C Redondel (40, con un ruedo de 22) → 4-D Ruinas del Campanario (escalada vertical de unas 7 pantallas) → arena del Torito Kernel → 4-E Atardecer (80). Se pasa de una a otra caminando por el borde derecho; a la arena se entra por la puerta de la cima de las ruinas.
+- **Las ruinas miden unas 7 pantallas de alto, no 12.** Con 12, la escalada sola se comía casi todo el tiempo objetivo del nivel (12–18 min). Es un número en `maps.js`.
+- **Checkpoints:** inicio de la plaza, entrada del redondel y cima de las ruinas (antes del jefe), como dice el documento. Hay un cuarto al empezar el atardecer, para que quien salga del juego ahí no tenga que volver a pelear con el jefe.
+
+### Calor y sombra
+
+- El sol pega desde arriba. Cada cosa que da sombra (copas de los guanacastes, carretas, toldos de los puestos, la tarima, aleros de tejas, el arco del patio, los capiteles de la arena) proyecta una columna de sombra hasta el suelo. Choco está en la sombra si el centro de su cuerpo cae dentro de una columna. Se dibuja como un tinte suave, una mancha en el suelo y un borde claro punteado donde empieza el sol.
+- **Las ruinas son al revés:** adentro es sombra; calientan las columnas de sol que entran por los huecos y se mecen.
+- **Atardecer:** sin calor y sin termómetro.
+- Al llegar a 100 se pierde un cuadrito con "¡QUEMA!" y el medidor baja a 40. El escudo no lo bloquea; la cobertura de cacao sí lo absorbe. Desde 60 caen gotas de chocolate, suena un chisporroteo suave y ondulan las 14 filas de arriba y de abajo de la pantalla.
+- **Bebederos:** tocarlos enfría a 0 (con chorrito y "¡AGUA!").
+- Al reaparecer, el calor vuelve a 0.
+
+### Enemigos
+
+- **Toro glitch:**
+  - Patrulla. Si ve a Choco de frente (a 120 px y a su altura), raspa 0.8 s con los ojos brillando y embiste hasta 220 px, sin tirarse por los bordes.
+  - Caerle en el lomo rebota sin daño; los cuernos y los costados sí duelen. Se esquiva con el doble salto. Aguanta 4 disparos.
+- **Bombetero:**
+  - Está en los techos. Enciende la mecha 0.6 s y tira una bombeta en parábola hacia donde estaba Choco. Antes de que caiga aparece una marca roja en el suelo, y explota en 20 px de radio.
+  - El escudo la bloquea; el parry se la devuelve y lo destruye.
+  - Las bombetas atraviesan los banderines (son tela) y no chocan con el techo de quien las tira.
+- **Sabanero:**
+  - Gira el lazo 0.75 s y lo lanza recto. Si atrapa a Choco, lo jala hacia él a 70 px/s. No quita vida: el peligro es el pozo que hay entre los dos.
+  - Atado no se puede saltar, pero sí disparar: un disparo que cruza la cuerda la corta. Con el escudo, el lazo rebota.
+  - Llegar hasta él duele y suelta a Choco.
+- **Zanates:** van en bandadas de 3–4, posados. Al acercarse Choco se alborotan y, de a uno, graznan y abren las alas 0.45 s antes de lanzarse en picada en línea recta hacia donde él estaba; después se van. Se pisan o se disparan, y contra el escudo caen.
+- **Tamal explosivo:** una olla en lo alto de una cuesta tiembla 0.6 s y suelta un tamal que rueda cuesta abajo. Explota al chocar con una pared, al tocar a Choco o con un disparo.
+- **Plataformas que se desmoronan** en las ruinas: misma lógica que las del nivel 1 (tiemblan 0.45 s, caen y vuelven a los 3 s), pero dibujadas como ladrillo.
+
+### Misión de la rosquilla
+
+- Los 4 puestos de la plaza (chorreada, tanela, arroz de maíz y empanada) se usan con ↑/E. Al recoger una comida aparece el comentario que Fabiola va a hacer después. Choco lleva solo una: tomar otra la cambia (con aviso), y la que lleva se ve en un cuadrito abajo a la izquierda del HUD.
+- **El patio trasero** está en alto, sobre un arco por donde pasa la calle. Solo se llega por los techos: casa 2 → dos plataformas fantasma (Vista Debug) → la pared del patio. La Y dorada 1 está sobre la segunda plataforma fantasma. Para salir se baja por un tablón (↓ + saltar).
+- **Al rescatar a Fabiola:**
+  - Si Choco lleva la rosquilla, ella la recibe (la tiene en la mano) y entrega la **Receta de la Abuela**, que queda guardada en la partida (`grandmaRecipe`). Usarla para la cobertura del nivel 5 es parte del Hito 7.
+  - Si lleva otra comida, Fabiola dice su comentario sobre ella.
+  - Sin comida, solo dice el diálogo de la historia.
+- La comida no se pierde al morir, pero sí con Game Over (se reintenta el nivel desde el inicio).
+
+### El Redondel
+
+- Al pasar la puerta se cierran las dos. Las oleadas entran a los 0, 18 y 36 s (1, 2 y 3 toros que salen por las puertas). Además caen bombetas del cielo cerca de Choco, cada 4.5, 3.2 y 2.4 s, con marca.
+- Termina al aguantar 60 s o al derrotar 6 toros; el contador está arriba.
+- Solo hay sombra **sobre** las gradas altas, que tienen techo de manta; abajo de ellas pega el sol.
+- La Y dorada 2 aparece en la punta de la bandera central al empezar la tercera oleada. Si el redondel termina sin tomarla, desaparece; se puede intentar otra vez repitiendo el nivel.
+- Morir en el redondel lo reinicia desde la puerta.
+
+### El Torito Kernel
+
+- **Arena:** dos columnas de piedra con capitel (dan sombra a los costados) y dos plataformas altas en las esquinas. Fabiola cuelga en una jaula de la campana.
+- **Ataques** al azar, sin repetir: embestida, pisotón (dos ondas que las columnas frenan), bombetas de nariz (3 en abanico, con la nariz brillando 0.6 s) y humo. Después del humo siempre embiste. Si está pegado a una columna, en lugar de embestir contra ella pisa.
+- **Humo:** tapa durante 3 s la mitad de la pantalla donde está el toro; con la Vista Debug se ve casi todo. Se escucha el raspado de la embestida que viene.
+- **Daño:**
+  - Solo recibe daño con la Vista Debug activa, mientras está aturdido y en el chip. Queda aturdido 3 s al chocar con una columna y 2 s con una bombeta devuelta.
+  - El chip se dibuja arriba, en la parte de atrás del lomo, pero lo que recibe los disparos es toda la parte de atrás del cuerpo, para que se le pueda pegar parado.
+  - El disparo normal quita 1 y el cargado 3. Fuera del chip suena "tink".
+  - Con la vista activa y antes del primer golpe, el chip dice "¡AQUÍ!".
+- **Fase 2 (15 de vida):**
+  - El sol pasa a 16/s y el toro parpadea en rojo.
+  - La embestida es doble: rebota en la pared y vuelve.
+  - Cada golpe contra una columna la agrieta, y al segundo se cae con su capitel (y se va su sombra).
+- **Derrota:**
+  1. Se desarma en piezas de carreta, suena la campana y cae la jaula.
+  2. Fabiola camina hasta Choco y dice su diálogo (con la comida, si hay).
+  3. Se vuelve luz turquesa y suma +1 cuadrito: **barra completa, 5**.
+  4. Sale la pantalla del Lazo de Fibra Óptica y la frase del sabanero.
+  5. Fundido al atardecer.
+
+### Lazo de Fibra Óptica y práctica
+
+- **Controles:**
+  - Con un nodo al alcance (resaltado con corchetes; el ícono del HUD se ilumina), **mantener V** lanza el lazo.
+  - Colgado, ← → columpian y ↑ ↓ acortan o alargan la cuerda.
+  - **Soltar V o saltar** hace salir disparado con la velocidad tangencial más −120 hacia arriba, y recarga el doble salto.
+  - Tocar el suelo colgado suelta sin impulso. Un golpe también suelta.
+- La punta de la cuerda viaja al nodo a 700 px/s (no es instantáneo). La cuerda es cian, con pulsos de luz.
+- **Impulso al soltar:** durante 0.35 s en el aire no se frena por encima de la velocidad máxima, salvo que se pida la dirección contraria. Sin esto, la desaceleración en el aire se comía el columpio.
+- **"Jalar" objetos** (cajas, el núcleo del jefe final) llega en el Hito 7, junto con lo que hay que jalar.
+- **4-E:**
+  - Reto 1: un nodo sobre un hueco.
+  - Reto 2: lazo + doble salto hasta una cornisa alta.
+  - Reto 3: cadena de 5 nodos.
+  - Cada reto se anuncia con un cartel, y las pruebas simulan los tres con la física real.
+  - Una cadena opcional de 2 nodos lleva a la Y dorada 3, en una cornisa alta sobre el portal.
+- **En el barranco caer no cuesta vida:** Choco vuelve a la última cornisa, como en el prólogo, porque es una práctica. El portal del final termina el nivel.
+
+### Arte y audio
+
+- **Paleta del documento:** sol `#FFB347`, adobe `#F5E6C8`, tejas `#B5532E`, guanacaste `#6E8B3D` y atardecer rosado-morado.
+- **Fondo en 4 capas:**
+  - cielo con un sol al que a ratos le aparecen ojos rojos, y estática;
+  - montañas;
+  - techos del pueblo, con el campanario y gente glitcheada bailando;
+  - en la plaza, una guirnalda de banderines en primer plano.
+- **Música original:**
+  - Santa Cruz: en Re mayor, con marimba, rasgueo y un bajo que alterna 6/8 y 3/4.
+  - El Torito Kernel: el mismo tema en menor, más rápido y pesado.
+  - El atardecer: versión lenta, solo con marimba y colchón.
+- **Efectos nuevos:** lazo (silbido y "tink"), bombeta (silbido y explosión), mecha, toro, zanates, olla de tamales, humo, rugido, campana, agua, quemadura, chisporroteo del calor y portal.
+
+### Desarrollo
+
+- Atajos: `?scene=level4`, `?scene=plaza`, `?scene=redondel`, `?scene=ruinas` (abajo de la escalada), `?scene=torito` y `?scene=lazo`. También están en `?scene=dev`.
+- Sin partida, el nivel 4 empieza con Botas, Laptop, Escudo y 4 cuadritos.
+- F10 en el nivel 4: Choco recibe la rosquilla perfecta, para probar el final de la misión.

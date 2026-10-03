@@ -415,6 +415,64 @@ Object.assign(SFX, {
     for (let i = 0; i < 6; i++) a.tone({ wave: 'triangle', f0: 1200 + i * 300, f1: 500, dur: 0.15, vol: 0.06, at: i * 0.08 });
   },
   turretShot: (a) => a.tone({ wave: 'pulse25', f0: 700, f1: 400, dur: 0.08, vol: 0.1 }),
+
+  // --- Nivel 4 · Santa Cruz ---
+  // Lazo: silbido al lanzar, "tink" al engancharse (docs/05_audio.md)
+  lassoThrow: (a) => a.noise({ dur: 0.16, vol: 0.12, type: 'bandpass', freq: a.vary(1800), freq1: 3600, q: 4 }),
+  lassoHook: (a) => {
+    a.tone({ wave: 'triangle', f0: N(96), dur: 0.05, vol: 0.14 });
+    a.tone({ wave: 'pulse12', f0: N(103), dur: 0.09, vol: 0.08, at: 0.03 });
+  },
+  lassoRelease: (a) => a.tone({ wave: 'pulse25', f0: a.vary(500), f1: a.vary(1100), dur: 0.12, vol: 0.12 }),
+  lassoSwing: (a) => [0, 0.18, 0.36].forEach((t) => a.noise({ dur: 0.1, vol: 0.06, type: 'bandpass', freq: 1400, freq1: 2400, q: 3, at: t })),
+  ropeCut: (a) => {
+    a.noise({ dur: 0.06, vol: 0.2, type: 'highpass', freq: 3000 });
+    a.tone({ wave: 'pulse12', f0: 900, f1: 300, dur: 0.1, vol: 0.08 });
+  },
+  // Bombeta: silbido + explosión
+  bombetaThrow: (a) => a.tone({ wave: 'sine', f0: a.vary(1600), f1: 700, dur: 0.6, vol: 0.07 }),
+  bombetaBoom: (a) => {
+    a.noise({ dur: 0.35, vol: 0.38, type: 'lowpass', freq: a.vary(2200), freq1: 120 });
+    a.tone({ wave: 'triangle', f0: 120, f1: 40, dur: 0.3, vol: 0.3 });
+  },
+  fuse: (a) => a.noise({ dur: 0.3, vol: 0.06, type: 'highpass', freq: 5000 }),
+  toroCharge: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 90, f1: 60, dur: 0.35, vol: 0.14 });
+    [0, 0.12, 0.24].forEach((t) => a.noise({ dur: 0.05, vol: 0.18, type: 'lowpass', freq: 500, at: t }));
+  },
+  zanate: (a) => {
+    a.tone({ wave: 'pulse12', f0: a.vary(1900), f1: 2600, dur: 0.07, vol: 0.07 });
+    a.tone({ wave: 'pulse12', f0: a.vary(2200), f1: 1500, dur: 0.09, vol: 0.06, at: 0.08 });
+  },
+  dive: (a) => a.noise({ dur: 0.25, vol: 0.08, type: 'bandpass', freq: 2500, freq1: 900, q: 2 }),
+  potRattle: (a) => [0, 0.07, 0.14, 0.21].forEach((t) => a.noise({ dur: 0.03, vol: 0.1, type: 'bandpass', freq: a.vary(3200), q: 6, at: t })),
+  snort: (a) => a.noise({ dur: 0.4, vol: 0.18, type: 'lowpass', freq: 900, freq1: 300 }),
+  smoke: (a) => a.noise({ dur: 0.9, vol: 0.14, type: 'lowpass', freq: 1500, freq1: 200 }),
+  roar: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 110, f1: 70, dur: 0.9, vol: 0.2, vibrato: 8 });
+    a.noise({ dur: 0.8, vol: 0.15, type: 'lowpass', freq: 800 });
+  },
+  // Campana del campanario
+  bell: (a) => {
+    a.tone({ wave: 'sine', f0: N(64), dur: 2.2, vol: 0.22 });
+    a.tone({ wave: 'sine', f0: N(64) * 2.76, dur: 1.4, vol: 0.06 });
+    a.tone({ wave: 'triangle', f0: N(52), dur: 1.8, vol: 0.12 });
+  },
+  water: (a) => {
+    a.noise({ dur: 0.25, vol: 0.16, type: 'bandpass', freq: a.vary(1200), freq1: 2600, q: 2 });
+    [0, 0.06, 0.12].forEach((t, i) => a.tone({ wave: 'sine', f0: N(84 + i * 3), dur: 0.05, vol: 0.06, at: t }));
+  },
+  // Se derrite un cuadrito por el calor
+  heatBurn: (a) => {
+    a.noise({ dur: 0.4, vol: 0.16, type: 'highpass', freq: 2500, freq1: 6000 });
+    a.tone({ wave: 'pulse50', f0: N(72), f1: N(60), dur: 0.35, vol: 0.12 });
+  },
+  sizzle: (a) => a.noise({ dur: 0.05, vol: 0.035, type: 'highpass', freq: a.vary(5000) }),
+  foodPick: (a) => [N(76), N(79), N(84)].forEach((f, i) => a.tone({ wave: 'triangle', f0: f, dur: 0.07, vol: 0.12, at: i * 0.05 })),
+  portal: (a) => {
+    a.tone({ wave: 'triangle', f0: 200, f1: 900, dur: 0.7, vol: 0.14, vibrato: 10 });
+    a.noise({ dur: 0.6, vol: 0.08, type: 'bandpass', freq: 3000, q: 3 });
+  },
 });
 
 export function playSfx(audio, name) {

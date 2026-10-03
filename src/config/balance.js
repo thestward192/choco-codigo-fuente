@@ -483,6 +483,142 @@ export const TURRET = {
   PARRIES_NEEDED: 2,
 };
 
+// ============================================================================
+// Nivel 4 · Santa Cruz — docs/niveles/nivel_4_santa_cruz.md
+// ============================================================================
+
+// Calor — docs/03_mecanicas.md
+export const HEAT = {
+  MAX: 100,
+  SUN_RATE: 11, // por segundo al sol
+  SUN_RATE_BOSS2: 16, // fase 2 del Torito Kernel
+  SHADE_RATE: 30, // baja por segundo en la sombra
+  AFTER_DAMAGE: 40, // al llegar a 100 pierde un cuadrito y el medidor baja a esto
+  DRIP_FROM: 60, // empieza a gotear y la pantalla ondula
+  WAVE_ROWS: 14, // filas de arriba y de abajo que ondulan
+  WAVE_AMP: 2, // px
+  WATER_COOLDOWN: 0.8, // un bebedero no vuelve a sonar antes de esto
+};
+
+// Lazo de Fibra Óptica — docs/03_mecanicas.md
+export const LASSO = {
+  RANGE: 90,
+  CONE_HALF: Math.PI / 3, // 120° de apertura
+  MIN_LEN: 24,
+  MAX_LEN: 90,
+  REEL_SPEED: 70, // px/s al acortar (↑) o alargar (↓)
+  THROW_SPEED: 700, // la punta viaja hasta el nodo
+  GRAVITY: 900,
+  PUMP: 260, // aceleración tangencial con ← →
+  MAX_SPEED: 330,
+  RELEASE_VY: -120,
+  KEEP_MOMENTUM: 0.35, // segundos sin frenado en el aire tras soltar
+  HAND_Y: -14, // la cuerda sale de la mano (relativo a los pies)
+};
+
+// Enemigos de Santa Cruz — docs/02_personajes.md
+Object.assign(ENEMIES, {
+  TORO: {
+    W: 26,
+    H: 16,
+    HP: 4,
+    WALK_SPEED: 18,
+    SIGHT_X: 120, // ve a Choco a esta distancia horizontal
+    SIGHT_Y: 28,
+    SCRAPE: 0.8, // telegrafiado
+    CHARGE_SPEED: 175,
+    CHARGE_MAX: 220, // px máximos de embestida
+    RECOVER: 0.9,
+  },
+  BOMBETERO: {
+    W: 12,
+    H: 18,
+    HP: 2,
+    RANGE: 170, // distancia horizontal para empezar a tirar
+    INTERVAL: 2.4,
+    TELEGRAPH: 0.6, // enciende la mecha
+    FLIGHT: 1.0, // segundos de vuelo de la bombeta
+  },
+  BOMBETA: {
+    R: 4,
+    BLAST_R: 20,
+    GRAVITY: 420,
+    MARK_TIME: 0.5, // la marca en el suelo aparece antes de caer
+  },
+  SABANERO: {
+    W: 12,
+    H: 20,
+    HP: 3,
+    RANGE: 120,
+    TELEGRAPH: 0.75, // gira el lazo sobre la cabeza
+    ROPE_SPEED: 210,
+    ROPE_RANGE: 130,
+    PULL_SPEED: 70, // jala a Choco hacia él
+    PULL_MAX: 2.2, // segundos máximos de jalón
+    COOLDOWN: 2.2,
+  },
+  ZANATE: {
+    W: 10,
+    H: 8,
+    HP: 1,
+    WAKE_X: 110, // se alborotan cuando Choco se acerca
+    TELEGRAPH: 0.45, // graznido y alas arriba antes de la picada
+    DIVE_SPEED: 170,
+    STAGGER: 0.5, // entre un zanate y el siguiente
+  },
+  TAMAL: {
+    R: 6,
+    SPEED: 80,
+    INTERVAL: 3.2,
+    WARN: 0.6, // la olla tiembla antes de soltarlo
+    FUSE: 0.4, // explota al chocar con una pared
+    LIFE: 6, // si no chocó con nada, se apaga solo
+  },
+});
+
+// Columnas de sol de las ruinas (las plataformas que se desmoronan usan HAZARDS.FALLING_PLATFORM)
+export const RUINS = {
+  BEAM_W: 22, // ancho de una columna de sol
+  BEAM_SPEED: 0.35, // rad/s de la oscilación
+  BEAM_SWAY: 40, // px de vaivén
+};
+
+// El Redondel: sección de arena con 3 oleadas
+export const REDONDEL = {
+  SURVIVE: 60, // o derrotar KILLS toros
+  KILLS: 6,
+  WAVES: [
+    { at: 0, toros: [-1] },
+    { at: 18, toros: [1, -1] },
+    { at: 36, toros: [-1, 1, 1] },
+  ],
+  BOMB_EVERY: [4.5, 3.2, 2.4], // bombetas que caen del cielo por oleada
+  GOLDEN_WAVE: 2, // la Y dorada aparece en la tercera oleada (índice 2)
+};
+
+// Jefe: El Torito Kernel (80×56)
+export const TORITO = {
+  W: 64,
+  H: 44,
+  HP: 30,
+  IDLE: [1.1, 0.8],
+  SCRAPE: 0.8,
+  CHARGE_SPEED: 210,
+  STUN_COLUMN: 3,
+  STUN_PARRY: 2,
+  REAR: 0.7, // se para en dos patas antes del pisotón
+  SHOCK_SPEED: 140,
+  SHOCK_H: 10,
+  NOSE_TELEGRAPH: 0.6,
+  BOMB_FAN: [-44, 0, 44], // px respecto a Choco
+  BOMB_FLIGHT: 1.1,
+  SMOKE_TELEGRAPH: 0.5,
+  SMOKE_TIME: 3,
+  COLUMN_HITS: 2, // en la fase 2 una columna aguanta esto antes de romperse
+  CHIP: { W: 12, H: 18, FROM_FLOOR: 6 }, // punto débil en la parte de atrás
+  INTRO: 1.8,
+};
+
 export const AUDIO = {
   PITCH_VARIATION: 0.05, // ±5 % en efectos repetitivos
   MUSIC_FADE: 0.5,
