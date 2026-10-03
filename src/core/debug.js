@@ -8,6 +8,7 @@ export class Debug {
   constructor() {
     this.overlay = true;
     this.invincible = false;
+    this.infiniteLives = false;
     this.frameStepping = false;
     this._stepRequested = false;
     this.pendingKeys = [];
@@ -32,6 +33,8 @@ export class Debug {
       else if (k === 'F6') this.frameStepping = !this.frameStepping;
       else if (k === 'F7') this._stepRequested = true;
       else if (k === 'F8' && scene?.debugHudDemo) scene.debugHudDemo();
+      else if (k === 'F9') this.infiniteLives = !this.infiniteLives;
+      else if (k === 'F10' && scene?.debugCarnes) scene.debugCarnes();
     }
     this.pendingKeys.length = 0;
   }
@@ -50,6 +53,7 @@ export class Debug {
     const lines = [`${TEXTS.debug.on} ${game.fps} FPS ×${game.renderer.scale}`];
     if (scene?.debugInfo) lines.push(...scene.debugInfo());
     if (this.invincible) lines.push(TEXTS.debug.invincible);
+    if (this.infiniteLives) lines.push(TEXTS.debug.infiniteLives);
     if (this.frameStepping) lines.push(TEXTS.debug.stepping);
     ctx.globalAlpha = 0.55;
     ctx.fillStyle = '#000';

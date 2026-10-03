@@ -14,6 +14,7 @@ import { SpamBlock } from '../enemies/spam.js';
 import { playSfx } from '../../audio/sfx.js';
 import { fxRng } from '../../core/rng.js';
 import { TEXTS } from '../../data/dialogues.js';
+import { drawText } from '../../art/font.js';
 
 const G = GUARDIAN;
 const R = fxRng;
@@ -342,6 +343,11 @@ export class Guardian {
     scene.enemies.push(new SpamBlock(x, 4, { rain: true, floorY: this.floorY }));
   }
 
+  // Punto débil (Vista Debug): la cabeza, que solo se puede pisar cuando está aturdido
+  weakPoint() {
+    return { x: this.cx, y: this.body.y + 2 };
+  }
+
   // Contacto con Choco: solo se le puede pisar mientras está aturdido
   contact(scene, c, inp) {
     if (this.state === 'stunned') {
@@ -445,6 +451,8 @@ export class Guardian {
         ctx.fillRect(fx - 2, ay, 5, 1);
         ctx.fillRect(fx - 1, ay + 1, 3, 1);
         ctx.fillRect(fx, ay + 2, 1, 1);
+        // Hasta el primer pisotón, además se dice con texto
+        if (this.hp === G.HP) drawText(ctx, TEXTS.level1.bossStompHint, fx, ay - 10, { align: 'center', color: '#FFD23F' });
       }
     }
   }

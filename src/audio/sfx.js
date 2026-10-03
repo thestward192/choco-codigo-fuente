@@ -263,6 +263,88 @@ export const SFX = {
   },
 };
 
+// --- Hito 4: La UNA ---
+Object.assign(SFX, {
+  // Espiral de glitch al empezar una batalla
+  battleStart: (a) => {
+    for (let i = 0; i < 8; i++) a.tone({ wave: 'pulse12', f0: 300 + i * 180, f1: 200 + i * 120, dur: 0.05, vol: 0.09, at: i * 0.04 });
+    a.noise({ dur: 0.45, vol: 0.18, type: 'bandpass', freq: 600, freq1: 4000, q: 2 });
+    a.tone({ wave: 'triangle', f0: 90, f1: 45, dur: 0.4, vol: 0.3, at: 0.35 });
+  },
+  bugHit: (a) => {
+    a.noise({ dur: 0.08, vol: 0.3, type: 'bandpass', freq: a.vary(2200), q: 2 });
+    a.tone({ wave: 'pulse25', f0: a.vary(600), f1: 180, dur: 0.1, vol: 0.14 });
+  },
+  crit: (a) => {
+    a.tone({ wave: 'triangle', f0: 200, f1: 40, dur: 0.35, vol: 0.45 });
+    a.noise({ dur: 0.25, vol: 0.35, type: 'lowpass', freq: 5000, freq1: 300 });
+    [84, 91].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), dur: 0.1, vol: 0.12, at: 0.05 + i * 0.06 }));
+  },
+  windup: (a) => a.tone({ wave: 'pulse25', f0: 220, f1: 880, dur: 0.5, vol: 0.08, curve: 'lin' }),
+  impact: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 300, f1: 70, dur: 0.18, vol: 0.2 });
+    a.noise({ dur: 0.12, vol: 0.25, type: 'lowpass', freq: 1800 });
+  },
+  parryPerfect: (a) => {
+    a.tone({ wave: 'triangle', f0: 1800, f1: 2400, dur: 0.12, vol: 0.2 });
+    a.tone({ wave: 'pulse12', f0: N(96), dur: 0.15, vol: 0.1, at: 0.04 });
+    a.noise({ dur: 0.05, vol: 0.2, type: 'highpass', freq: 5000 });
+  },
+  parryGood: (a) => a.tone({ wave: 'triangle', f0: 1200, f1: 900, dur: 0.1, vol: 0.18 }),
+  debugScan: (a) => {
+    for (let i = 0; i < 6; i++) a.tone({ wave: 'pulse12', f0: 900 + i * 220, dur: 0.035, vol: 0.07, at: i * 0.045 });
+    a.tone({ wave: 'sine', f0: 1600, f1: 400, dur: 0.4, vol: 0.06, at: 0.25 });
+  },
+  forceFail: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 330, f1: 310, dur: 0.18, vol: 0.12 });
+    a.tone({ wave: 'sawtooth', f0: 220, f1: 200, dur: 0.3, vol: 0.12, at: 0.16 });
+  },
+  victory: (a) => [72, 76, 79, 84, 79, 84, 88].forEach((m, i) => a.tone({ wave: 'pulse50', f0: N(m), dur: i === 6 ? 0.4 : 0.09, vol: 0.12, at: i * 0.08 })),
+  flee: (a) => [76, 72, 67, 64].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), dur: 0.06, vol: 0.1, at: i * 0.05 })),
+  buzzer: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 110, dur: 0.5, vol: 0.18 });
+    a.tone({ wave: 'sawtooth', f0: 116, dur: 0.5, vol: 0.14 });
+  },
+  lever: (a) => {
+    a.noise({ dur: 0.03, vol: 0.25, type: 'highpass', freq: 2500 });
+    a.tone({ wave: 'triangle', f0: 260, f1: 180, dur: 0.08, vol: 0.25 });
+  },
+  pcOn: (a) => a.tone({ wave: 'pulse12', f0: a.vary(1400), f1: 2000, dur: 0.06, vol: 0.08 }),
+  pcOff: (a) => a.tone({ wave: 'pulse12', f0: a.vary(1200), f1: 500, dur: 0.06, vol: 0.07 }),
+  gateOpen: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 90, f1: 140, dur: 0.6, vol: 0.12 });
+    a.noise({ dur: 0.6, vol: 0.12, type: 'bandpass', freq: 1500, q: 3 });
+    [72, 79].forEach((m, i) => a.tone({ wave: 'pulse25', f0: N(m), dur: 0.12, vol: 0.1, at: 0.6 + i * 0.08 }));
+  },
+  push: (a) => a.noise({ dur: 0.18, vol: 0.15, type: 'lowpass', freq: a.vary(500), freq1: 200 }),
+  hop: (a) => a.tone({ wave: 'pulse25', f0: a.vary(330), f1: a.vary(700), dur: 0.1, vol: 0.14 }),
+  save: (a) => {
+    [60, 67, 72, 76, 79].forEach((m, i) => a.tone({ wave: 'triangle', f0: N(m), dur: 0.2, vol: 0.18, at: i * 0.07 }));
+    a.tone({ wave: 'pulse12', f0: N(96), dur: 0.3, vol: 0.05, at: 0.35 });
+  },
+  buy: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(84), dur: 0.05, vol: 0.12 });
+    a.tone({ wave: 'pulse25', f0: N(91), dur: 0.12, vol: 0.12, at: 0.06 });
+    a.noise({ dur: 0.05, vol: 0.1, type: 'highpass', freq: 6000, at: 0.02 });
+  },
+  denied: (a) => a.tone({ wave: 'pulse50', f0: 180, f1: 140, dur: 0.22, vol: 0.14 }),
+  eat: (a) => [0, 0.1, 0.2].forEach((t) => a.noise({ dur: 0.05, vol: 0.12, type: 'bandpass', freq: a.vary(1200), q: 3, at: t })),
+  // Batalla de rap
+  scratch: (a) => {
+    a.noise({ dur: 0.12, vol: 0.22, type: 'bandpass', freq: 800, freq1: 3000, q: 3 });
+    a.noise({ dur: 0.12, vol: 0.18, type: 'bandpass', freq: 3000, freq1: 600, q: 3, at: 0.13 });
+  },
+  crowd: (a) => {
+    a.noise({ dur: 1.2, vol: 0.2, type: 'bandpass', freq: 1100, q: 0.5, attack: 0.05 });
+    for (let i = 0; i < 6; i++) a.tone({ wave: 'triangle', f0: 500 + Math.random() * 400, f1: 800 + Math.random() * 300, dur: 0.25, vol: 0.05, at: i * 0.1 });
+  },
+  boo: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 180, f1: 120, dur: 0.8, vol: 0.08, attack: 0.1 });
+    a.noise({ dur: 0.8, vol: 0.1, type: 'lowpass', freq: 700, attack: 0.1 });
+  },
+  beatSelect: (a) => a.tone({ wave: 'pulse25', f0: N(79), dur: 0.05, vol: 0.12 }),
+});
+
 export function playSfx(audio, name) {
   const fn = SFX[name];
   if (fn && audio && audio.ctx) fn(audio);

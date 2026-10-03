@@ -19,6 +19,10 @@ export const SPEAKERS = {
   hezron: { color: ACCENTS.hezron, pitch: 360 },
   fabiola: { color: ACCENTS.fabiola, pitch: 700 },
   system: { color: UI.cyan, pitch: 900 },
+  profe: { color: '#C8A070', pitch: 380, glitch: true },
+  student: { color: '#8FB3D9', pitch: 560, glitch: true },
+  senora: { color: '#FF9AC0', pitch: 680 },
+  stack: { color: '#E0343F', pitch: 250, glitch: true },
 };
 
 const BOX = { x: 4, y: SCREEN.H - 50, w: SCREEN.W - 8, h: 46 };

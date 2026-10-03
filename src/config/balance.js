@@ -267,6 +267,101 @@ export const LAPTOP = {
   MIN_TO_REACTIVATE: 30,
 };
 
+// ============================================================================
+// Nivel 2 · La UNA — docs/niveles/nivel_2_una.md
+// ============================================================================
+
+// Movimiento cenital (niveles 2 y 3) — docs/03_mecanicas.md
+export const TOPDOWN = {
+  WALK_SPEED: 70,
+  ACCEL_TIME: 0.08, // tiempo para llegar a la velocidad máxima
+  SNEAK_SPEED: 35, // nivel 3
+  HITBOX_W: 10, // hitbox en los pies
+  HITBOX_H: 8,
+  WALK_FPS: 8,
+  INTERACT_RANGE: 20, // px desde los pies hasta el objeto
+  CAMERA_LERP: 0.14,
+  // Estantes con ruedas (biblioteca)
+  PUSH_DELAY: 0.14, // empujar contra el estante este tiempo antes de que se mueva
+  PUSH_TIME: 0.22, // lo que tarda en deslizarse un tile
+  PUSH_ALIGN: 6, // tolerancia de alineación (px) para empujar
+  // Salto corto con las Botas sobre pilas de libros bajas
+  HOP_TIME: 0.38,
+  HOP_HEIGHT: 9,
+  // Tras huir de una batalla: el bug se queda quieto y Choco parpadea
+  FLEE_GRACE: 1.6,
+  BUG_SPEED: 30,
+  BUG_PAUSE: 0.6, // pausa en los extremos de la ruta
+};
+
+// Batallas por turnos
+export const BATTLE = {
+  ENERGY_PER_SQUARE: 10, // 10 de energía por cuadrito (20 en el nivel 2)
+  RAM_MAX: 10,
+  RAM_START: 6,
+  RAM_REGEN: 2, // por turno
+  COMPILE_DAMAGE: 4,
+  CRIT_MULT: 1.5,
+  WEAK_MULT: 2, // Compilar contra la debilidad revelada por Debug
+  DEBUG_COST: 3,
+  DEBUG_TURNS: 2,
+  REFACTOR_COST: 4,
+  REFACTOR_HEAL: 6,
+  FORCE_COST: 7,
+  FORCE_DAMAGE: 12,
+  FORCE_FAIL: 0.25,
+  FLEE_CHANCE: 0.6,
+  // Golpe con timing: el marcador cruza la barra de ida y vuelta
+  TIMING_SWEEP: 0.9, // segundos de un extremo al otro
+  TIMING_SWEEPS: 2, // si no se presiona, sale un golpe normal al terminar
+  TIMING_CRIT: 0.07, // media ventana del centro (fracción de la barra) → crítico
+  TIMING_GOOD: 0.22, // media ventana "BIEN" (golpe normal con texto)
+  // Defensa con timing: un destello marca el impacto
+  DEFENSE_WINDUP: [0.7, 1.1], // anticipación del ataque (s), al azar en el rango
+  DEFENSE_PERFECT: 1.5 / 60, // media ventana: 3 frames en total → daño 0
+  DEFENSE_GOOD: 0.12, // media ventana → mitad del daño
+  DEFENSE_EARLY_LOCK: 0.25, // presionar antes de esto no cuenta (y bloquea el intento)
+  // Recompensa en bits por bug derrotado (se suma a la de cada bug)
+  ITEMS: {
+    cafe: { energy: 8, ram: 0, price: 15 },
+    empanada: { energy: 4, ram: 3, price: 20 },
+    galloPinto: { energy: 15, ram: 0, price: 40 },
+  },
+  INTRO_TIME: 0.9, // espiral de glitch al empezar
+  MAX_ITEMS: 9, // por tipo
+};
+
+// Los 5 bugs del nivel 2 (docs/niveles/nivel_2_una.md)
+export const BUGS = {
+  nullPointer: { HP: 12, DAMAGE: 7, MISS: 0.5, BITS: 8 },
+  loop: { HP: 16, DAMAGE: 3, LOOP_TURNS: 3, BITS: 10 },
+  race: { HP: 14, DAMAGE: 3, FIRST_CHANCE: 0.5, DOUBLE_CHANCE: 0.3, BITS: 10 },
+  leak: { HP: 18, DAMAGE: 2, LEAK: 1, BITS: 12 },
+  spaghetti: { HP: 15, DAMAGE: 3, TANGLE_DAMAGE: 1, BITS: 10 },
+};
+
+// Batalla de rap contra MC Stack Overflow
+export const RAP = {
+  BPM: 90, // la mecánica depende de este tempo: la canción usa el mismo valor
+  BEATS_PER_BAR: 4,
+  LINE_BARS: 2, // cada línea de Stack dura 2 compases
+  CHOOSE_BARS: 6, // compases para elegir respuesta
+  ON_BEAT_WINDOW: 0.12, // confirmar a ±0.12 s del beat cuenta doble
+  HYPE: 3, // barras de Choco
+  FLOW: 3, // barras de Stack
+  WEAK_FLOW: 0.5, // respuesta floja
+  SCORE_CORRECT: 100,
+  SCORE_WEAK: 40,
+  OVERFLOW_DAMAGE: 4, // ataque de desbordamiento entre rondas (energía)
+};
+
+// Puzzles del nivel 2
+export const PUZZLES = {
+  BINARY_TARGETS: [37, 170, 233], // la tercera ronda se muestra en hexadecimal
+  GATES_MAX_CHANGES: 3, // circuito 2: palancas que se pueden cambiar antes de reiniciar
+  GATES_RESET_DELAY: 0.8,
+};
+
 export const AUDIO = {
   PITCH_VARIATION: 0.05, // ±5 % en efectos repetitivos
   MUSIC_FADE: 0.5,

@@ -37,7 +37,8 @@ const GOLDEN_INDEX = { A: 0, secret: 1, C: 2 };
 const Y_BLOCKS = new Set(['Q', 'C', 'M', 'H', 'i']);
 
 export class Level1Scene extends PlatformLevel {
-  constructor(game) {
+  // start: 'arena' arranca directo en la pelea del jefe (atajo de desarrollo ?scene=boss1)
+  constructor(game, { start = null } = {}) {
     super(game, { levelId: 1 });
     this.sections = level1Sections();
     this.bumps = new Map();
@@ -51,7 +52,8 @@ export class Level1Scene extends PlatformLevel {
     // Checkpoint guardado
     const cp = this.session?.data.checkpoint;
     const saved = cp && cp.level === 1 ? L1_CHECKPOINTS.find((c) => c.id === cp.id) : null;
-    if (saved) {
+    if (start === 'arena') this.loadSection('arena', { entry: 'arena' });
+    else if (saved) {
       this.loadSection(saved.section, { entry: 'checkpoint', id: saved.id });
     } else this.loadSection('A', { entry: 'start' });
   }
@@ -115,6 +117,8 @@ export class Level1Scene extends PlatformLevel {
     } else if (entry === 'arena') {
       x = 2 * TS + 8;
       y = S.floor * TS;
+      // Atajo de desarrollo (?scene=boss1): sin checkpoint previo, se reaparece en la arena
+      if (!this.checkpoint) this.checkpoint = { x, y, id: -1, section: 'arena' };
     }
     if (!keepChoco || !this.choco) this.placeChoco(x, y);
     else {
@@ -377,6 +381,12 @@ export class Level1Scene extends PlatformLevel {
         s.showBanner(TEXTS.level1.bossName, TEXTS.level1.bossSub, null, 1.6);
         g.audio.playSong(SONG_GUARDIAN);
         yield 1.0;
+        // La primera vez en esta partida del nivel se explica cómo vencerlo
+        if (!s.bossHintShown) {
+          s.bossHintShown = true;
+          yield 0.7;
+          s.showBanner(TEXTS.level1.bossHint, TEXTS.level1.bossHintSub, null, 3.2);
+        }
       },
       { skippable: false, keepHud: true },
     );
@@ -468,7 +478,8 @@ export class Level1Scene extends PlatformLevel {
   // ---------- Muerte y reaparición ----------
   onRespawn() {
     const cp = this.checkpoint;
-    this.loadSection(cp.section || 'A', { entry: cp.id >= 0 ? 'checkpoint' : 'start', id: cp.id, keepChoco: true });
+    const entry = cp.section === 'arena' ? 'arena' : cp.id >= 0 ? 'checkpoint' : 'start';
+    this.loadSection(cp.section || 'A', { entry, id: cp.id, keepChoco: true });
   }
 
   // Óscar suspira al pasar junto a un rótulo sin Y (cuando ya fue rescatado)

@@ -277,6 +277,13 @@ export class AudioEngine {
     this.player = null;
   }
 
+  // Segundos desde el primer tiempo de la canción que suena (null si no hay audio).
+  // La batalla de rap lo usa para sincronizarse con el beat real.
+  songTime() {
+    if (!this.ctx || !this.player || this.player.t0 === undefined) return null;
+    return this.ctx.currentTime - this.player.t0;
+  }
+
   setLayer(name, on, time = 0.4) {
     if (this.player) this.player.setLayer(name, on, time);
   }
@@ -331,6 +338,7 @@ class SongPlayer {
   start(fade) {
     const c = this.engine.ctx;
     const t0 = c.currentTime + 0.05;
+    this.t0 = t0;
     for (const ch of this.channels) ch.next = t0;
     this.out.gain.setValueAtTime(0.0001, c.currentTime);
     this.out.gain.exponentialRampToValueAtTime(1, c.currentTime + Math.max(0.01, fade));

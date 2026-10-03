@@ -36,6 +36,16 @@ export const PORTRAIT_PAL = {
   q: '#8C1D52',
   N: '#2A2A38',
   K: '#44445A',
+  // Personas de la UNA
+  f: '#F0C8A0',
+  F: '#C89070',
+  j: '#8A5A3A',
+  a: '#3A6EA8',
+  A: '#24487A',
+  x: '#9A9AA8',
+  d: '#3A2A20',
+  i: '#C87A3A',
+  Q: '#E8E0D0',
 };
 
 export const EXPRESSIONS = ['normal', 'happy', 'worried', 'surprised', 'angry'];
@@ -362,7 +372,89 @@ function systemPortrait(g) {
   g.hline(13, 20, 17, 'c');
 }
 
-const BUILDERS = { oscar, stward, hezron, fabiola, choco, null: nullPortrait, system: systemPortrait };
+// ---------- Personas de la UNA (glitcheadas, salvo la señora de la soda) ----------
+
+function personFace(g, face, { skin = 'f', shade = 'F', y = 9 } = {}) {
+  g.rect(8, y, 23, y + 15, skin);
+  g.vline(23, y + 1, y + 15, shade).hline(8, 23, y + 15, shade);
+  g.frame(7, y - 1, 24, y + 16, 'o');
+  g.set(7, y - 1, '.').set(24, y - 1, '.').set(7, y + 16, '.').set(24, y + 16, '.');
+  // Ojos
+  const ey = y + 5;
+  if (face === 'happy') {
+    g.pts([[10, ey + 1], [11, ey], [12, ey + 1], [18, ey + 1], [19, ey], [20, ey + 1]], 'o');
+  } else {
+    g.rect(10, ey, 12, ey + 2, 'e').rect(18, ey, 20, ey + 2, 'e');
+    g.set(11, ey + 1, 'o').set(12, ey + 1, 'o').set(19, ey + 1, 'o').set(20, ey + 1, 'o');
+    if (face === 'worried' || face === 'angry') {
+      g.line(9, ey - 2, 12, ey - (face === 'angry' ? 1 : 3), 'o').line(18, ey - (face === 'angry' ? 1 : 3), 21, ey - 2, 'o');
+    }
+  }
+  // Boca
+  const my = y + 11;
+  if (face === 'happy') g.hline(13, 18, my, 'o').hline(14, 17, my + 1, 'r');
+  else if (face === 'surprised') g.rect(15, my - 1, 16, my + 1, 'o');
+  else g.hline(14, 17, my, 'o');
+}
+
+function profe(g, face) {
+  // Saco vino, pelo canoso, lentes y un libro
+  g.rect(3, 26, 28, 31, 'v').hline(3, 28, 26, 'V');
+  g.rect(13, 25, 18, 31, 'Q').vline(15, 26, 31, 'R').vline(16, 26, 31, 'R');
+  personFace(g, face);
+  g.hline(7, 24, 8, 'x').rect(6, 8, 8, 14, 'x').rect(23, 8, 25, 14, 'x');
+  g.hline(9, 22, 6, 'x').hline(11, 20, 5, 'x');
+  g.frame(9, 13, 13, 17, 'k').frame(17, 13, 21, 17, 'k').hline(14, 16, 14, 'k');
+  g.rect(24, 22, 30, 30, 'V').rect(25, 23, 29, 29, 'u').vline(27, 23, 29, 'U');
+}
+
+function student(g, face) {
+  // Jacket azul, pelo castaño, audífonos de cable
+  g.rect(3, 26, 28, 31, 'a').hline(3, 28, 26, 'A').vline(15, 26, 31, 'A');
+  personFace(g, face, { skin: 'F', shade: 'j' });
+  g.rect(7, 5, 24, 9, 'i').rect(6, 7, 8, 14, 'i').rect(23, 7, 25, 12, 'i');
+  g.hline(9, 22, 4, 'i').set(20, 10, 'i').set(21, 10, 'i');
+  g.line(6, 16, 9, 30, 'w').set(5, 15, 'W');
+}
+
+function senora(g, face) {
+  // Delantal blanco, blusa rosada, redecilla en el pelo, sonrisa cálida
+  g.rect(3, 26, 28, 31, 'p').hline(3, 28, 26, 'P');
+  g.rect(9, 26, 22, 31, 'w').hline(9, 22, 26, 'W').vline(9, 26, 31, 'W').vline(22, 26, 31, 'W');
+  personFace(g, face, { skin: 'F', shade: 'j' });
+  g.rect(6, 4, 25, 9, 'd').rect(5, 7, 7, 16, 'd').rect(24, 7, 26, 16, 'd');
+  for (let x = 7; x <= 24; x += 2) g.set(x, 5, 'w').set(x + 1, 7, 'W');
+  g.hline(7, 24, 3, 'W');
+  g.set(9, 19, 'r').set(10, 19, 'r').set(21, 19, 'r').set(22, 19, 'r');
+}
+
+function stackPortrait(g, face) {
+  // Pila de ventanas de error con gorra
+  const wins = [
+    [4, 20, 27, 30],
+    [6, 12, 25, 22],
+    [8, 5, 23, 14],
+  ];
+  wins.forEach(([x0, y0, x1, y1], i) => {
+    g.rect(x0, y0, x1, y1, 'w').frame(x0, y0, x1, y1, 'o');
+    g.rect(x0 + 1, y0 + 1, x1 - 1, y0 + 2, i === 2 ? 'R' : 'c');
+    g.set(x1 - 2, y0 + 1, 'e');
+  });
+  // Cara en la ventana de arriba
+  const angry = face === 'angry';
+  g.set(12, 9, 'o').set(18, 9, 'o').set(12, 10, 'o').set(18, 10, 'o');
+  if (angry) g.line(11, 7, 13, 8, 'o').line(17, 8, 19, 7, 'o');
+  g.hline(13, 17, 12, 'o');
+  // Gorra hacia atrás
+  g.rect(7, 2, 24, 5, 'k').hline(7, 24, 5, 'g').rect(2, 3, 7, 5, 'k');
+  g.set(15, 1, 'R');
+  // Texto de error
+  g.hline(8, 20, 16, 'R').hline(8, 16, 18, 'M').hline(6, 22, 24, 'M').hline(6, 18, 26, 'M');
+  // Micrófono
+  g.line(28, 31, 26, 22, 'g').ellipse(26, 20, 2, 2, 'M');
+}
+
+const BUILDERS = { oscar, stward, hezron, fabiola, choco, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait };
 
 export function buildPortraitRows(key) {
   const [who, face] = key.split(':');

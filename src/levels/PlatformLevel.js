@@ -16,6 +16,7 @@ import { Choco } from '../entities/choco.js';
 import { Shot } from '../entities/projectile.js';
 import { Hud } from '../ui/hud.js';
 import { Laptop } from '../items/laptop.js';
+import { T as TILE } from '../systems/tilemap.js';
 import { drawText, drawTextBox } from '../art/font.js';
 import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
@@ -244,7 +245,7 @@ export class PlatformLevel extends Scene {
 
   // Reaparece en el checkpoint. costLife: false al reiniciar desde la pausa.
   respawn(costLife = true) {
-    if (costLife) this.lives--;
+    if (costLife && !this.game.debug?.infiniteLives) this.lives--;
     if (this.lives <= 0) {
       this.game.flow.gameOver(this.game, this.levelId, { ...this.stats });
       return;
@@ -453,7 +454,7 @@ export class PlatformLevel extends Scene {
     // Respawn tras derretirse
     if (this.pendingRespawn && c.meltDone && !g.transitioning) {
       this.pendingRespawn = false;
-      if (this.lives <= 1) {
+      if (this.lives <= 1 && !g.debug?.infiniteLives) {
         this.lives = 0;
         this.game.flow.gameOver(g, this.levelId, { ...this.stats });
         return;
@@ -764,5 +765,48 @@ export class PlatformLevel extends Scene {
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#9FE8FF';
     for (let i = 0; i < 6; i++) ctx.fillRect(fxRng.int(0, SCREEN.W), fxRng.int(0, SCREEN.H), 1, 1);
+    this.drawDebugReveal(ctx, cx, cy);
+  }
+
+  // Lo que la Vista Debug revela: bloques invisibles, paredes agrietadas, puntos débiles
+  drawDebugReveal(ctx, cx, cy) {
+    const m = this.map;
+    const x0 = Math.max(0, Math.floor(cx / TS));
+    const y0 = Math.max(0, Math.floor(cy / TS));
+    const x1 = Math.min(m.w - 1, Math.floor((cx + SCREEN.W) / TS));
+    const y1 = Math.min(m.h - 1, Math.floor((cy + SCREEN.H) / TS));
+    const blink = Math.floor(this.t * 4) % 2 === 0;
+    ctx.strokeStyle = UI.cyan;
+    ctx.lineWidth = 1;
+    for (let ty = y0; ty <= y1; ty++) {
+      for (let tx = x0; tx <= x1; tx++) {
+        const hidden = m.typeAt(tx, ty) === TILE.HIDDEN;
+        const cracked = m.charAt(tx, ty) === 'K';
+        if (!hidden && !cracked) continue;
+        const x = tx * TS - cx;
+        const y = ty * TS - cy;
+        ctx.globalAlpha = hidden ? 0.9 : 0.6;
+        ctx.strokeRect(x + 0.5, y + 0.5, TS - 1, TS - 1);
+        if (hidden && blink) drawText(ctx, '?', x + 8, y + 4, { align: 'center', color: UI.cyan, shadow: false });
+        if (cracked) {
+          ctx.fillStyle = UI.cyan;
+          ctx.fillRect(x + 5, y + 4, 1, 4);
+          ctx.fillRect(x + 6, y + 8, 1, 3);
+          ctx.fillRect(x + 9, y + 6, 3, 1);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    // Puntos débiles: un círculo que parpadea
+    for (const e of this.enemies) {
+      if (!e.active && e.state !== 'intro') continue;
+      const wp = e.weakPoint ? e.weakPoint() : { x: e.body.x + e.body.w / 2, y: e.body.y + 3 };
+      if (!wp) continue;
+      const r = blink ? 4 : 5;
+      ctx.strokeStyle = blink ? '#FFFFFF' : UI.cyan;
+      ctx.beginPath();
+      ctx.arc(Math.round(wp.x - cx) + 0.5, Math.round(wp.y - cy) + 0.5, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
 }

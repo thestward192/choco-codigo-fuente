@@ -90,6 +90,8 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Enemigos que se activan al acercarse a la cámara**, para que no se adelanten antes de que el jugador los vea.
 - **Corrupción progresiva en la pradera:** destellos cortos de tiles con paleta glitch y nubes con texto de N.U.L.L. ("te veo", "∅") a medida que se avanza.
 - **Guardián del Slot:** las fases se interpretan así: tras el **primer** pisotón, embestida doble; tras el **segundo**, la lluvia se combina con el salto aplastante (el tercer pisotón lo derrota). Tocarlo de costado mientras está aturdido no duele. Los disparos lo empujan 6 px con un "tink". Su música es una variación más rápida del tema del castillo.
+- **Plataformas de la arena:** están a 2 tiles del suelo (antes 4). El salto normal llega a ≈50 px, así que a 64 px eran inalcanzables sin las Botas. A esa altura libran las ondas de choque, pero no el cuerpo del Guardián: si embiste o aterriza debajo, golpea igual (se esquiva saltando desde la plataforma).
+- **Cómo se le gana al Guardián:** al empezar la pelea (solo la primera vez en esa partida del nivel) sale un aviso: "¡HACELO CHOCAR CONTRA LA PARED!" / "Cuando quede mareado, pisále la cabeza.". Mientras está aturdido, hasta el primer pisotón, aparece "¡PISÁ!" sobre la flecha.
 - **Rescate de Óscar:** la jaula está hecha de caracteres (| # [ ]) en magenta. Orden: diálogo → Óscar se vuelve luz rosada y entra a la barra (+1 cuadrito con animación en el HUD) → pantalla de las Botas → resultados. Al rejugar el nivel con Óscar ya rescatado no hay jaula.
 - **Rótulos sin Y:** el hueco "_" reemplaza también la conjunción ("pisá el disquete _ pateálo"). Óscar suspira junto a esos rótulos cuando ya fue rescatado (al rejugar).
 - **Vida extra por bits:** al llegar a 100 aparece "¡VIDA EXTRA!".
@@ -100,5 +102,62 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 
 ### Desarrollo
 
+- **Vidas infinitas (F9 con `?debug=1`):** morir no gasta vidas ni lleva al Game Over. Es distinto de F2 (invencible), que evita el daño. `?scene=boss1` (también en el menú de desarrollo) arranca directo en la arena del Guardián y reaparece ahí.
 - Atajos nuevos: `?scene=prologue`, `?scene=loading` y `?scene=level1`; también están en el menú de desarrollo (`?scene=dev`).
 - La lógica común de los niveles de plataformas vive en `src/levels/PlatformLevel.js` (la sala de pruebas también la usa). Los mapas se arman con `src/levels/mapBuilder.js`.
+
+## Hito 4 · Nivel 2 (La UNA)
+
+### Exploración
+
+- **Salas:** 9 interiores (vestíbulo, soda, sala vieja, aula 3, pasillo principal, laboratorio, biblioteca, biblioteca sala 2 y auditorio), con el mapa del documento. La biblioteca tiene dos salas porque el documento pide "2 salas de dificultad creciente". Las puertas cambian de sala con un fundido corto.
+- **Interactuar es solo E** (o Y en el gamepad). Espacio queda para el salto corto con las Botas, que se usa sobre las pilas de libros bajas.
+- **Mochila:** X (la tecla de disparo, que no se usa en la exploración) abre la mochila para usar comida de la soda fuera de las batallas. La empanada fuera de batalla solo da energía.
+- **Ventana de energía y RAM:** una línea debajo de las vidas. La barra de chocolate muestra los cuadritos según la energía (10 por cuadrito). La RAM que se muestra es con la que empieza cada batalla (6).
+- **Dos terminales de guardado:** la del vestíbulo (del documento) y otra en el pasillo, junto a la puerta del auditorio, para no repetir medio nivel antes del jefe. Guardar llena la energía y deja el progreso del nivel (carnés, puzzles, mochila, bits) en la ranura. Al volver a entrar al nivel, se sigue desde la última terminal.
+- **Bits:** la recompensa por bug es de 8 a 12 bits según el bug, y hay bits sueltos en las salas. La regla de 100 bits = 1 vida se mantiene. Los bits sueltos no reaparecen al morir, pero los bugs vencidos sí (como dice el documento).
+- **Huir:** si sale bien, Choco parpadea 1.6 s y el bug se queda quieto con un "?" para que se pueda pasar.
+- **NPCs:** los compas y profes son personas genéricas pixeladas (no de chocolate), con aberración cromática y "..." en magenta para mostrar que están en loop. La señora de la soda no glitchea.
+- **Rótulos sin Y:** siguen en este nivel ("Bienvenid_ a la UNA"). El ejemplo "Sal_da de emergencia" del documento no se usó porque "salida" no tiene Y. Si Óscar ya fue rescatado, suspira la primera vez que se lee cada rótulo.
+
+### Puzzles
+
+- **Laboratorio:** cada computadora muestra 1/0 y su valor (128…1) en el piso; la pantalla grande muestra el objetivo y la suma actual. Si el binario está mal, suena un buzzer, sale un bug al azar y empieza la batalla. Las computadoras quedan como estaban para corregir.
+- **Aula 3:** dos circuitos separados por rejas. Circuito 1: (A AND NOT B) OR (C AND D). Circuito 2: (A XOR B) AND NOT (C XOR D) AND (B OR C), empezando en A=1, B=1, C=0, D=1. Se resuelve con 2 cambios; con 3 cambios sin abrir, se reinicia. Las pruebas verifican que el mínimo esté entre 2 y 3.
+- **Biblioteca:** los estantes se empujan caminando contra ellos, alineados (si se mantiene la dirección, siguen avanzando de a un tile). Las pilas de libros bloquean los estantes pero se saltan con las Botas. La sala 1 se resuelve sin saltar.
+- **Y dorada de la biblioteca:** está en un nicho tapado por un cuarto estante que no hace falta para abrir la reja. La solución "obvia" deja ese estante encerrado para siempre; la alternativa es usarlo para tapar una de las marcas. Si se pierde, la palanca de reinicio deja intentarlo otra vez (el carné ya queda). Las pruebas recorren las dos soluciones.
+- **Y dorada de la sala vieja:** al leer la pizarra por segunda vez, la pizarra tiembla y cae la Y.
+
+### Batallas
+
+- **Turno:** al empezar cada ronda el bug decide su intención; Debug la muestra (con la debilidad) durante 2 rondas.
+- **Golpe con timing:** el marcador va y vuelve dos veces por la barra; si no se presiona, sale un golpe normal. Centro (±7 % de la barra) = crítico ×1.5; cerca del centro sale "BIEN" (daño normal).
+- **Debug:** "el próximo Compilar contra la debilidad hace ×2" se interpreta como "el próximo Compilar después de Debug hace ×2" (se gasta en ese golpe). Se suma con el crítico.
+- **Defensa:** el bug se prepara entre 0.7 y 1.1 s (siempre más de 0.4 s), un anillo amarillo se cierra sobre Choco y el destello blanco marca el impacto. Perfecto: ±1.5 frames (3 frames en total) → 0 daño. Bien: ±0.12 s → mitad (redondeada hacia abajo). Presionar antes de tiempo bloquea el intento ("MUY PRONTO"), para que no se pueda apretar sin parar.
+- **Gimmicks:** Loop Infinito se cura al final de su tercer turno (y vuelve a contar); Race Condition va primero el 50 % de las rondas y ataca dos veces el 30 %; Memory Leak quita 1 de energía máxima al final de cada ronda (vuelve al terminar la pelea); Spaghetti Code enreda en rondas alternas. El enredo cambia Compilar, Debug o Commit --force por otro comando al azar el 50 % de las veces; Refactor, Objeto y Huir no se enredan, y una defensa perfecta evita el enredo.
+- **Fondos de batalla** según la sala: pasillo con casilleros, soda, pizarra, laboratorio, biblioteca y tarima.
+
+### MC Stack Overflow (rap)
+
+- El beat va a 90 BPM y la batalla usa el reloj de audio de la canción, así que la ventana de ±0.12 s está pegada al beat que se escucha.
+- Cada línea de Stack dura 2 compases; las palabras aparecen al ritmo y la del tiempo actual se ilumina en amarillo. Elegir tiene 6 compases (con indicador de tiempos). Si se acaba el tiempo, cuenta como "sin rima".
+- Las opciones muestran la primera línea; abajo se ve la respuesta completa de la que está seleccionada.
+- **Si Stack sigue con flow después de la ronda 3** (por respuestas flojas), hay 2 rondas extra originales que se repiten hasta que alguien gane.
+- **Ataque de desbordamiento entre rondas:** ventanas de error que vuelan hacia Choco y quitan 4 de energía (0 con defensa perfecta, 2 con "bien"). Quedarse sin energía también es perder la batalla.
+- **Perder:** cuesta una vida y la batalla se repite desde la ronda 1 ahí mismo, sin volver a la terminal.
+- **Puntaje:** 100 por respuesta correcta y 40 por floja, el doble en el beat.
+
+### Rescate
+
+- Orden: la jaula se abre, Stward baja y dice su verso → Stack se cierra ventana por ventana → Stward camina hasta Choco y entrega la laptop (diálogo) → luz amarilla a la barra (+1 cuadrito y energía llena) → pantalla de la Laptop Debugger → demostración de la Vista Debug de 10 s en el auditorio (se puede pasar con Enter después de 4 s) → "no debiste volver" → resultados.
+- Al rejugar con Stward ya rescatado no hay jaula: Stack colapsa y se termina el nivel.
+
+### Vista Debug en plataformas
+
+- Con la laptop, en los niveles de plataformas la Vista Debug también marca los bloques invisibles (con "?"), las paredes agrietadas y un círculo en el punto débil de cada enemigo (en el Guardián, la cabeza). En el nivel 2 muestra las rutas de los bugs.
+
+### Desarrollo
+
+- Atajos: `?scene=level2` (La UNA), `?scene=auditorio` (con los 3 carnés), `?scene=battle` (las 5 batallas seguidas) y `?scene=rap`. También están en `?scene=dev`.
+- F3 en el nivel 2 da todos los objetos y los 3 carnés; F10 da solo los carnés.
+- `TopdownLevel` es la base de los niveles cenitales y se va a reutilizar en el nivel 3.

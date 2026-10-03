@@ -29,7 +29,9 @@ async function start() {
 
   // Flujo normal: Presioná cualquier tecla → Presentación → Título.
   // Atajos de desarrollo: ?scene=room (sala de pruebas), ?scene=tech (prueba técnica), ?scene=dev (menú de hitos),
-  // ?scene=prologue (cuarto), ?scene=loading (Pantalla de Carga), ?scene=level1 (Mundo Cartucho)
+  // ?scene=prologue (cuarto), ?scene=loading (Pantalla de Carga), ?scene=level1 (Mundo Cartucho),
+  // ?scene=boss1 (directo al Guardián del Slot), ?scene=level2 (La UNA), ?scene=auditorio (con los
+  // 3 carnés, frente a MC Stack Overflow), ?scene=battle (batallas de prueba), ?scene=rap
   let next = () => new SplashScene(game);
   const direct = import.meta.env.DEV ? new URLSearchParams(location.search).get('scene') : null;
   if (direct === 'room') {
@@ -38,9 +40,15 @@ async function start() {
   } else if (direct === 'prologue' || direct === 'loading') {
     const mod = direct === 'prologue' ? await import('./levels/level0_prologo/RoomScene.js') : await import('./levels/level0_prologo/LoadingScene.js');
     next = () => (direct === 'prologue' ? new mod.RoomScene(game) : new mod.LoadingScene(game));
-  } else if (direct === 'level1') {
+  } else if (direct === 'level1' || direct === 'boss1') {
     const { Level1Scene } = await import('./levels/level1_cartucho/Level1Scene.js');
-    next = () => new Level1Scene(game);
+    next = () => new Level1Scene(game, { start: direct === 'boss1' ? 'arena' : null });
+  } else if (direct === 'level2' || direct === 'auditorio') {
+    const { Level2Scene } = await import('./levels/level2_una/Level2Scene.js');
+    next = () => new Level2Scene(game, { start: direct === 'auditorio' ? 'auditorio' : null });
+  } else if (direct === 'battle' || direct === 'rap') {
+    const { DevBattleScene } = await import('./scenes/DevBattleScene.js');
+    next = () => new DevBattleScene(game, direct);
   } else if (direct === 'dev') {
     const { DevMenuScene } = await import('./scenes/DevMenuScene.js');
     next = () => new DevMenuScene(game);

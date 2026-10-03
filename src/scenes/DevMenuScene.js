@@ -12,6 +12,8 @@ import { Flow } from '../game/flow.js';
 import { RoomScene } from '../levels/level0_prologo/RoomScene.js';
 import { LoadingScene } from '../levels/level0_prologo/LoadingScene.js';
 import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
+import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
+import { DevBattleScene } from './DevBattleScene.js';
 
 export class DevMenuScene extends Scene {
   constructor(game, selected = 1) {
@@ -41,6 +43,9 @@ export class DevMenuScene extends Scene {
       else if (id === 'prologue') g.changeScene(() => new RoomScene(g), { type: 'fade' });
       else if (id === 'loading') g.changeScene(() => new LoadingScene(g), { type: 'fade' });
       else if (id === 'level1') g.changeScene(() => new Level1Scene(g), { type: 'iris' });
+      else if (id === 'level2') g.changeScene(() => new Level2Scene(g), { type: 'iris' });
+      else if (id === 'battle' || id === 'rap') g.changeScene(() => new DevBattleScene(g, id), { type: 'fade' });
+      else if (id === 'boss1') g.changeScene(() => new Level1Scene(g, { start: 'arena' }), { type: 'iris' });
     }
   }
 

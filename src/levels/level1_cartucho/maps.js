@@ -265,8 +265,9 @@ function buildArena() {
   b.ground(0, W - 1, G);
   b.hline(0, W - 1, 0, '#');
   b.vline(0, 0, H - 1, '#').vline(W - 1, 0, H - 1, '#');
-  b.hline(3, 5, 6, '=');
-  b.hline(14, 16, 6, '=');
+  // A 2 tiles del suelo: se alcanzan con el salto normal (≈50 px) y libran las ondas de choque
+  b.hline(3, 5, G - 2, '=');
+  b.hline(14, 16, G - 2, '=');
   return { rows: b.toRows(), floor: G };
 }
 
