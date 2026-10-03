@@ -34,7 +34,7 @@ export class Debug {
       else if (k === 'F7') this._stepRequested = true;
       else if (k === 'F8' && scene?.debugHudDemo) scene.debugHudDemo();
       else if (k === 'F9') this.infiniteLives = !this.infiniteLives;
-      else if (k === 'F10' && scene?.debugCarnes) scene.debugCarnes();
+      else if (k === 'F10') (scene?.debugF10 || scene?.debugCarnes)?.call(scene);
     }
     this.pendingKeys.length = 0;
   }

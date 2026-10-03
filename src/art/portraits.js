@@ -454,7 +454,33 @@ function stackPortrait(g, face) {
   g.line(28, 31, 26, 22, 'g').ellipse(26, 20, 2, 2, 'M');
 }
 
-const BUILDERS = { oscar, stward, hezron, fabiola, choco, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait };
+function office(g, face) {
+  // Gente de Novacomp (glitcheada): camisa gris, gafete y audífonos de reunión
+  g.rect(3, 26, 28, 31, 'x').hline(3, 28, 26, 'g');
+  g.vline(15, 26, 31, 'c').rect(14, 29, 17, 31, 'w');
+  personFace(g, face);
+  g.rect(7, 4, 24, 8, 'd').rect(6, 6, 8, 13, 'd').rect(23, 6, 25, 11, 'd');
+  g.hline(6, 25, 3, 'g').rect(4, 12, 6, 17, 'g').rect(25, 12, 27, 17, 'g');
+  g.line(27, 17, 21, 22, 'g');
+}
+
+function deadlinePortrait(g, face) {
+  // El reloj DEADLINE: esfera crema, aro oscuro, pantalla con la cuenta regresiva
+  g.ellipse(15.5, 15.5, 14, 14, 'N');
+  g.ellipse(15.5, 15.5, 12.5, 12.5, 'Q');
+  for (const [x, y] of [[15, 4], [16, 4], [27, 15], [27, 16], [15, 27], [16, 27], [4, 15], [4, 16]]) g.set(x, y, 'k');
+  g.set(22, 6, 'm').set(9, 25, 'm');
+  // Pantalla
+  g.rect(10, 18, 21, 23, 'n').frame(9, 17, 22, 24, 'K');
+  g.hline(11, 13, 20, 'R').hline(15, 16, 20, 'R').hline(18, 20, 20, 'R').set(14, 19, 'R').set(14, 21, 'R');
+  // Manecillas (enojado: en V)
+  const angry = face === 'angry';
+  g.line(15, 15, angry ? 9 : 15, angry ? 8 : 6, 'k').line(16, 15, angry ? 22 : 23, angry ? 8 : 12, 'k');
+  g.rect(15, 14, 16, 15, 'm');
+  g.outline('o');
+}
+
+const BUILDERS = { oscar, stward, hezron, fabiola, choco, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait, office, deadline: deadlinePortrait };
 
 export function buildPortraitRows(key) {
   const [who, face] = key.split(':');

@@ -182,6 +182,13 @@ const NPC_LOOKS = {
     { skin: 'Q', hair: 'u', top: 'i', topS: 'I', legs: 'a', backpack: 'x', long: true },
   ],
   senora: [{ skin: 'Q', hair: 'n', top: 'p', topS: 'v', legs: 'i', apron: true, net: true }],
+  // Nivel 3: gente de oficina (el daily)
+  office: [
+    { skin: 'q', hair: 'U', top: 'i', topS: 'I', legs: 'a', glasses: true, lanyard: true },
+    { skin: 'Q', hair: 'u', top: 't', topS: 'T', legs: 'I', hood: true },
+    { skin: 'j', hair: 'n', top: 'a', topS: 'A', legs: 'i', long: true, lanyard: true },
+    { skin: 'q', hair: 'N', top: 'v', topS: 'V', legs: 'I', beard: true, glasses: true },
+  ],
 };
 
 function buildNpc(key) {
@@ -205,6 +212,7 @@ function buildNpc(key) {
   g.vline(3, ty + 1, ty + 4, look.top).set(3, ty + 5, look.skin);
   g.vline(12, ty + 1, ty + 4, look.topS).set(12, ty + 5, look.skin);
   if (look.book) g.rect(12, ty + 3, 14, ty + 6, 'v').set(13, ty + 4, 'z');
+  if (look.lanyard) g.vline(7, ty, ty + 2, 'F').rect(7, ty + 3, 8, ty + 4, 'z');
   // Cabeza
   const hy = 2 + bob;
   g.rect(5, hy + 1, 10, hy + 6, look.skin);

@@ -16,6 +16,7 @@ import { Choco } from '../entities/choco.js';
 import { Shot } from '../entities/projectile.js';
 import { Hud } from '../ui/hud.js';
 import { Laptop } from '../items/laptop.js';
+import { shieldCharge01 } from '../systems/shield.js';
 import { T as TILE } from '../systems/tilemap.js';
 import { drawText, drawTextBox } from '../art/font.js';
 import { UI } from '../art/palettes.js';
@@ -616,7 +617,7 @@ export class PlatformLevel extends Scene {
         bits: this.bits,
         goldenY: this.goldenY,
         laptop: c.items.laptop ? this.laptop : null,
-        shield: c.items.shield ? { cooldown01: 1 } : null,
+        shield: c.items.shield ? { cooldown01: shieldCharge01(c.shield) } : null,
         lassoInRange: false,
       });
     } else s.items = { staff: c.items.staff };

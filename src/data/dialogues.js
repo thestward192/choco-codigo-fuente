@@ -21,7 +21,7 @@ export const TEXTS = {
   title: {
     subtitle: 'CÓDIGO FUENTE',
     pressEnter: 'Presioná Enter',
-    version: 'v0.4 · Hito 4',
+    version: 'v0.5 · Hito 5',
   },
 
   mainMenu: {
@@ -238,6 +238,8 @@ export const TEXTS = {
     student: 'Compa',
     senora: 'Señora de la soda',
     stack: 'MC Stack Overflow',
+    office: 'Compa de oficina',
+    deadline: 'DEADLINE',
   },
 
   credits: {
@@ -250,7 +252,7 @@ export const TEXTS = {
 
   hud: {
     battery: 'Q',
-    deadline: 'DEADLINE',
+    deadline: 'ENTREGA EN',
     interact: '↑',
   },
 
@@ -324,6 +326,86 @@ export const TEXTS = {
       solved: '¡ESTANTES EN SU LUGAR!',
     },
     hopHint: 'ESPACIO: saltar la pila',
+  },
+
+  // Nivel 3 · Oficinas de Novacomp. Los rótulos siguen sin la letra Y.
+  level3: {
+    rooms: {
+      lobby: 'RECEPCIÓN',
+      openspace: 'OPEN SPACE',
+      terrace: 'TERRAZA',
+      gerencia: 'PASILLO DE GERENCIA',
+      servers: 'SALA DE SERVIDORES',
+      practice: 'SALA DE PRUEBAS',
+    },
+    reception: 'NOVACOMP',
+    signs: {
+      elevator: 'ASCENSOR · Fuera de servicio desde el último deplo_.',
+    },
+    checkpoint: 'CHECKPOINT',
+    checkpointSub: 'Progreso guardado',
+    alarm: '¡ALARMA!',
+    alarmSub: 'Escondete o salí de su vista',
+    calm: 'Vuelve la calma',
+    caught: '¡TE ATRAPARON!',
+    caughtSub: 'De vuelta al inicio de la sección',
+    lifeLost: 'SIN CUADRITOS',
+    lifeLostSub: 'De vuelta al último checkpoint',
+    sneakHint: (k) => `Mantené ${k}: caminar sigiloso (sin ruido)`,
+    hideHint: (k) => `${k}: esconderse`,
+    hidden: 'Escondido',
+    hack: {
+      title: 'HACKEANDO...',
+      safe: 'CAJA FUERTE',
+      ok: 'ACCESO CONCEDIDO',
+      fail: 'HACKEO FALLIDO',
+      timeout: 'SE ACABÓ EL TIEMPO',
+      locked: 'TERMINAL BLOQUEADA',
+      cancel: (k) => `${k} cancelar`,
+      done: 'Ya está hackeada',
+    },
+    effects: {
+      cameraOff: 'Cámara apagada 10 s',
+      route: 'Ruta del BotSeg desviada',
+      lasersOff: 'Láseres apagados 6 s',
+      safe: 'Caja fuerte abierta',
+    },
+    vaporHint: (k) => `${k}: nube de vapor de Hezron`,
+    vaporEmpty: 'Hezron: "Ya no me quedan cargas, mae."',
+    // Sabores de Hezron: uno distinto cada vez que suelta una nube
+    flavors: [
+      'Mango con chile',
+      'Horchata con menta',
+      'Café de la oficina, edición lunes',
+      'Maracuyá',
+      'Cas con sal',
+      'Tamal navideño',
+      'Agua dulce con queso',
+      'Guanábana sin azúcar',
+      'Pan bon tostado',
+      'Chan con limón',
+    ],
+    daily: ['Ayer trabajé en...', 'Hoy voy a...', 'Sin bloqueos.', '¿Choco? Tu turno.'],
+    dailyChoco: 'Ehh... ayer rescaté a Stward. Hoy, a Hezron. Bloqueos: N.U.L.L.',
+    postIt: 'Choco',
+    boss: {
+      name: 'DEADLINE',
+      sub: 'La entrega era ayer',
+      hint: 'Hackeá una terminal: el reloj se congela',
+      hintSub: 'Y disparale al núcleo mientras está abierto',
+      frozen: 'CONGELADO',
+      expired: '¡SE VENCIÓ EL DEADLINE!',
+      expiredSub: 'El contador vuelve a 1:00',
+      noDate: 'SIN FECHA DE ENTREGA',
+    },
+    practice: {
+      block: (k, n, max) => `${k}: escudo · Bloqueá ${n}/${max}`,
+      parry: (n, max) => `Activalo justo antes del impacto · Parry ${n}/${max}`,
+      parryText: '¡PARRY!',
+      blockText: 'BLOQUEADO',
+      done: '¡FIREWALL CONFIGURADO!',
+      exit: 'La salida está abierta',
+    },
   },
 
   // Batallas por turnos
@@ -526,7 +608,7 @@ export const TEXTS = {
 
   debug: {
     on: 'DEBUG',
-    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2)',
+    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2) / Hezron (nivel 3)',
     invincible: 'INVENCIBLE',
     infiniteLives: 'VIDAS INFINITAS',
     stepping: 'CUADRO A CUADRO (F7 avanza)',
@@ -548,6 +630,10 @@ export const TEXTS = {
       { id: 'level2', label: 'Hito 4 · Nivel 2: La UNA' },
       { id: 'battle', label: 'Hito 4 · Batalla de prueba (bug al azar)' },
       { id: 'rap', label: 'Hito 4 · Batalla de rap: MC Stack Overflow' },
+      { id: 'level3', label: 'Hito 5 · Nivel 3: Novacomp' },
+      { id: 'terraza', label: 'Hito 5 · Nivel 3: terraza (Hezron)' },
+      { id: 'deadline', label: 'Hito 5 · Nivel 3: jefe DEADLINE' },
+      { id: 'escudo', label: 'Hito 5 · Nivel 3: práctica del escudo' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },
@@ -683,6 +769,57 @@ export const DIALOGUES = {
   debugReveal: [
     { who: 'choco', face: 'worried', text: '"No debiste volver"... N.U.L.L. sabe que vengo.' },
     { who: 'stward', face: 'normal', text: 'Que sepa. Dos cuadritos más y nos vamos por Hezron.' },
+  ],
+
+  // ---------- Nivel 3 · Novacomp ----------
+  level3Intro: [
+    { who: 'choco', face: 'surprised', text: '¿Novacomp? ¿De noche y con bots de seguridad? Así no era la oficina.' },
+    { who: 'stward', face: 'normal', text: 'Shhh. Esos conos de luz son lo que ven. Si te quedás adentro, suena la alarma.' },
+    { who: 'oscar', face: 'worried', text: 'Mantené Shift para caminar sin hacer ruido. Corriendo cerca de ellos te escuchan.' },
+  ],
+  hackTutorial: [
+    { who: 'system', face: 'normal', text: 'TERMINAL DE SEGURIDAD. Ingresá las flechas en orden antes de que se acabe el tiempo.' },
+    { who: 'system', face: 'normal', text: 'Un error reinicia la secuencia. Tres errores activan la alarma.' },
+    { who: 'stward', face: 'happy', text: 'Esta apaga la cámara de la puerta 10 segundos. Con la laptop (Q) ves los cables de cada terminal.' },
+  ],
+  elevator: [{ who: 'choco', face: 'normal', text: 'Fuera de servicio desde el último deploy. Clásico.' }],
+  coffee: [{ who: 'choco', face: 'happy', text: 'Café de oficina: no sabe a nada, pero funciona.' }],
+  coffeeFull: [{ who: 'choco', face: 'normal', text: 'Todavía no lo necesito. Lo dejo para después.' }],
+  coffeeEmpty: [{ who: 'choco', face: 'worried', text: 'Ya me lo tomé. Y era el último de la jarra.' }],
+  dailyAfter: [{ who: 'choco', face: 'worried', text: 'Tres segundos de mi vida que no voy a recuperar.' }],
+  chocoDesk: [
+    { who: 'choco', face: 'surprised', text: 'Mi escritorio. Con mi nombre en un post-it.' },
+    { who: 'choco', face: 'happy', text: 'Alguien todavía me guarda el campo aquí.' },
+    { who: 'stward', face: 'normal', text: 'Ese post-it tiene algo escrito en código. Mirálo con la laptop (Q).' },
+  ],
+  hezronRescue: [
+    { who: 'hezron', face: 'normal', text: 'Tranquilo, los bots no ven a través del vapor. Es sabor mango con chile, edición limitada.' },
+    { who: 'choco', face: 'surprised', text: '¡Hezron! ¿Cuánto llevás aquí?' },
+    { who: 'hezron', face: 'happy', text: 'Un rato. Los drones pasan y ni me ven. Tranqui.' },
+    { who: 'hezron', face: 'normal', text: 'Yo te cubro. Pero me quedan pocas cargas, así que decime cuándo.' },
+    { who: 'system', face: 'normal', text: 'C: Hezron suelta una nube delante de vos. Tapa la vista 6 s. 3 cargas por sección.' },
+  ],
+  hezronTutorial: [{ who: 'hezron', face: 'normal', text: 'Esos dos drones vigilan la salida. Tirá una nube entre vos y ellos, y pasá.' }],
+  safeOpen: [{ who: 'system', face: 'normal', text: 'CAJA FUERTE ABIERTA. Adentro: una Y dorada y un post-it que dice "bonos 2019".' }],
+  deadlineIntro: [
+    { who: 'hezron', face: 'surprised', text: 'Uy. Ese es el reloj de la sala de reuniones grande.' },
+    { who: 'deadline', face: 'angry', text: 'LA ENTREGA ERA AYER.' },
+    { who: 'choco', face: 'surprised', text: '¿Ayer? ¡Si ni me dijeron qué había que entregar!' },
+    { who: 'hezron', face: 'normal', text: 'Tranqui. Hackeá las terminales de las orillas: lo congelan. Ahí le disparás al centro.' },
+  ],
+  deadlineExpired: [{ who: 'deadline', face: 'angry', text: 'SE VENCIÓ. TE DOY UN MINUTO MÁS. UNO.' }],
+  deadlineDefeat: [{ who: 'hezron', face: 'happy', text: 'Tranqui. Ya no hay prisa.' }],
+  hezronShield: [
+    { who: 'hezron', face: 'normal', text: 'Lo saqué del servidor. Bloquea casi todo, pero se recalienta.' },
+    { who: 'hezron', face: 'happy', text: 'No lo dejés prendido todo el día como el aire del tercer piso.' },
+  ],
+  practiceIntro: [
+    { who: 'hezron', face: 'normal', text: 'Probalo con esa torreta de pruebas. Primero bloqueá un par de disparos.' },
+    { who: 'hezron', face: 'happy', text: 'Después activalo justo antes del golpe. Si lo pegás, el disparo se devuelve.' },
+  ],
+  practiceDone: [
+    { who: 'hezron', face: 'happy', text: 'Eso. Parry perfecto. Sabor victoria con limón.' },
+    { who: 'choco', face: 'happy', text: 'Tres cuadritos. Vamos por Fabiola.' },
   ],
 
   // Prueba de diálogos de la sala de pruebas (Hito 2)

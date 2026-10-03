@@ -161,3 +161,61 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - Atajos: `?scene=level2` (La UNA), `?scene=auditorio` (con los 3 carnés), `?scene=battle` (las 5 batallas seguidas) y `?scene=rap`. También están en `?scene=dev`.
 - F3 en el nivel 2 da todos los objetos y los 3 carnés; F10 da solo los carnés.
 - `TopdownLevel` es la base de los niveles cenitales y se va a reutilizar en el nivel 3.
+
+## Hito 5 · Nivel 3 (Novacomp)
+
+### Estructura
+
+- **Seis salas en línea:** Recepción (3-A) → Open space (3-B) → Terraza (3-C) → Pasillo de gerencia (3-D) → Sala de servidores (3-E, jefe) → Sala de práctica del escudo. Se pasa de una a otra por puertas con un fundido corto, como en el nivel 2.
+- **Checkpoints automáticos** al entrar por primera vez a Recepción, Open space, Gerencia y la Sala de servidores (la terraza no tiene, como dice el documento). El de los servidores no está en el documento: se agregó para no repetir medio nivel antes de cada intento contra DEADLINE (igual que la arena del nivel 1).
+- **Contacto con un BotSeg (o un dron en alarma):** quita un cuadrito y la sección vuelve a empezar desde la puerta por la que se entró (enemigos, alarma y cargas de vapor de cero). Si se acaban los cuadritos, se pierde una vida y se vuelve al último checkpoint con la barra llena.
+- **Bits:** hay algunos en cada sala (el documento no los menciona en este nivel) para que la pantalla de resultados y las vidas extra sigan funcionando.
+
+### Sigilo
+
+- **Conos:** 60°, 80 px los BotSeg y 96 px las cámaras. Se dibujan siempre encima de la oscuridad y cambian de color: crema (normal), amarillo/naranja (sospecha), rojo (alarma). Tapan la vista las paredes, los casilleros, las impresoras, los racks, la caja fuerte y las puertas cerradas; el vidrio, los escritorios, las plantas y la baranda no.
+- **Sospecha:** el medidor está sobre la cabeza del enemigo. Con el primer avistamiento suena un "?"; si Choco sale del cono, el BotSeg va a revisar el último punto donde lo vio, mira alrededor 1.6 s y vuelve a su ruta.
+- **Alarma:** dura 12 s y se reinicia cada vez que algún enemigo ve a Choco. Los BotSeg persiguen el último punto conocido (a 60 px/s, menos que caminar, así que se puede huir). **Los drones también bajan a perseguir durante la alarma:** sin esto, en la terraza (que no tiene BotSeg) la alarma no tendría consecuencias. Los láseres activan la alarma además de quitar un cuadrito.
+- **Ruido:** caminar normal a menos de 40 px de un BotSeg hace ruido (se ven las ondas); disparar y chocar con la aspiradora hacen ruido en 80 px. Con Shift (35 px/s) no hay ruido. Las cámaras y los drones no reaccionan al ruido.
+- **Escondites:** casilleros (en la pared) y escritorios con mantel morado. Con E Choco se mete adentro (se le ven los ojitos) y con E sale por donde entró. Esconderse funciona siempre, aunque lo estén persiguiendo: los bots van al último punto donde lo vieron y, si no lo encuentran, vuelve la calma. Hezron se esconde en su propia nube.
+- **Báculo:** el disparo normal aturde (BotSeg 2 s, cámara 3 s y dron 2 s, que el documento no menciona). Se dispara en 4 direcciones y el cargado atraviesa. Los disparos pasan por encima de los escritorios.
+- **Daily:** al entrar a la sala de vidrio, Choco queda 3 s atrapado en la reunión, con globos que no se pueden saltar ("Ayer trabajé en... Hoy voy a... Sin bloqueos."). Mientras tanto los guardias no lo ven (están en reunión), pero siguen caminando, así que esos 3 s cambian el ritmo de las rutas. Pasa cada vez que se entra.
+- **Café:** recupera un cuadrito una sola vez; si la barra está llena no lo gasta.
+
+### Hackeo
+
+- Recepción (tutorial): 4 flechas en 4 s, apaga la cámara de la puerta 10 s. Terminales normales: 5 flechas en 3 s. Caja fuerte: 7 flechas en 2.5 s. Terminales del jefe: 6 flechas en 3 s.
+- Durante el hackeo el nivel sigue andando y Choco no se puede mover; un golpe lo interrumpe. X cancela. Se acaba el tiempo: falla sin alarma. Tres errores: alarma (en el jefe, la terminal se bloquea 5 s).
+- Efectos usados: apagar una cámara 10 s (Recepción, Open space, Gerencia), desviar la ruta de un BotSeg para siempre (Open space), apagar los láseres 6 s (Gerencia) y abrir la caja fuerte. Las terminales de efecto temporal se pueden volver a usar cuando se acaba el efecto.
+- **Vista Debug en este nivel:** muestra los cables (con pulsos) de cada terminal a lo que controla, las rutas de los BotSeg y las órbitas de los drones, y la Y escondida del escritorio de Choco.
+
+### Hezron y el vapor
+
+- Se rescata al acercarse a su bean bag en la terraza. Sigue el rastro de Choco y suelta la nube con C, delante de Choco (18 px), donde cae en 0.25 s. La nube mide 24 px de radio, dura 6 s y bloquea cualquier rayo de visión que la cruce; Choco adentro de la nube también queda tapado. 3 cargas por sala; se recargan al entrar a una sala nueva o al reiniciar la sección.
+- Cada nube viene con un sabor distinto en un globito ("Horchata con menta", "Café de la oficina, edición lunes", "Cas con sal"...).
+- La terraza tiene dos carriles separados por maceteras: arriba, 2 drones que vigilan la salida (el tutorial de la nube); abajo, 3 drones en fila que llevan al toldo con la Y dorada.
+
+### DEADLINE
+
+- **Cómo vencerlo:** hackear una terminal congela el reloj 6 s y abre la pantalla; 8 disparos normales (o 3 cargados) vacían un tercio. Si no se vacía a tiempo, esa terminal se reinicia en 3 s. El daño no pasa de un tercio al siguiente. Con la pantalla cerrada los disparos rebotan.
+- **Ataques en ciclo** (abanicos, barrido, notificaciones) con pausas que se acortan en cada tercio. Abanicos de 5 y 8 sobres, luego 8+8 y 8+11. El barrido avisa con una línea punteada y la manecilla brillando 1 s, y un tic-tac más rápido; las columnas-servidor tapan el láser. Las notificaciones persiguen 4 s; una nube de Hezron las confunde y los disparos las revientan.
+- **Cuenta regresiva:** al vencerse quita un cuadrito (aunque Choco sea invencible en ese momento) y vuelve a 1:00. El reloj no corre mientras está congelado. En el HUD dice "ENTREGA EN".
+- **Último tercio:** las terminales que faltan saltan a otras posiciones con un glitch.
+- **Derrota:** las manecillas se caen, "SIN FECHA DE ENTREGA", el reloj se desarma; Hezron dice "Tranqui. Ya no hay prisa.", se vuelve luz lila y se une a la barra (+1 cuadrito), entrega el Escudo Firewall y se abre la puerta a la sala de práctica.
+
+### Escudo Firewall y práctica
+
+- 1.5 s de burbuja hexagonal, recarga de 3.5 s (el ícono del HUD se llena), 60 % de velocidad y sin disparar. Parry: el golpe llega dentro de los 0.15 s después de activarlo → el proyectil vuelve a su origen más rápido, con destello, 6 frames de hit-stop y sonido propio.
+- **Sala de práctica:** una torreta de prueba dispara cada 1.7 s (con aviso). Hay que bloquear 2 disparos y hacer 2 parry; después se abre la salida y termina el nivel. Los disparos de la torreta solo empujan, no quitan cuadritos.
+- **En plataformas** el escudo ya funciona (C): bloquea los golpes y el contacto, y si el golpe llega en la ventana de parry hace el destello y el hit-stop. Reflejar proyectiles queda conectado para cuando haya enemigos que disparen (niveles 4 y 5); en el nivel 1 no hay.
+
+### Arte y audio
+
+- Oficina de noche con oscuridad por capas: luces de Choco, pantallas de los escritorios, terminales, ventanas, láseres, el reloj y los propios conos. Con alarma, la pantalla pulsa en rojo.
+- Música de Novacomp en Re menor a 100 BPM con capa de alarma (percusión y sirena) que entra y sale con la alarma. DEADLINE en Mi menor a 132 BPM con el tic-tac en la percusión, más un tic-tac propio del reloj que se acelera en cada tercio y en los últimos 30 s.
+- Gente de oficina nueva para el daily (con gafete y audífonos) y retratos nuevos para el compa de oficina y DEADLINE.
+
+### Desarrollo
+
+- Atajos: `?scene=level3`, `?scene=terraza`, `?scene=deadline` (en los servidores, con Hezron) y `?scene=escudo` (sala de práctica). También están en `?scene=dev`, que ahora tiene scroll.
+- F10 en el nivel 3: Hezron se une al instante (con 3 cargas).

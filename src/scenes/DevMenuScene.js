@@ -13,6 +13,7 @@ import { RoomScene } from '../levels/level0_prologo/RoomScene.js';
 import { LoadingScene } from '../levels/level0_prologo/LoadingScene.js';
 import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
 import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
+import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
 import { DevBattleScene } from './DevBattleScene.js';
 
 export class DevMenuScene extends Scene {
@@ -46,6 +47,8 @@ export class DevMenuScene extends Scene {
       else if (id === 'level2') g.changeScene(() => new Level2Scene(g), { type: 'iris' });
       else if (id === 'battle' || id === 'rap') g.changeScene(() => new DevBattleScene(g, id), { type: 'fade' });
       else if (id === 'boss1') g.changeScene(() => new Level1Scene(g, { start: 'arena' }), { type: 'iris' });
+      else if (id === 'level3') g.changeScene(() => new Level3Scene(g), { type: 'iris' });
+      else if (id === 'terraza' || id === 'deadline' || id === 'escudo') g.changeScene(() => new Level3Scene(g, { start: id }), { type: 'iris' });
     }
   }
 
@@ -61,17 +64,23 @@ export class DevMenuScene extends Scene {
       });
     }
     const w = 276;
-    const h = 86;
+    const h = 140;
     const x = (SCREEN.W - w) / 2;
-    const y = 40;
+    const y = 14;
     drawTerminalPanel(ctx, x, y, w, h, TEXTS.devMenu.title);
     drawText(ctx, TEXTS.devMenu.subtitle, x + 8, y + 18, { color: UI.textDim, shadow: false });
-    this.items.forEach((it, i) => {
-      const iy = y + 36 + i * 16;
+    // Lista con scroll: se ven VISIBLE elementos alrededor del seleccionado
+    const VISIBLE = 7;
+    const first = Math.max(0, Math.min(this.items.length - VISIBLE, this.sel - Math.floor(VISIBLE / 2)));
+    this.items.slice(first, first + VISIBLE).forEach((it, k) => {
+      const i = first + k;
+      const iy = y + 32 + k * 14;
       const active = i === this.sel;
       if (active) drawBraceCursor(ctx, x + 10, iy, this.t);
       drawText(ctx, it.label, x + 20, iy, { color: active ? UI.text : UI.textDim });
     });
+    if (first > 0) drawText(ctx, '↑', x + w - 10, y + 32, { color: UI.textDim });
+    if (first + VISIBLE < this.items.length) drawText(ctx, '↓', x + w - 10, y + 32 + (VISIBLE - 1) * 14, { color: UI.textDim });
     drawText(ctx, TEXTS.devMenu.hint, SCREEN.W / 2, SCREEN.H - 16, { align: 'center', color: UI.textDim });
   }
 }

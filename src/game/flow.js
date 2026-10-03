@@ -19,6 +19,7 @@ import { RoomScene } from '../levels/level0_prologo/RoomScene.js';
 import { LoadingScene } from '../levels/level0_prologo/LoadingScene.js';
 import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
 import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
+import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
 
 export const Flow = {
   toTitle(game, { type = 'fade' } = {}) {
@@ -67,6 +68,7 @@ export const Flow = {
     if (id === 0) return new RoomScene(game);
     if (id === 1) return new Level1Scene(game);
     if (id === 2) return new Level2Scene(game);
+    if (id === 3) return new Level3Scene(game);
     // Los niveles que todavía no existen abren la sala de pruebas como reemplazo.
     return new TestRoomScene(game, { levelId: id });
   },

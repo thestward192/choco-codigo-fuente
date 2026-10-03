@@ -362,6 +362,127 @@ export const PUZZLES = {
   GATES_RESET_DELAY: 0.8,
 };
 
+// ============================================================================
+// Nivel 3 · Oficinas de Novacomp — docs/niveles/nivel_3_novacomp.md
+// ============================================================================
+
+// Sigilo: conos de visión, sospecha, alarma y ruido
+export const STEALTH = {
+  CONE_HALF: Math.PI / 6, // 60° de apertura
+  BOT_RANGE: 80, // 72–96 px según el enemigo
+  CAMERA_RANGE: 96,
+  CONE_RAYS: 22, // rayos para dibujar el cono (la detección usa un rayo directo)
+  DRONE_RADIUS: 28, // visión circular del dron
+  SUSPICION_TIME: 0.7, // dentro del cono: el medidor se llena en este tiempo
+  SUSPICION_TIME_CLOSE: 0.35, // ...o en este si Choco está cerca
+  CLOSE_DIST: 32,
+  SUSPICION_DECAY: 0.45, // por segundo al salir del cono (baja poco a poco)
+  ALARM_TIME: 12,
+  NOISE_RUN_RADIUS: 40, // caminar normal cerca de enemigos
+  NOISE_SHOT_RADIUS: 80, // disparar o chocar con la aspiradora
+  NOISE_RUN_EVERY: 0.35, // cada cuánto se emite el ruido de pasos
+  BOT_SPEED: 30,
+  BOT_INVESTIGATE_SPEED: 42,
+  BOT_CHASE_SPEED: 60, // menos que caminar (70): se puede huir
+  BOT_PAUSE: 0.8, // en los extremos de la ruta
+  LOOK_AROUND: 1.6, // revisa el punto del "?" este tiempo
+  REPATH_EVERY: 0.4,
+  STUN_BOT: 2, // Báculo: aturde a un BotSeg
+  STUN_CAMERA: 3, // ...y a una cámara
+  STUN_DRONE: 2,
+  CAMERA_SPEED: 0.7, // rad/s del barrido
+  CAMERA_PAUSE: 1.0, // pausa en cada extremo del arco
+  CAMERA_HACK_OFF: 10,
+  DRONE_SPEED: 0.9, // rad/s alrededor de su centro
+  DRONE_CHASE_SPEED: 52, // con la alarma baja a perseguir
+  LASER_ON: 1.5,
+  LASER_OFF: 1.3,
+  LASER_WARN: 0.45, // parpadeo antes de prenderse
+  LASER_HACK_OFF: 6,
+  VACUUM_SPEED: 22,
+  VACUUM_PUSH: 90, // empujón al chocar con Choco
+  CONTACT_RESPAWN_DELAY: 0.6,
+  HURT_KNOCKBACK: 130, // retroceso en cenital (láser, proyectiles)
+};
+
+// Hackeo con la laptop (minijuego de flechas) — docs/03_mecanicas.md
+export const HACK = {
+  NORMAL: { LENGTH: 5, TIME: 3 },
+  TUTORIAL: { LENGTH: 4, TIME: 4 },
+  SAFE: { LENGTH: 7, TIME: 2.5 }, // caja fuerte de gerencia
+  BOSS: { LENGTH: 6, TIME: 3 }, // terminales de DEADLINE
+  MAX_ERRORS: 3, // tres errores: alarma (o terminal bloqueada en el jefe)
+  BOSS_LOCK: 5,
+  ERROR_FLASH: 0.25,
+};
+
+// Nubes de vapor de Hezron
+export const VAPOR = {
+  CHARGES: 3, // por sección
+  RADIUS: 24,
+  DURATION: 6,
+  THROW_DIST: 18, // la nube cae delante de Choco
+  THROW_TIME: 0.25,
+  FOLLOW_DIST: 16, // Hezron camina detrás de Choco
+  FOLLOW_SPEED: 90,
+  BALLOON_TIME: 1.8,
+};
+
+// Escudo Firewall — docs/03_mecanicas.md
+export const SHIELD = {
+  DURATION: 1.5,
+  COOLDOWN: 3.5,
+  MOVE_MULT: 0.6,
+  PARRY_WINDOW: 0.15, // activarlo justo antes del impacto refleja el proyectil
+  PARRY_HITSTOP: 6,
+  RADIUS: 13,
+  REFLECT_SPEED_MULT: 1.6,
+};
+
+// Disparo del Báculo en vista cenital (nivel 3)
+export const TOPDOWN_SHOT = {
+  MUZZLE: 9, // px delante de los pies
+  HEIGHT: 7, // altura del disparo sobre el piso
+};
+
+// Jefe: DEADLINE
+export const DEADLINE = {
+  COUNTDOWN: 180, // 3:00
+  COUNTDOWN_RESET: 60, // al vencerse: pierde un cuadrito y vuelve a 1:00
+  HP_PER_THIRD: 8, // 8 disparos normales vacían un tercio
+  THIRDS: 3,
+  FREEZE: 6, // terminal hackeada: el reloj se congela y abre su pantalla
+  REBOOT: 3, // si no se vació el tercio, la terminal se reinicia en este tiempo
+  IDLE: [1.3, 1.0, 0.75], // pausa entre ataques por tercio
+  // Invitaciones a reunión
+  FAN_TELEGRAPH: 0.6,
+  FAN_COUNTS: [[5, 8], [8, 8], [8, 11]], // abanicos por tercio
+  FAN_SPREAD: [1.1, 1.5, 1.8], // rad
+  FAN_SPEED: 70,
+  FAN_GAP: 0.45, // entre el primer y el segundo abanico
+  // Barrido de manecillas
+  SWEEP_TELEGRAPH: 1.0,
+  SWEEP_TIME: [3.4, 2.7, 2.1], // segundos por vuelta completa
+  SWEEP_HIT: 5, // grosor (px) de la manecilla para el golpe
+  // Notificaciones que persiguen
+  NOTIF_COUNT: 3,
+  NOTIF_SPEED: 46,
+  NOTIF_TURN: 2.6, // rad/s
+  NOTIF_LIFE: 4,
+  NOTIF_TELEGRAPH: 0.5,
+  CORE_R: 9, // radio del núcleo cuando la pantalla está abierta
+  INTRO: 2.2,
+};
+
+// Torreta de práctica del escudo (al salir del nivel 3)
+export const TURRET = {
+  INTERVAL: 1.7,
+  TELEGRAPH: 0.5,
+  SPEED: 75,
+  BLOCKS_NEEDED: 2,
+  PARRIES_NEEDED: 2,
+};
+
 export const AUDIO = {
   PITCH_VARIATION: 0.05, // ±5 % en efectos repetitivos
   MUSIC_FADE: 0.5,

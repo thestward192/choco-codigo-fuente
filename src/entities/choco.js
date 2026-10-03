@@ -1,5 +1,7 @@
 // Choco en modo plataformas: física, báculo, vida, animación y efectos secundarios.
-import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX } from '../config/balance.js';
+import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD } from '../config/balance.js';
+import { createShield, shieldPress, shieldUpdate, shieldOn, shieldBlock } from '../systems/shield.js';
+import { drawShieldBubble } from '../art/shield.js';
 import { createBody, createJumpState, stepPlatformer, stompBounce, moveY } from '../systems/physics.js';
 import { ANIMS, FRAME_W, FRAME_H, LED_POS, SCARF_ANCHOR, chocoFrame, chocoMelt, withShootArms } from '../art/choco.js';
 import { playSfx } from '../audio/sfx.js';
@@ -43,6 +45,10 @@ export class Choco {
     this.chargeT = 0;
     this.chargeReady = false;
     this.chargeSound = null;
+
+    // Escudo Firewall
+    this.shield = createShield();
+    this.parryFlash = 0;
 
     // Cara y detalles
     this.blinkIn = R.range(CHOCO_FX.BLINK_MIN, CHOCO_FX.BLINK_MAX);
@@ -113,6 +119,8 @@ export class Choco {
     this.t += dt;
     if (this.invuln > 0) this.invuln -= dt;
     if (this.flashT > 0) this.flashT -= dt;
+    if (this.parryFlash > 0) this.parryFlash -= dt * 3;
+    shieldUpdate(this.shield, dt);
 
     if (this.state === 'dead') {
       this.updateDead(dt);
@@ -142,7 +150,7 @@ export class Choco {
         jumpBuffered: control && inp.buffered('jump'),
         jumpHeld: inp.down('jump'),
         down: inp.down('down'),
-        speedMult: this.charging && this.chargeT > STAFF.CHARGE_VISIBLE_AFTER ? STAFF.CHARGE_MOVE_MULT : 1,
+        speedMult: (this.charging && this.chargeT > STAFF.CHARGE_VISIBLE_AFTER ? STAFF.CHARGE_MOVE_MULT : 1) * (shieldOn(this.shield) ? SHIELD.MOVE_MULT : 1),
       },
       dt,
       this.scene.map,
@@ -158,7 +166,12 @@ export class Choco {
     if (b.onGround && !this.scene.map.touchesSpikes(b.x - 4, b.y, b.w + 8, b.h + 1)) {
       this.safe = { x: this.footX, y: this.footY };
     }
-    this.updateStaff(dt, inp);
+    // Escudo Firewall (C): mientras está activo no se dispara
+    if (control && this.items.shield && inp.pressed('shield') && shieldPress(this.shield)) {
+      this.stopCharge();
+      playSfx(this.audio, 'shieldOn');
+    }
+    if (!shieldOn(this.shield)) this.updateStaff(dt, inp);
     this.updateHazards();
     if (this.state === 'dead') return;
 
@@ -292,9 +305,23 @@ export class Choco {
   }
 
   // Recibe un golpe desde la posición x de la fuente. Devuelve true si hizo efecto.
-  hurt(sourceX, { fromBelow = false, damage = 1 } = {}) {
+  hurt(sourceX, { fromBelow = false, damage = 1, projectile = null } = {}) {
     if (this.state !== 'play' || this.invuln > 0) return false;
     if (this.scene.game.debug?.invincible) return false;
+    // El escudo bloquea golpes y proyectiles; activado justo antes, refleja (parry)
+    const blocked = shieldBlock(this.shield);
+    if (blocked) {
+      if (blocked === 'parry') {
+        this.parryFlash = 1;
+        this.fx.hitstop(SHIELD.PARRY_HITSTOP);
+        this.fx.flash('#FFFFFF', 2);
+        playSfx(this.audio, 'parry');
+        projectile?.reflect?.(this.scene);
+      } else playSfx(this.audio, 'shieldBlock');
+      this.particles.burst(this.cx, this.cy, blocked === 'parry' ? 16 : 8, { speedMin: 30, speedMax: 110, colors: ['#FFFFFF', '#8AE8FF', '#43D9FF'], lifeMin: 0.15, lifeMax: 0.4 });
+      this.body.vx = Math.sign(this.cx - sourceX || -this.facing) * 60;
+      return false;
+    }
     const dir = Math.sign(this.cx - sourceX) || -this.facing;
     this.invuln = HEALTH.INVINCIBLE_TIME;
     this.hurtT = HEALTH.HURT_POSE_TIME;
@@ -597,6 +624,11 @@ export class Choco {
       const lx = flip ? FRAME_W - 1 - LED_POS.x : LED_POS.x;
       ctx.fillStyle = CHOCO.c;
       ctx.fillRect(dx + Math.floor((lx * dw) / FRAME_W), dy + Math.floor(((LED_POS.y + f.dy) * dh) / FRAME_H), 1, 1);
+    }
+
+    // Burbuja del Escudo Firewall
+    if (shieldOn(this.shield) || this.parryFlash > 0) {
+      drawShieldBubble(ctx, footX, footY - 11, { t: this.t, left: this.shield.active > 0 ? this.shield.active : undefined, parry: Math.max(0, this.parryFlash), r: SHIELD.RADIUS + 2 });
     }
 
     // Brillo del báculo al cargar

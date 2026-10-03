@@ -89,7 +89,7 @@ describe('Textos', () => {
 
 describe('Retratos', () => {
   it('todos los personajes y expresiones miden 32×32 y usan la paleta', () => {
-    for (const who of ['choco', 'null', 'oscar', 'stward', 'hezron', 'fabiola', 'system', 'profe', 'student', 'senora', 'stack']) {
+    for (const who of ['choco', 'null', 'oscar', 'stward', 'hezron', 'fabiola', 'system', 'profe', 'student', 'senora', 'stack', 'office', 'deadline']) {
       for (const face of EXPRESSIONS) {
         const rows = buildPortraitRows(`${who}:${face}`);
         expect(rows.length).toBe(32);

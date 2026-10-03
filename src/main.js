@@ -31,7 +31,9 @@ async function start() {
   // Atajos de desarrollo: ?scene=room (sala de pruebas), ?scene=tech (prueba técnica), ?scene=dev (menú de hitos),
   // ?scene=prologue (cuarto), ?scene=loading (Pantalla de Carga), ?scene=level1 (Mundo Cartucho),
   // ?scene=boss1 (directo al Guardián del Slot), ?scene=level2 (La UNA), ?scene=auditorio (con los
-  // 3 carnés, frente a MC Stack Overflow), ?scene=battle (batallas de prueba), ?scene=rap
+  // 3 carnés, frente a MC Stack Overflow), ?scene=battle (batallas de prueba), ?scene=rap,
+  // ?scene=level3 (Novacomp), ?scene=terraza (rescate de Hezron), ?scene=deadline (jefe),
+  // ?scene=escudo (práctica del Escudo Firewall)
   let next = () => new SplashScene(game);
   const direct = import.meta.env.DEV ? new URLSearchParams(location.search).get('scene') : null;
   if (direct === 'room') {
@@ -46,6 +48,9 @@ async function start() {
   } else if (direct === 'level2' || direct === 'auditorio') {
     const { Level2Scene } = await import('./levels/level2_una/Level2Scene.js');
     next = () => new Level2Scene(game, { start: direct === 'auditorio' ? 'auditorio' : null });
+  } else if (['level3', 'terraza', 'deadline', 'escudo'].includes(direct)) {
+    const { Level3Scene } = await import('./levels/level3_novacomp/Level3Scene.js');
+    next = () => new Level3Scene(game, { start: direct === 'level3' ? null : direct });
   } else if (direct === 'battle' || direct === 'rap') {
     const { DevBattleScene } = await import('./scenes/DevBattleScene.js');
     next = () => new DevBattleScene(game, direct);

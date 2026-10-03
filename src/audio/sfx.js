@@ -343,6 +343,78 @@ Object.assign(SFX, {
     a.noise({ dur: 0.8, vol: 0.1, type: 'lowpass', freq: 700, attack: 0.1 });
   },
   beatSelect: (a) => a.tone({ wave: 'pulse25', f0: N(79), dur: 0.05, vol: 0.12 }),
+  // --- Nivel 3 · sigilo ---
+  suspicious: (a) => {
+    a.tone({ wave: 'triangle', f0: N(76), f1: N(80), dur: 0.12, vol: 0.12 });
+    a.tone({ wave: 'triangle', f0: N(80), f1: N(83), dur: 0.12, vol: 0.1, at: 0.13 });
+  },
+  alert: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(88), dur: 0.06, vol: 0.18 });
+    a.tone({ wave: 'pulse25', f0: N(93), dur: 0.14, vol: 0.18, at: 0.06 });
+  },
+  alarm: (a) => {
+    for (let i = 0; i < 4; i++) a.tone({ wave: 'sawtooth', f0: 660, f1: 990, dur: 0.22, vol: 0.09, at: i * 0.26 });
+  },
+  calm: (a) => a.tone({ wave: 'triangle', f0: N(72), f1: N(67), dur: 0.35, vol: 0.12 }),
+  hackKey: (a) => a.tone({ wave: 'pulse12', f0: a.vary(1500), dur: 0.035, vol: 0.1 }),
+  hackError: (a) => {
+    a.tone({ wave: 'pulse50', f0: 140, f1: 110, dur: 0.16, vol: 0.16 });
+    a.noise({ dur: 0.08, vol: 0.12, type: 'bandpass', freq: 900 });
+  },
+  hackOk: (a) => [N(76), N(81), N(88)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.07, vol: 0.13, at: i * 0.06 })),
+  hackOpen: (a) => {
+    a.tone({ wave: 'pulse25', f0: 300, f1: 900, dur: 0.12, vol: 0.1 });
+    a.noise({ dur: 0.05, vol: 0.08, type: 'highpass', freq: 4000, at: 0.1 });
+  },
+  vapor: (a) => {
+    a.noise({ dur: 0.45, vol: 0.18, type: 'lowpass', freq: 1800, freq1: 400, attack: 0.04 });
+    a.tone({ wave: 'sine', f0: 220, f1: 160, dur: 0.3, vol: 0.05 });
+  },
+  servo: (a) => a.noise({ dur: 0.08, vol: 0.05, type: 'bandpass', freq: 2200, q: 6 }),
+  stun: (a) => {
+    a.tone({ wave: 'pulse12', f0: 1800, f1: 300, dur: 0.18, vol: 0.12 });
+    a.noise({ dur: 0.1, vol: 0.12, type: 'highpass', freq: 3000 });
+  },
+  laserOn: (a) => a.tone({ wave: 'sawtooth', f0: 90, f1: 120, dur: 0.12, vol: 0.05 }),
+  vacuumBump: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(84), dur: 0.08, vol: 0.12 });
+    a.tone({ wave: 'pulse25', f0: N(79), dur: 0.12, vol: 0.12, at: 0.09 });
+  },
+  // --- Escudo Firewall ---
+  shieldOn: (a) => {
+    a.tone({ wave: 'triangle', f0: 180, f1: 420, dur: 0.16, vol: 0.14 });
+    a.tone({ wave: 'pulse12', f0: 900, f1: 1300, dur: 0.1, vol: 0.06, at: 0.03 });
+  },
+  shieldBlock: (a) => {
+    a.tone({ wave: 'triangle', f0: 520, f1: 380, dur: 0.1, vol: 0.16 });
+    a.noise({ dur: 0.05, vol: 0.12, type: 'bandpass', freq: 3200, q: 2 });
+  },
+  parry: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(91), dur: 0.05, vol: 0.18 });
+    a.tone({ wave: 'triangle', f0: N(98), f1: N(103), dur: 0.25, vol: 0.18, at: 0.03 });
+    a.noise({ dur: 0.12, vol: 0.15, type: 'highpass', freq: 5000 });
+  },
+  // --- DEADLINE ---
+  tick: (a) => a.noise({ dur: 0.02, vol: 0.22, type: 'bandpass', freq: 3200, q: 8 }),
+  tock: (a) => a.noise({ dur: 0.025, vol: 0.2, type: 'bandpass', freq: 1900, q: 8 }),
+  envelope: (a) => a.noise({ dur: 0.06, vol: 0.1, type: 'bandpass', freq: a.vary(2600), q: 2 }),
+  notif: (a) => {
+    a.tone({ wave: 'sine', f0: N(84), dur: 0.08, vol: 0.14 });
+    a.tone({ wave: 'sine', f0: N(91), dur: 0.12, vol: 0.12, at: 0.08 });
+  },
+  freeze: (a) => {
+    a.tone({ wave: 'triangle', f0: 1400, f1: 300, dur: 0.5, vol: 0.14 });
+    a.noise({ dur: 0.4, vol: 0.1, type: 'highpass', freq: 6000, freq1: 2000 });
+  },
+  expired: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 220, f1: 110, dur: 0.6, vol: 0.14 });
+    for (let i = 0; i < 3; i++) a.tone({ wave: 'pulse50', f0: 880, dur: 0.08, vol: 0.1, at: i * 0.15 });
+  },
+  clockBreak: (a) => {
+    a.noise({ dur: 0.7, vol: 0.3, type: 'lowpass', freq: 5000, freq1: 300 });
+    for (let i = 0; i < 6; i++) a.tone({ wave: 'triangle', f0: 1200 + i * 300, f1: 500, dur: 0.15, vol: 0.06, at: i * 0.08 });
+  },
+  turretShot: (a) => a.tone({ wave: 'pulse25', f0: 700, f1: 400, dur: 0.08, vol: 0.1 }),
 });
 
 export function playSfx(audio, name) {
