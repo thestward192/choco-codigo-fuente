@@ -34,6 +34,7 @@ export function defaultOptions() {
     intenseGlitch: true,
     textSpeed: 'normal', // 'slow' | 'normal' | 'instant'
     keys: null, // null = controles por defecto
+    devMode: false, // modo desarrolladora: todos los mapas abiertos y vidas infinitas
   };
 }
 

@@ -21,9 +21,23 @@ export function isCompleted(d, id) {
 }
 
 // El prólogo siempre está disponible; cada nivel, si el anterior (o el prólogo) está completo.
-export function isUnlocked(d, id) {
-  if (id <= 0) return true;
+// Con el modo desarrolladora (devMode) todos están abiertos.
+export function isUnlocked(d, id, devMode = false) {
+  if (id <= 0 || devMode) return true;
   return isCompleted(d, id - 1);
+}
+
+// Modo desarrolladora: lo mínimo que Choco tendría al llegar al nivel `id` jugando en orden
+// (objetos y cuadritos de los niveles anteriores), sumado a lo que ya tiene la partida.
+export function devLoadout(lo, id) {
+  let founders = 0;
+  for (const l of LEVELS) {
+    if (l.id >= id) continue;
+    if (l.item && l.item in lo.items) lo.items[l.item] = true;
+    if (l.founder) founders++;
+  }
+  lo.maxHp = Math.max(lo.maxHp, Math.min(HEALTH.MAX_POSSIBLE, HEALTH.START_MAX + founders));
+  return lo;
 }
 
 export function hasItem(d, item) {

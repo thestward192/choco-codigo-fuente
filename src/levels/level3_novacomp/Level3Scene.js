@@ -701,7 +701,7 @@ export class Level3Scene extends TopdownLevel {
     this.particles.burst(c.footX, c.footY - 6, 30, { speedMin: 20, speedMax: 90, colors: ['#5C3521', '#83522F', '#B07A4A', '#F4F1EA'], gravity: 120, lifeMin: 0.4, lifeMax: 0.9, size: 2, endSize: 1 });
     this.hideChoco = true;
     this.stats.deaths++;
-    if (!this.game.debug?.infiniteLives) this.lives--;
+    if (!this.game.infiniteLives) this.lives--;
     const s = this;
     this.playCutscene(
       function* () {

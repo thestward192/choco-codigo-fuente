@@ -51,7 +51,7 @@ export class WorldMapScene extends Scene {
       playSfx(g.audio, 'menuMove');
     }
     if (inp.pressed('confirm')) {
-      if (!isUnlocked(this.data, this.levelId)) {
+      if (!isUnlocked(this.data, this.levelId, g.devMode)) {
         this.shake = 0.3;
         playSfx(g.audio, 'menuCancel');
         g.effects.glitch(0.15, 0.4);
@@ -79,7 +79,7 @@ export class WorldMapScene extends Scene {
     drawTerminalPanel(ctx, LIST.x, LIST.y, LIST.w, LIST.h, TEXTS.worldMap.path);
     MAP_LEVELS.forEach((id, i) => {
       const level = levelById(id);
-      const unlocked = isUnlocked(this.data, id);
+      const unlocked = isUnlocked(this.data, id, this.game.devMode);
       const done = isCompleted(this.data, id);
       const active = i === this.sel;
       const y = LIST.y + 20 + i * 19;
@@ -120,6 +120,7 @@ export class WorldMapScene extends Scene {
       ctx.drawImage(founderSprite(f, frame).normal, LIST.x + 62 + i * 18, by + 2);
     });
 
+    if (this.game.devMode) drawText(ctx, TEXTS.worldMap.devMode, LIST.x + LIST.w - 6, by + 13, { align: 'right', color: UI.magenta });
     this.drawInfo(ctx);
     drawText(ctx, TEXTS.worldMap.hint, SCREEN.W / 2, SCREEN.H - 12, { align: 'center', color: UI.textDim });
   }
@@ -127,7 +128,7 @@ export class WorldMapScene extends Scene {
   drawInfo(ctx) {
     const id = this.levelId;
     const level = levelById(id);
-    const unlocked = isUnlocked(this.data, id);
+    const unlocked = isUnlocked(this.data, id, this.game.devMode);
     drawTerminalPanel(ctx, INFO.x, INFO.y, INFO.w, INFO.h, `preview ${String(id).padStart(2, '0')}`);
     const px = INFO.x + 5;
     const py = INFO.y + 16;

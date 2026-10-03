@@ -23,7 +23,7 @@ import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
 import { playSfx } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
-import { hasItem, maxHpFor, goldenFor, setCheckpoint } from '../game/progress.js';
+import { hasItem, maxHpFor, goldenFor, setCheckpoint, devLoadout } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
 import { ItemGetScene } from '../scenes/ItemGetScene.js';
 import { fxRng } from '../core/rng.js';
@@ -78,7 +78,8 @@ export class PlatformLevel extends Scene {
     const d = this.session?.data;
     const items = { staff: true, boots: false, laptop: false, shield: false, lasso: false };
     if (d) for (const k of Object.keys(items)) if (k !== 'staff') items[k] = hasItem(d, k);
-    return { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX };
+    const lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX };
+    return this.game.devMode && this.levelId !== null ? devLoadout(lo, this.levelId) : lo;
   }
 
   // ---------- Construcción ----------
@@ -246,7 +247,7 @@ export class PlatformLevel extends Scene {
 
   // Reaparece en el checkpoint. costLife: false al reiniciar desde la pausa.
   respawn(costLife = true) {
-    if (costLife && !this.game.debug?.infiniteLives) this.lives--;
+    if (costLife && !this.game.infiniteLives) this.lives--;
     if (this.lives <= 0) {
       this.game.flow.gameOver(this.game, this.levelId, { ...this.stats });
       return;
@@ -455,7 +456,7 @@ export class PlatformLevel extends Scene {
     // Respawn tras derretirse
     if (this.pendingRespawn && c.meltDone && !g.transitioning) {
       this.pendingRespawn = false;
-      if (this.lives <= 1 && !g.debug?.infiniteLives) {
+      if (this.lives <= 1 && !g.infiniteLives) {
         this.lives = 0;
         this.game.flow.gameOver(g, this.levelId, { ...this.stats });
         return;

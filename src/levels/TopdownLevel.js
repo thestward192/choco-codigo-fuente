@@ -13,7 +13,7 @@ import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
 import { playSfx } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
-import { hasItem, maxHpFor, goldenFor } from '../game/progress.js';
+import { hasItem, maxHpFor, goldenFor, devLoadout } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
 import { damp } from '../core/tween.js';
 import { fxRng } from '../core/rng.js';
@@ -63,7 +63,8 @@ export class TopdownLevel extends Scene {
     const items = { staff: true, boots: !d, laptop: false, shield: false, lasso: false };
     if (d) for (const k of Object.keys(items)) if (k !== 'staff') items[k] = hasItem(d, k);
     // Sin partida (atajo de desarrollo): con las Botas y el cuadrito de Óscar
-    return { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX + 1 };
+    const lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX + 1 };
+    return this.game.devMode && this.levelId !== null ? devLoadout(lo, this.levelId) : lo;
   }
 
   setMap(map) {

@@ -719,7 +719,7 @@ export class Level2Scene extends TopdownLevel {
   // Sin energía: pierde una vida y vuelve a la última terminal con energía llena
   loseLife({ boss = false } = {}) {
     this.stats.deaths++;
-    if (!this.game.debug?.infiniteLives) this.lives--;
+    if (!this.game.infiniteLives) this.lives--;
     if (this.lives <= 0) {
       this.game.flow.gameOver(this.game, this.levelId, { ...this.stats });
       return;

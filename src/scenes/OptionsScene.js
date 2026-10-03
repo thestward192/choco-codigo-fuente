@@ -69,10 +69,11 @@ export class OptionsScene extends Scene {
         { id: 'shake', label: T.shake, ...toggle('screenShake') },
         { id: 'glitch', label: T.glitch, ...toggle('intenseGlitch') },
         { id: 'textSpeed', label: T.textSpeed, ...cycle(SPEEDS, 'textSpeed', (v) => T.speeds[v]) },
+        { id: 'devMode', label: T.devMode, ...toggle('devMode', () => {}) },
         { id: 'controls', label: T.controls },
         { id: 'back', label: T.back },
       ],
-      { x: PANEL.x + 18, y: PANEL.y + 20, spacing: 11, width: PANEL.w - 30 },
+      { x: PANEL.x + 18, y: PANEL.y + 19, spacing: 10, width: PANEL.w - 30 },
     );
     this.previewT = 0;
   }
@@ -102,6 +103,7 @@ export class OptionsScene extends Scene {
     drawTerminalPanel(ctx, PANEL.x, PANEL.y + Math.round((PANEL.h - h) / 2), PANEL.w, h, open >= 1 ? `~/.chocorc · ${T.title}` : '');
     if (open < 1) return;
     this.menu.draw(ctx);
+    if (this.game.devMode) drawText(ctx, T.devModeOn, SCREEN.W / 2, PANEL.y + PANEL.h - 9, { align: 'center', color: UI.magenta, shadow: false });
     drawText(ctx, T.hint, SCREEN.W / 2, SCREEN.H - 7, { align: 'center', color: UI.textDim, shadow: false });
   }
 }

@@ -12,9 +12,27 @@ import {
   formatTime,
   isCompleted,
   clearCheckpoint,
+  devLoadout,
 } from '../src/game/progress.js';
 
 describe('Progreso de la partida', () => {
+  it('modo desarrolladora: todos los niveles abiertos sin tocar la partida', () => {
+    const d = newGameData();
+    for (const id of [1, 2, 3, 4, 5]) expect(isUnlocked(d, id, true)).toBe(true);
+    expect(isUnlocked(d, 3)).toBe(false);
+    expect(d.levelsCompleted).toEqual([0]);
+  });
+
+  it('modo desarrolladora: objetos y cuadritos de los niveles anteriores', () => {
+    const base = () => ({ items: { staff: true, boots: false, laptop: false, shield: false, lasso: false }, maxHp: 1 });
+    expect(devLoadout(base(), 1)).toEqual({ items: { staff: true, boots: false, laptop: false, shield: false, lasso: false }, maxHp: 1 });
+    expect(devLoadout(base(), 4)).toEqual({ items: { staff: true, boots: true, laptop: true, shield: true, lasso: false }, maxHp: 4 });
+    expect(devLoadout(base(), 5).items.lasso).toBe(true);
+    expect(devLoadout(base(), 5).maxHp).toBe(5);
+    // No quita lo que la partida ya tiene
+    expect(devLoadout({ items: { staff: true, boots: true, laptop: true, shield: false, lasso: false }, maxHp: 3 }, 2).maxHp).toBe(3);
+  });
+
   it('partida nueva: con el Báculo y el nivel 1 disponible (prólogo pendiente del Hito 3)', () => {
     const d = newGameData();
     expect(d.items).toEqual(['staff']);

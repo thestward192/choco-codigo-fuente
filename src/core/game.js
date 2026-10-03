@@ -60,6 +60,15 @@ export class Game {
     if (o.keys) this.input.setBindings(o.keys);
   }
 
+  // Modo desarrolladora (Opciones): abre todos los mapas y no se gastan vidas.
+  get devMode() {
+    return !!this.options.devMode;
+  }
+
+  get infiniteLives() {
+    return this.devMode || !!this.debug?.infiniteLives;
+  }
+
   saveOptions() {
     this.save.saveOptions(this.options);
     this.applyOptions();

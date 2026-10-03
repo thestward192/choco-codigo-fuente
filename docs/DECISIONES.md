@@ -330,3 +330,12 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - Atajos: `?scene=level4`, `?scene=plaza`, `?scene=redondel`, `?scene=ruinas` (abajo de la escalada), `?scene=torito` y `?scene=lazo`. También están en `?scene=dev`.
 - Sin partida, el nivel 4 empieza con Botas, Laptop, Escudo y 4 cuadritos.
 - F10 en el nivel 4: Choco recibe la rosquilla perfecta, para probar el final de la misión.
+
+## Modo desarrolladora (Opciones)
+
+- Pedido por Stward para probar todo sin jugar en orden. Está en **Opciones → Modo desarrolladora** (Sí/No), se guarda con las opciones (no con la partida) y funciona también en el build de producción.
+- **Mapas abiertos:** todos los recuerdos del mapa se pueden jugar. No se marca nada como completado: al apagarlo, el mapa vuelve a mostrar el progreso real.
+- **Vidas infinitas** en todos los niveles: morir no gasta vidas y nunca hay Game Over (lo mismo que F9 en `?debug=1`).
+- **Equipo mínimo:** al entrar a un nivel, Choco tiene como mínimo los objetos y cuadritos de los niveles anteriores (por ejemplo, el nivel 4 empieza con Botas, Laptop, Escudo y 4 cuadritos), para que el nivel se pueda jugar como fue diseñado. No se guardan en la partida.
+- Completar un nivel en este modo sí cuenta normalmente (récord, Y doradas, fundador y objeto).
+- El mapa muestra "MODO DEV" mientras está activo.
