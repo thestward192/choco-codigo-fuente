@@ -308,6 +308,7 @@ export class Level3Scene extends TopdownLevel {
   }
 
   setCheckpoint(id) {
+    if (this.checkpointOff(id)) return;
     const st = this.state;
     st.checkpoint = id;
     st.bits = this.bits;

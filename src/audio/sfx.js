@@ -473,6 +473,68 @@ Object.assign(SFX, {
     a.tone({ wave: 'triangle', f0: 200, f1: 900, dur: 0.7, vol: 0.14, vibrato: 10 });
     a.noise({ dur: 0.6, vol: 0.08, type: 'bandpass', freq: 3000, q: 3 });
   },
+
+  // --- Nivel 5 · El Código Puro ---
+  turretCharge: (a) => a.tone({ wave: 'pulse12', f0: 400, f1: 1300, dur: 0.45, vol: 0.06, curve: 'lin' }),
+  exception: (a) => {
+    a.tone({ wave: 'pulse25', f0: a.vary(980), f1: 520, dur: 0.09, vol: 0.11 });
+    a.noise({ dur: 0.04, vol: 0.06, type: 'highpass', freq: 4000 });
+  },
+  fragmentAim: (a) => a.tone({ wave: 'pulse12', f0: N(88), f1: N(95), dur: 0.12, vol: 0.06 }),
+  segment: (a) => [0, 0.08, 0.16].forEach((t) => a.tone({ wave: 'pulse12', f0: a.vary(1600), f1: 600, dur: 0.05, vol: 0.06, at: t })),
+  firewallPass: (a) => a.noise({ dur: 0.08, vol: 0.07, type: 'bandpass', freq: a.vary(2600), q: 2 }),
+  firewallBurn: (a) => {
+    a.noise({ dur: 0.25, vol: 0.2, type: 'highpass', freq: 1800, freq1: 5000 });
+    a.tone({ wave: 'sawtooth', f0: 300, f1: 120, dur: 0.2, vol: 0.08 });
+  },
+  nullWindup: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(64), f1: N(76), dur: 0.5, vol: 0.1, curve: 'lin' });
+    a.tone({ wave: 'pulse12', f0: N(65), f1: N(77), dur: 0.5, vol: 0.06, curve: 'lin' });
+  },
+  nullSlam: (a) => {
+    a.tone({ wave: 'triangle', f0: 140, f1: 38, dur: 0.35, vol: 0.32 });
+    a.noise({ dur: 0.3, vol: 0.25, type: 'lowpass', freq: 1400, freq1: 150 });
+  },
+  wave: (a) => a.noise({ dur: 0.3, vol: 0.12, type: 'bandpass', freq: a.vary(700), freq1: 300, q: 1.5 }),
+  waveHigh: (a) => a.tone({ wave: 'pulse25', f0: N(83), f1: N(71), dur: 0.25, vol: 0.1 }),
+  pillarWarn: (a) => a.tone({ wave: 'pulse12', f0: N(84), dur: 0.06, vol: 0.08 }),
+  pillarUp: (a) => {
+    a.noise({ dur: 0.2, vol: 0.2, type: 'lowpass', freq: 2500, freq1: 400 });
+    a.tone({ wave: 'pulse25', f0: 160, f1: 520, dur: 0.12, vol: 0.12 });
+  },
+  nullOpen: (a) => [N(76), N(71), N(77)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.08, vol: 0.09, at: i * 0.07 })),
+  bulletEmit: (a) => a.tone({ wave: 'pulse12', f0: a.vary(1200), f1: 700, dur: 0.05, vol: 0.06 }),
+  shuffle: (a) => [0, 0.06, 0.12, 0.18].forEach((t, i) => a.tone({ wave: 'pulse25', f0: N(72 + ((i * 5) % 12)), dur: 0.05, vol: 0.08, at: t })),
+  fakeBurst: (a) => {
+    a.noise({ dur: 0.3, vol: 0.2, type: 'bandpass', freq: 2000, freq1: 600, q: 1 });
+    a.tone({ wave: 'pulse25', f0: N(77), f1: N(64), dur: 0.25, vol: 0.1 });
+  },
+  laserWarn: (a) => a.tone({ wave: 'sine', f0: 1800, f1: 2400, dur: 0.7, vol: 0.06, curve: 'lin' }),
+  laserSweep: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 220, f1: 180, dur: 1.1, vol: 0.1, vibrato: 30 });
+    a.noise({ dur: 1, vol: 0.06, type: 'bandpass', freq: 3000, q: 2 });
+  },
+  nullYank: (a) => {
+    a.tone({ wave: 'pulse50', f0: 600, f1: 180, dur: 0.25, vol: 0.14 });
+    a.noise({ dur: 0.15, vol: 0.12, type: 'lowpass', freq: 1500 });
+  },
+  nullRecover: (a) => a.tone({ wave: 'pulse25', f0: 200, f1: 500, dur: 0.3, vol: 0.08 }),
+  nullPulse: (a) => {
+    a.tone({ wave: 'sawtooth', f0: 90, f1: 40, dur: 0.8, vol: 0.2, vibrato: 12 });
+    a.noise({ dur: 0.7, vol: 0.2, type: 'lowpass', freq: 3000, freq1: 200 });
+  },
+  overflowHit: (a) => {
+    a.noise({ dur: 0.4, vol: 0.2, type: 'bandpass', freq: 900, freq1: 300, q: 1 });
+    a.tone({ wave: 'pulse25', f0: N(60), f1: N(48), dur: 0.3, vol: 0.12 });
+  },
+  overflowRumble: (a) => a.noise({ dur: 0.6, vol: 0.05, type: 'lowpass', freq: 300 }),
+  echo: (a) => [N(79), N(84), N(88)].forEach((f, i) => a.tone({ wave: 'sine', f0: f, dur: 0.3, vol: 0.06, at: i * 0.09 })),
+  collapse: (a) => {
+    a.noise({ dur: 1.4, vol: 0.25, type: 'lowpass', freq: 2500, freq1: 100 });
+    for (let i = 0; i < 6; i++) a.tone({ wave: 'pulse12', f0: 1400 - i * 180, dur: 0.06, vol: 0.05, at: i * 0.15 });
+  },
+  sparkle: (a) => [N(88), N(91), N(96)].forEach((f, i) => a.tone({ wave: 'triangle', f0: f, dur: 0.12, vol: 0.06, at: i * 0.06 })),
+  cry: (a) => [0, 0.2, 0.4].forEach((t) => a.tone({ wave: 'triangle', f0: N(79), f1: N(74), dur: 0.16, vol: 0.06, at: t })),
 });
 
 export function playSfx(audio, name) {

@@ -11,13 +11,16 @@ import { chocoFrame, ANIMS, FRAME_W, FRAME_H } from '../art/choco.js';
 import { FOUNDERS } from '../data/levels.js';
 import { SONG_TITULO } from '../audio/songs/titulo.js';
 import { Flow } from '../game/flow.js';
+import { ExtraScene } from './ExtraScene.js';
 
 const C = TEXTS.credits;
 const SPEED = 14; // px/s
 
 export class CreditsScene extends Scene {
-  constructor(game) {
+  // opts: { extra } → después de los créditos, la escena extra (15 Y doradas)
+  constructor(game, { extra = false } = {}) {
     super(game);
+    this.extra = extra;
     this.t = 0;
     this.scroll = 0;
     this.leaving = false;
@@ -58,7 +61,8 @@ export class CreditsScene extends Scene {
     if (this.leaving || this.game.transitioning) return;
     if (this.holdT >= 3 || inp.pressed('cancel')) {
       this.leaving = true;
-      Flow.toTitle(this.game);
+      if (this.extra) this.game.changeScene(() => new ExtraScene(this.game), { type: 'fade', duration: 0.8 });
+      else Flow.toTitle(this.game);
     }
   }
 

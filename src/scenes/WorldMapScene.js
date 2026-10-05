@@ -27,11 +27,15 @@ export class WorldMapScene extends Scene {
   constructor(game, focus = null) {
     super(game);
     this.t = 0;
-    this.data = game.session.data;
     const f = MAP_LEVELS.indexOf(focus);
     this.sel = f >= 0 ? f : 0;
     this.shake = 0;
     this.selT = 0;
+  }
+
+  // Siempre los datos actuales de la partida (el menú del mapa puede cambiarlos)
+  get data() {
+    return this.game.session.data;
   }
 
   get levelId() {
@@ -114,13 +118,14 @@ export class WorldMapScene extends Scene {
     // ---- Barra de Choco y fundadores rescatados ----
     const by = LIST.y + LIST.h + 6;
     drawTerminalPanel(ctx, LIST.x, by, LIST.w, 26, '');
-    drawMiniBar(ctx, LIST.x + 6, by + 14, maxHpFor(this.data), 8);
+    drawMiniBar(ctx, LIST.x + 6, by + 14, this.game.hotfix ? 1 : maxHpFor(this.data), 8);
     this.data.founders.forEach((f, i) => {
       const frame = 2 + (Math.floor(this.t * 6 + i) % 4);
       ctx.drawImage(founderSprite(f, frame).normal, LIST.x + 62 + i * 18, by + 2);
     });
 
     if (this.game.devMode) drawText(ctx, TEXTS.worldMap.devMode, LIST.x + LIST.w - 6, by + 13, { align: 'right', color: UI.magenta });
+    else if (this.game.hotfix) drawText(ctx, TEXTS.worldMap.hotfixTag, LIST.x + LIST.w - 6, by + 13, { align: 'right', color: UI.magenta });
     this.drawInfo(ctx);
     drawText(ctx, TEXTS.worldMap.hint, SCREEN.W / 2, SCREEN.H - 12, { align: 'center', color: UI.textDim });
   }

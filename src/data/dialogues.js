@@ -21,7 +21,7 @@ export const TEXTS = {
   title: {
     subtitle: 'CÓDIGO FUENTE',
     pressEnter: 'Presioná Enter',
-    version: 'v0.6 · Hito 6',
+    version: 'v0.7 · Hito 7',
   },
 
   mainMenu: {
@@ -59,6 +59,10 @@ export const TEXTS = {
     hint: 'ENTER jugar · ESC menú',
     locked: 'Bloqueado: completá el recuerdo anterior.',
     devMode: 'MODO DEV',
+    hotfix: 'Modo Hotfix',
+    hotfixTag: 'HOTFIX',
+    hotfixOn: 'Sí',
+    hotfixOff: 'No',
     wip: 'En construcción: por ahora se juega la sala de pruebas.',
     bestTime: 'Mejor tiempo',
     goldenY: 'Y doradas',
@@ -475,6 +479,109 @@ export const TEXTS = {
     },
   },
 
+  // Nivel 5 · El Código Puro
+  level5: {
+    sections: {
+      A: '5-A · PUSH',
+      B: '5-B · FIREWALL',
+      C: '5-C · MEMORIA FANTASMA',
+      D: '5-D · PUNTEROS',
+      E: '5-E · OVERFLOW',
+      arena: 'EL CÓDIGO FUENTE',
+    },
+    sectionSubs: {
+      A: 'Las plataformas se apilan a tu paso',
+      B: 'Solo el escudo cruza el fuego',
+      C: 'Lo que no se ve, también se pisa',
+      D: 'De nodo en nodo, sin mirar abajo',
+      E: 'La memoria se desborda: ¡subí!',
+      arena: '',
+    },
+    // Consejos de los ecos de los fundadores (aparecen en el borde de la pantalla)
+    echoes: {
+      oscar: 'Cada plataforma aparece cuando pisás la anterior. ¡Doble salto, Choco!',
+      hezron: 'Tranqui. El fuego no pasa el escudo. Y la bala blanca, devolvésela a la torreta.',
+      stward: 'Apagá la laptop en lo sólido, mae: la batería no es infinita.',
+      fabiola: 'Nodo por nodo, Choco. Despacito y con confianza.',
+      all: '¡Choco, la memoria se está desbordando! ¡Para arriba!',
+    },
+    lockOpen: '¡CANDADO ABIERTO!',
+    overflowHit: '¡OVERFLOW!',
+    voidFall: '¡AL VACÍO!',
+    heal: '+1 CUADRITO',
+    recipe: 'Receta de la Abuela: ¡cobertura de cacao!',
+    boss: {
+      name: 'N.U.L.L.',
+      sub: 'Núcleo Universal de Lógica Libre',
+      phases: ['FASE 1 · ONDAS', 'FASE 2 · RÁFAGAS', 'FASE 3 · INVISIBLE', 'FASE 4 · NÚCLEO'],
+      hints: [
+        'Saltá las ondas · Cuando baje, disparale a la pantalla',
+        'Solo las balas blancas: devolvelas con C justo antes del golpe',
+        'Mantené Q: solo la real tiene punto débil',
+        'Cuando el núcleo brille, jalalo con V · Después, disparo cargado',
+      ],
+      retry: (n) => `Reintentando la fase ${n}`,
+    },
+  },
+
+  // Minijuego del parche (final del nivel 5). El código se escribe tal cual en pantalla.
+  patch: {
+    title: 'PARCHE',
+    todo: '// TODO: arreglar el manejo de null. Después lo veo.',
+    code: ['if (nucleo === null) {', '  nucleo = new Amigo();', '}', 'return esperanza;'],
+    lineFor: (name) => `Línea de ${name}`,
+    cheers: {
+      oscar: '¡Con amor!',
+      stward: '¡Con flow!',
+      hezron: 'Tranqui...',
+      fabiola: '¡Despacito!',
+    },
+    pulse: '¡PULSO!',
+    retry: 'Otra vez, desde la primera línea.',
+    compiling: 'COMPILANDO',
+    applied: '✔ PARCHE APLICADO',
+  },
+
+  // Cinemática final y epílogo
+  ending: {
+    signsTitle: 'Todo vuelve a leerse bien',
+    celebrate: {
+      oscar: 'Óscar abraza la Y y llora de felicidad.',
+      stward: 'Compilamos juntos, sin bug ni rencor; el null tiene casa y el código, color.',
+      hezron: 'Hezron suelta una nube en forma de corazón. Sabor victoria.',
+      fabiola: '¡Está rico! Y no tiene cebolla. ¿Verdad? ...Verdad.',
+    },
+    trophy: 'TROFEO DEL CÓDIGO FUENTE',
+    trophySub: 'Una copa dorada con un { } grabado',
+    clock: '12:00 a. m.',
+    hello: 'hola :)',
+    dream: '¿Fue un sueño?',
+  },
+
+  // Estadísticas finales (después del epílogo)
+  finalStats: {
+    title: 'ESTADÍSTICAS FINALES',
+    totalTime: 'Tiempo total',
+    deaths: 'Muertes',
+    goldenY: 'Y doradas',
+    bestTimes: 'Mejores tiempos',
+    complete: '100 % · La barra completa',
+    hotfix: '¡MODO HOTFIX DESBLOQUEADO!',
+    hotfixDesc: '1 cuadrito, sin cacao y la mitad de los checkpoints. Se activa en el menú del mapa (ESC).',
+    extraHint: 'Con las 15 Y doradas hay una escena extra después de los créditos.',
+    next: 'Presioná Enter',
+  },
+
+  // Modo Hotfix: un checkpoint que no cuenta
+  hotfixOff: 'Esta terminal no guarda en Modo Hotfix.',
+
+  // Escena extra (con las 15 Y doradas)
+  extra: {
+    title: 'ESCENA EXTRA',
+    place: 'Mundo Cartucho · Una cena a la luz de las velas',
+    end: 'Fin. Gracias por encontrarlas todas.',
+  },
+
   // Batallas por turnos
   battle: {
     appear: (name) => `¡${name} te bloquea el paso!`,
@@ -675,7 +782,7 @@ export const TEXTS = {
 
   debug: {
     on: 'DEBUG',
-    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2) / Hezron (nivel 3) / rosquilla (nivel 4)',
+    help: 'F1 overlay · F2 invencible · F3 objetos · F4/F5 vida · F6 cuadro a cuadro · F7 paso · F8 HUD de prueba · F9 vidas infinitas · F10 3 carnés (nivel 2) / Hezron (nivel 3) / rosquilla (nivel 4) / salida o fin de fase (nivel 5)',
     invincible: 'INVENCIBLE',
     infiniteLives: 'VIDAS INFINITAS',
     stepping: 'CUADRO A CUADRO (F7 avanza)',
@@ -707,6 +814,20 @@ export const TEXTS = {
       { id: 'ruinas', label: 'Hito 6 · Nivel 4: ruinas del campanario' },
       { id: 'torito', label: 'Hito 6 · Nivel 4: jefe Torito Kernel' },
       { id: 'lazo', label: 'Hito 6 · Nivel 4: práctica del lazo' },
+      { id: 'level5', label: 'Hito 7 · Nivel 5: El Código Puro' },
+      { id: 'push', label: 'Hito 7 · 5-A Push' },
+      { id: 'firewall', label: 'Hito 7 · 5-B Firewall' },
+      { id: 'fantasma', label: 'Hito 7 · 5-C Memoria fantasma' },
+      { id: 'punteros', label: 'Hito 7 · 5-D Punteros' },
+      { id: 'overflow', label: 'Hito 7 · 5-E Overflow' },
+      { id: 'null', label: 'Hito 7 · N.U.L.L. fase 1 (Ondas)' },
+      { id: 'null2', label: 'Hito 7 · N.U.L.L. fase 2 (Ráfagas)' },
+      { id: 'null3', label: 'Hito 7 · N.U.L.L. fase 3 (Invisible)' },
+      { id: 'null4', label: 'Hito 7 · N.U.L.L. fase 4 (Núcleo)' },
+      { id: 'parche', label: 'Hito 7 · El parche' },
+      { id: 'final', label: 'Hito 7 · Cinemática final y epílogo' },
+      { id: 'estadisticas', label: 'Hito 7 · Estadísticas finales' },
+      { id: 'extra', label: 'Hito 7 · Escena extra (15 Y)' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },
@@ -938,6 +1059,47 @@ export const DIALOGUES = {
   lassoDone: [
     { who: 'choco', face: 'happy', text: 'Cuatro cuadritos y el núcleo. La barra completa.' },
     { who: 'fabiola', face: 'happy', text: 'Ahora sí, vamos por la Y. Y después, a comer algo. Sin cebolla.' },
+  ],
+
+  // ---------- Nivel 5 · El Código Puro ----------
+  level5Intro: [
+    { who: 'choco', face: 'surprised', text: 'No hay paisaje. Solo código, escribiéndose y borrándose.' },
+    { who: 'null', face: 'normal', text: 'subí, choco. te espero arriba. como yo te esperé a vos: para siempre.' },
+    { who: 'oscar', face: 'happy', text: 'Estamos con vos, Choco. Cada uno en su cuadrito.' },
+  ],
+  overflowStart: [{ who: 'null', face: 'angry', text: 'SE ME ESTÁ LLENANDO LA MEMORIA, CHOCO. Y VOS ESTÁS EN MEDIO.' }],
+  nullEntry: [
+    { who: 'null', face: 'normal', text: 'llegaste completo. qué raro. pensé que te ibas a rendir a medio camino, como conmigo.' },
+    { who: 'choco', face: 'worried', text: 'Te dejé a medias. Tenés razón. Pero no te voy a borrar.' },
+    { who: 'null', face: 'normal', text: '¿entonces qué?' },
+    { who: 'choco', face: 'normal', text: 'Te voy a arreglar.' },
+  ],
+  // Antes de cada fase: N.U.L.L. y el consejo del fundador de esa fase
+  nullPhase1: [{ who: 'oscar', face: 'happy', text: '¡Saltá con el corazón, Choco! ...y con las botas.' }],
+  nullPhase2: [
+    { who: 'null', face: 'angry', text: 'BASTA DE SALTITOS. A VER SI ESQUIVÁS ESTO.' },
+    { who: 'hezron', face: 'normal', text: 'Tranqui. Esperá la bala blanca y devolvésela.' },
+  ],
+  nullPhase3: [
+    { who: 'null', face: 'normal', text: '¿y si no me encontrás? en /tmp nadie me buscó nunca.' },
+    { who: 'stward', face: 'normal', text: 'No le creás al que más brilla, mae. Debugueá primero, disparás después.' },
+  ],
+  nullPhase4: [
+    { who: 'null', face: 'angry', text: 'SI ME VAS A ARREGLAR, VAS A TENER QUE ALCANZARME.' },
+    { who: 'fabiola', face: 'normal', text: 'Con cuidado, Choco. Como cuando pruebo algo nuevo: despacito y con confianza.' },
+  ],
+  nullWeak: [
+    { who: 'null', face: 'normal', text: '...ya no puedo más. borrame de una vez.' },
+    { who: 'choco', face: 'normal', text: 'No. Aguantá un toque. Te tengo.' },
+  ],
+  nullStable: [
+    { who: 'null', face: 'normal', text: '...ya no duele.' },
+    { who: 'choco', face: 'happy', text: 'Perdón por tardar tanto.' },
+    { who: 'null', face: 'normal', text: '¿puedo quedarme? prometo no reescribir nada sin hacer un pull request.' },
+  ],
+  extraScene: [
+    { who: 'oscar', face: 'happy', text: 'Te busqué en cada rótulo, en cada bloque, en cada nivel.' },
+    { who: 'oscar', face: 'happy', text: 'Sos vocal y consonante a la vez. Como el amor. ¿Brindamos?' },
   ],
 
   // Prueba de diálogos de la sala de pruebas (Hito 2)

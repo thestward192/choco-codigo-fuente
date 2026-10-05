@@ -21,6 +21,8 @@ import { Level1Scene } from '../levels/level1_cartucho/Level1Scene.js';
 import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
 import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
 import { Level4Scene } from '../levels/level4_santacruz/Level4Scene.js';
+import { Level5Scene } from '../levels/level5_codigo/Level5Scene.js';
+import { EndingScene } from '../scenes/EndingScene.js';
 
 export const Flow = {
   toTitle(game, { type = 'fade' } = {}) {
@@ -31,8 +33,8 @@ export const Flow = {
     game.changeScene(() => new MainMenuScene(game), { type: 'fade', duration: 0.2 });
   },
 
-  toCredits(game) {
-    game.changeScene(() => new CreditsScene(game), { type: 'fade' });
+  toCredits(game, opts = {}) {
+    game.changeScene(() => new CreditsScene(game, opts), { type: 'fade' });
   },
 
   // Crea una partida nueva en la ranura y arranca el prólogo.
@@ -71,6 +73,7 @@ export const Flow = {
     if (id === 2) return new Level2Scene(game);
     if (id === 3) return new Level3Scene(game);
     if (id === 4) return new Level4Scene(game);
+    if (id === 5) return new Level5Scene(game);
     // Los niveles que todavía no existen abren la sala de pruebas como reemplazo.
     return new TestRoomScene(game, { levelId: id });
   },
@@ -102,6 +105,11 @@ export const Flow = {
       result = completeLevel(s.data, id, stats);
       s.update(result.data);
     }
+    // El nivel 5 termina el juego: cinemática final, epílogo, estadísticas y créditos
+    if (id === 5) {
+      game.changeScene(() => new EndingScene(game, { stats, result }), { type: 'fade', color: '#FFFFFF', duration: 0.8 });
+      return;
+    }
     const toResults = () => game.changeScene(() => new ResultsScene(game, id, stats, result), { type: 'fade' });
     // Objeto obtenido la primera vez (en los niveles reales lo entrega el fundador dentro del nivel)
     if (result.rewards.item && !levelById(id)?.built) {
@@ -109,9 +117,13 @@ export const Flow = {
     } else toResults();
   },
 
-  gameOver(game, id, stats) {
+  // keepCheckpoint: en el jefe final, el Game Over vuelve al checkpoint de antes del jefe
+  gameOver(game, id, stats, { keepCheckpoint = false } = {}) {
     const s = game.session;
-    if (s) s.update(clearCheckpoint(recordAttempt(s.data, stats)));
+    if (s) {
+      const d = recordAttempt(s.data, stats);
+      s.update(keepCheckpoint ? d : clearCheckpoint(d));
+    }
     game.changeScene(() => new GameOverScene(game, id), { type: 'fade', color: '#000' });
   },
 

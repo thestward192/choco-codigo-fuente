@@ -2,7 +2,7 @@
 // recompensas, récords y conteos. La usan las escenas y las pruebas.
 import { defaultSlot } from '../core/save.js';
 import { LEVELS, FOUNDERS, levelById } from '../data/levels.js';
-import { HEALTH } from '../config/balance.js';
+import { HEALTH, HOTFIX } from '../config/balance.js';
 
 // Partida nueva. Con el prólogo construido, Choco empieza sin objetos (el Báculo se encuentra
 // en la Pantalla de Carga). Sin prólogo, se da por jugado: Báculo y nivel 1 disponible.
@@ -98,6 +98,17 @@ export function completeLevel(d, id, stats) {
   }
   if (id === 5) out.hotfixUnlocked = true;
   return { data: out, newRecord, firstTime, rewards };
+}
+
+// Modo Hotfix: ¿este checkpoint se apaga? (la mitad de cada nivel)
+export function hotfixSkips(levelId, cpId) {
+  return (HOTFIX.SKIP_CHECKPOINTS[levelId] || []).includes(cpId);
+}
+
+export function setHotfix(d, on) {
+  const out = structuredClone(d);
+  out.hotfix = !!on && !!out.hotfixUnlocked;
+  return out;
 }
 
 // Muertes y tiempo de un intento que no terminó (salir al mapa, game over)

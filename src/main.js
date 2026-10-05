@@ -34,7 +34,10 @@ async function start() {
   // 3 carnés, frente a MC Stack Overflow), ?scene=battle (batallas de prueba), ?scene=rap,
   // ?scene=level3 (Novacomp), ?scene=terraza (rescate de Hezron), ?scene=deadline (jefe),
   // ?scene=escudo (práctica del Escudo Firewall), ?scene=level4 (Santa Cruz), ?scene=plaza,
-  // ?scene=redondel, ?scene=ruinas, ?scene=torito (jefe), ?scene=lazo (práctica del lazo)
+  // ?scene=redondel, ?scene=ruinas, ?scene=torito (jefe), ?scene=lazo (práctica del lazo),
+  // ?scene=level5 (El Código Puro), ?scene=push, ?scene=firewall, ?scene=fantasma, ?scene=punteros,
+  // ?scene=overflow, ?scene=null (jefe final; null2, null3, null4 = fases), ?scene=parche,
+  // ?scene=final (cinemática final), ?scene=estadisticas, ?scene=extra (escena de las 15 Y)
   let next = () => new SplashScene(game);
   const direct = import.meta.env.DEV ? new URLSearchParams(location.search).get('scene') : null;
   if (direct === 'room') {
@@ -55,6 +58,15 @@ async function start() {
   } else if (['level4', 'plaza', 'redondel', 'ruinas', 'torito', 'lazo'].includes(direct)) {
     const { Level4Scene } = await import('./levels/level4_santacruz/Level4Scene.js');
     next = () => new Level4Scene(game, { start: direct === 'level4' ? null : direct });
+  } else if (['level5', 'push', 'firewall', 'fantasma', 'punteros', 'overflow', 'null', 'null2', 'null3', 'null4', 'parche'].includes(direct)) {
+    const { Level5Scene } = await import('./levels/level5_codigo/Level5Scene.js');
+    next = () => new Level5Scene(game, { start: direct === 'level5' ? null : direct });
+  } else if (direct === 'final' || direct === 'estadisticas') {
+    const mod = direct === 'final' ? await import('./scenes/EndingScene.js') : await import('./scenes/FinalStatsScene.js');
+    next = () => (direct === 'final' ? new mod.EndingScene(game) : new mod.FinalStatsScene(game));
+  } else if (direct === 'extra') {
+    const { ExtraScene } = await import('./scenes/ExtraScene.js');
+    next = () => new ExtraScene(game);
   } else if (direct === 'battle' || direct === 'rap') {
     const { DevBattleScene } = await import('./scenes/DevBattleScene.js');
     next = () => new DevBattleScene(game, direct);

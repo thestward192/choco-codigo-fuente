@@ -426,6 +426,12 @@ export class Level2Scene extends TopdownLevel {
   }
 
   useTerminal(id) {
+    // Modo Hotfix: esta terminal no guarda
+    if (this.checkpointOff(id)) {
+      playSfx(this.game.audio, 'denied');
+      this.showBanner(TEXTS.worldMap.hotfixTag, TEXTS.hotfixOff, null, 1.4);
+      return;
+    }
     const st = this.state;
     st.terminal = id;
     this.energy = this.maxEnergy;

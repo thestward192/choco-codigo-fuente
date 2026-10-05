@@ -69,6 +69,12 @@ export class Game {
     return this.devMode || !!this.debug?.infiniteLives;
   }
 
+  // Modo Hotfix (tras terminar el juego): 1 cuadrito fijo, sin cacao, la mitad de los checkpoints
+  get hotfix() {
+    const d = this.session?.data;
+    return !!(d && d.hotfixUnlocked && d.hotfix);
+  }
+
   saveOptions() {
     this.save.saveOptions(this.options);
     this.applyOptions();

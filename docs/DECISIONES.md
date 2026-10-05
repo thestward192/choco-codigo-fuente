@@ -339,3 +339,110 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Equipo mínimo:** al entrar a un nivel, Choco tiene como mínimo los objetos y cuadritos de los niveles anteriores (por ejemplo, el nivel 4 empieza con Botas, Laptop, Escudo y 4 cuadritos), para que el nivel se pueda jugar como fue diseñado. No se guardan en la partida.
 - Completar un nivel en este modo sí cuenta normalmente (récord, Y doradas, fundador y objeto).
 - El mapa muestra "MODO DEV" mientras está activo.
+
+## Hito 7 · Nivel 5 (El Código Puro) y final
+
+### El Stack
+
+- **Cinco secciones verticales separadas** (5-A Push, 5-B Firewall, 5-C Memoria fantasma, 5-D Punteros, 5-E Overflow), de una pantalla de ancho y en total unas 14 pantallas de alto. Cada una termina en una cornisa con la salida en la pared derecha; la siguiente empieza abajo.
+- **Checkpoints:** al inicio (5-A), al empezar 5-D (después de la sección 3) y en la cima del Overflow (antes del jefe).
+- **Push:** cada plataforma aparece deslizándose desde la pared cuando Choco pisa la anterior. Están a 4 filas una de otra: sin doble salto no se sube.
+- **Firewall:**
+  - Las capas de fuego cruzan todo el pozo. Sin escudo, el fuego empuja de vuelta por donde se vino y quita un cuadrito: no se puede atravesar aprovechando la invencibilidad. Con el escudo activo se pasa. De plataforma a plataforma hay 4 filas a través del fuego (un doble salto).
+  - Las torretas de Excepciones disparan balas reflejables. Solo su propia bala devuelta con parry las rompe, y al romperse abren su candado. El báculo rebota en ellas.
+- **Memoria fantasma:** tramos de 3 plataformas fantasma con descansos de un sentido en medio, para apagar la laptop y recargar.
+- **Punteros:** cornisas en paredes alternas con un pozo de 8 tiles en medio (no se salta) y un nodo del lazo encima de cada cruce. Caer al pozo no es muerte: se vuelve al piso de la sección.
+- **Excepciones** (5-D y 5-E): un aviso parpadea en el borde de la pantalla, del lado más lejano a Choco, y 0.8 s después cruza una bala recta a su altura.
+- **Overflow:**
+  - La masa sube a 12 px/s, 2.5 s después de entrar (la primera vez, después de que N.U.L.L. habla). Al llegar arriba deja de subir.
+  - Tocarla quita un cuadrito (el escudo no la bloquea) y devuelve a Choco al último suelo firme por encima de la masa. La masa baja 56 px para dar aire.
+  - Morir ahí vuelve al checkpoint del inicio de 5-D.
+- **Y doradas:**
+  - 5-B: un cubículo cerrado por el candado de la segunda torreta, debajo del fuego.
+  - 5-C: una cadena fantasma larga que gasta casi toda la batería.
+  - 5-E: arriba a la derecha, sobre Segmentos corruptos.
+- **Ecos de los fundadores:** al empezar cada sección aparece un eco de luz en el borde con un consejo corto: Óscar en Push, Hezron en Firewall, Stward en Memoria fantasma, Fabiola en Punteros y los cuatro en el Overflow.
+- **Receta de la Abuela:** cobertura de cacao al empezar el nivel y en cada reaparición (no en Modo Hotfix).
+
+### Lazo: jalar
+
+- El núcleo de N.U.L.L. es un objetivo "para jalar". Tiene prioridad sobre los nodos comunes cuando está al alcance.
+- Al llegar la punta al núcleo, Choco no se columpia: lo jala, sale con un saltito (−170) y recupera el doble salto.
+- **Al engancharse a un nodo**, el columpio ignora las plataformas de un sentido durante 0.2 s. Sin esto, engancharse estando todavía sobre una cornisa "aterrizaba" en ella al primer cuadro y soltaba.
+
+### N.U.L.L.
+
+- **Arena:**
+  - Una pantalla con suelo y 3 plataformas: dos laterales a media altura y una al centro, más alta.
+  - N.U.L.L. flota debajo de la barra del jefe. Los nodos solo se ven y se usan en la fase 4.
+  - **El monitor no hace daño por contacto**: lo peligroso son sus ataques. Así no castiga estar en la plataforma del centro cuando baja.
+- **Fase 1 · Ondas:**
+  - Los patrones van en este orden: sencilla, doble, pilares, triple, de dos alturas, y después repite la parte difícil.
+  - Las ondas salen de debajo del monitor hacia los dos lados.
+  - La onda alta es una banda de 16 a 38 px sobre el suelo y llega 0.5 s después de la baja. Las pruebas confirman que no se pasa con un salto simple y sí con el doble.
+  - Los pilares salen donde está Choco (3 seguidos, con marca 0.5 s antes); por eso no sirve esconderse en las plataformas.
+  - Después de cada patrón baja 3 s a la altura de las plataformas. 6 de daño: el normal quita 1 y el cargado 3.
+- **Fase 2 · Ráfagas:**
+  - Espiral, abanicos dirigidos a Choco y lluvia.
+  - Son reflejables una de cada 4 balas de la espiral, la del centro de cada abanico y una de cada 3 de la lluvia.
+  - La bala devuelta persigue a N.U.L.L.
+- **Fase 3 · Invisible:**
+  - Hay 3 copias iguales. La real solo recibe daño con la Vista Debug activa; con la vista se le ve una mira cian.
+  - Todas disparan, avisando con un destello.
+  - Una falsa golpeada explota en 3 Fragmentos (duran 7 s) y vuelve a los 2.2 s.
+  - Cada golpe a la real las baraja. La oscuridad es menor con la Vista Debug.
+- **Fase 4 · Núcleo:**
+  - El suelo y las plataformas se derrumban en una cinemática corta; Choco queda en una plataforma pequeña.
+  - Las dos plataformas pequeñas se alternan: 4.2 s visibles (parpadean el último 0.8 s) y 2 s ausentes. Durante las cinemáticas quedan fijas.
+  - **Caer al vacío quita un cuadrito (no una vida)** y devuelve a una plataforma, igual que el Overflow.
+  - Láser:
+    - Aviso de 0.8 s: una línea en el ángulo inicial y la zona que va a barrer.
+    - Después barre 1 rad en 1.1 s. Mientras dispara, N.U.L.L. deja de orbitar.
+  - El núcleo se puede enganchar cuando pasa a menos de 44 px de un nodo (brilla en blanco).
+  - Jalado, N.U.L.L. baja hacia Choco y queda expuesta 3 s. Solo cuenta un disparo cargado al núcleo.
+- **Entre fases:** hay 1 s de pausa y luego el diálogo de N.U.L.L. con el consejo del fundador. Se recupera 1 cuadrito y entra una capa más de la música.
+- **Muerte:** se reintenta la fase actual.
+- **Game Over:** se vuelve al checkpoint de antes del jefe, en la fase 1, como dice el documento del nivel 5. Es la única excepción a la regla general, donde un Game Over reinicia el nivel desde el inicio.
+- **El parche:**
+  - 4 líneas de 6 flechas en 20 s. Un error reinicia la línea actual.
+  - Cada línea es de un fundador (Óscar, Stward, Hezron y Fabiola), que celebra al terminarla.
+  - Si se acaba el tiempo, el pulso quita un cuadrito, **pero nunca el último**, y el parche se reintenta desde la primera línea con flechas nuevas.
+
+### Final
+
+- **Montaje de rótulos:** muestra 9 rótulos con huecos (niveles 1, 2 y 4) y los completa con "y". "Bienvenid_ a la UNA" queda fuera porque con "y" no se lee bien.
+- **Celebración de los fundadores:** cada uno tiene 2.4 s, con un texto corto en lugar de caja de diálogo.
+- **Trofeo:** un sprite de 18×20 dibujado a ×3. Choco lo levanta.
+- **Epílogo:** es el cuarto del prólogo, con el trofeo en el estante. Después hay un acercamiento a la tele, donde el cursor escribe "hola :)".
+- **Estadísticas finales:** tiempo total, muertes, Y doradas (x/15) y mejor tiempo de cada nivel. También avisan que se desbloqueó el Modo Hotfix.
+- **Créditos:**
+  - Mantienen el tema del título hasta el popurrí del Hito 8.
+  - Con las 15 Y doradas, al terminarlos sigue la escena extra: Óscar y la Y cenando a la luz de las velas, con la marimba del atardecer. Al final vuelve al título.
+- **Música nueva:**
+  - El Stack: tensa, con el bajo subiendo nota por nota.
+  - N.U.L.L. Final: con 4 capas (el motivo, el arpegio roto, el colchón y el tema de Choco transportado, que choca con el motivo).
+  - Parche y final: el tema de Choco lento; el motivo de N.U.L.L. resuelve en Mi mayor.
+
+### Modo Hotfix
+
+- Se desbloquea al terminar el nivel 5. Se activa o se apaga en el menú del mapa (ESC → "Modo Hotfix"), que solo aparece cuando ya está desbloqueado.
+- Se guarda en la partida (`hotfix`). El mapa muestra "HOTFIX" y la barra con 1 cuadrito.
+- **1 cuadrito fijo** en todos los niveles: rescatar a un fundador no suma cuadritos.
+- **Sin cacao:** los Granos y Trozos de Cacao se vuelven bits, y la Receta de la Abuela no da cobertura.
+- **La mitad de los checkpoints:** la lista está en `HOTFIX.SKIP_CHECKPOINTS`.
+  - Nivel 1: se apaga el segundo.
+  - Nivel 2: la terminal de guardado 2 (dice que no guarda).
+  - Nivel 3: open space y servidores.
+  - Nivel 4: redondel y atardecer; quedan la plaza y el de antes del Torito.
+  - Nivel 5: el de 5-D; quedan el inicio y el de antes del jefe.
+  - Los checkpoints apagados se ven tenues.
+
+### Desarrollo
+
+- **Atajos:**
+  - `?scene=level5`.
+  - Secciones del Stack: `push`, `firewall`, `fantasma`, `punteros` y `overflow`.
+  - Jefe: `null`, `null2`, `null3` y `null4`.
+  - `parche`, `final`, `estadisticas` y `extra`.
+  - También están en `?scene=dev`.
+- **F10 en el nivel 5:** en la pelea termina la fase actual; en el Stack lleva a Choco a la salida.

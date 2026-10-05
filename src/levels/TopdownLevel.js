@@ -2,7 +2,7 @@
 // tilemap, cámara, objetos con los que se interactúa (E), NPCs, carteles, pausa, cinemáticas,
 // avisos, HUD y final del nivel. Las subclases arman las salas y su lógica.
 import { Scene } from '../core/game.js';
-import { SCREEN, LIVES, HEALTH, TOPDOWN } from '../config/balance.js';
+import { SCREEN, LIVES, HEALTH, TOPDOWN, HOTFIX } from '../config/balance.js';
 import { Camera } from '../core/camera.js';
 import { Particles } from '../core/particles.js';
 import { Hud } from '../ui/hud.js';
@@ -13,7 +13,7 @@ import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
 import { playSfx } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
-import { hasItem, maxHpFor, goldenFor, devLoadout } from '../game/progress.js';
+import { hasItem, maxHpFor, goldenFor, devLoadout, hotfixSkips } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
 import { damp } from '../core/tween.js';
 import { fxRng } from '../core/rng.js';
@@ -63,8 +63,15 @@ export class TopdownLevel extends Scene {
     const items = { staff: true, boots: !d, laptop: false, shield: false, lasso: false };
     if (d) for (const k of Object.keys(items)) if (k !== 'staff') items[k] = hasItem(d, k);
     // Sin partida (atajo de desarrollo): con las Botas y el cuadrito de Óscar
-    const lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX + 1 };
-    return this.game.devMode && this.levelId !== null ? devLoadout(lo, this.levelId) : lo;
+    let lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX + 1 };
+    if (this.game.devMode && this.levelId !== null) lo = devLoadout(lo, this.levelId);
+    if (this.game.hotfix) lo.maxHp = HOTFIX.MAX_HP;
+    return lo;
+  }
+
+  // Modo Hotfix: la mitad de los checkpoints no cuentan
+  checkpointOff(id) {
+    return this.game.hotfix && hotfixSkips(this.levelId, id);
   }
 
   setMap(map) {
@@ -213,6 +220,11 @@ export class TopdownLevel extends Scene {
     if (this.choco.items.laptop) {
       const active = this.laptop.update(dt, g.input.down('debug') && this.choco.state === 'play' && !this.cutscene);
       if (this.laptop.justToggled) playSfx(g.audio, active ? 'interact' : 'menuCancel');
+    }
+    // Modo Hotfix: 1 cuadrito fijo (aunque se rescate a un fundador)
+    if (g.hotfix && this.maxHp > HOTFIX.MAX_HP) {
+      this.maxHp = HOTFIX.MAX_HP;
+      this.choco.hp = Math.min(this.choco.hp, this.maxHp);
     }
     this.choco.update(dt, g.input);
     for (const n of this.npcs) n.update(dt);

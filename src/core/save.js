@@ -19,6 +19,7 @@ export function defaultSlot() {
     lastLevel: null,
     grandmaRecipe: false,
     hotfixUnlocked: false,
+    hotfix: false, // Modo Hotfix activo en esta partida (se elige en el menú del mapa)
     updatedAt: 0,
   };
 }

@@ -10,7 +10,7 @@ export const LEVELS = [
   { id: 2, file: '02_una/', type: 'dir', color: '#8C2F39', accent: '#E9DCC3', founder: 'stward', item: 'laptop', built: true },
   { id: 3, file: '03_novacomp/', type: 'dir', color: '#1B2230', accent: '#8FB3D9', founder: 'hezron', item: 'shield', built: true },
   { id: 4, file: '04_santa_cruz/', type: 'dir', color: '#C8612E', accent: '#FFB347', founder: 'fabiola', item: 'lasso', built: true },
-  { id: 5, file: '05_codigo_puro/', type: 'dir', color: '#2A1446', accent: '#FF2E88', founder: null, item: 'trophy', built: false },
+  { id: 5, file: '05_codigo_puro/', type: 'dir', color: '#2A1446', accent: '#FF2E88', founder: null, item: 'trophy', built: true },
 ];
 
 // Niveles que aparecen en el explorador de archivos (el prólogo se juega al empezar)

@@ -1,5 +1,5 @@
 // Choco en modo plataformas: física, báculo, vida, animación y efectos secundarios.
-import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO } from '../config/balance.js';
+import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO, HOTFIX } from '../config/balance.js';
 import { createShield, shieldPress, shieldUpdate, shieldOn, shieldBlock } from '../systems/shield.js';
 import { pickNode, createSwing, swingStep, releaseVelocity } from '../systems/lasso.js';
 import { drawShieldBubble } from '../art/shield.js';
@@ -118,7 +118,9 @@ export class Choco {
   }
 
   setMaxHp(n) {
-    this.maxHp = Math.max(1, Math.min(HEALTH.MAX_POSSIBLE, n));
+    // Modo Hotfix: 1 cuadrito fijo, aunque se rescate a un fundador
+    const cap = this.scene.game?.hotfix ? HOTFIX.MAX_HP : HEALTH.MAX_POSSIBLE;
+    this.maxHp = Math.max(1, Math.min(cap, n));
     this.hp = Math.min(this.hp, this.maxHp);
   }
 
@@ -254,12 +256,25 @@ export class Choco {
       const d = Math.hypot(dx, dy);
       const step = LASSO.THROW_SPEED * dt;
       if (d <= step) {
+        // Algo que se jala (el núcleo de N.U.L.L.): no se columpia, lo trae y suelta con un saltito
+        if (L.node.pull) {
+          this.lasso = null;
+          this.body.vy = Math.min(this.body.vy, LASSO.PULL_HOP);
+          this.js.canDoubleJump = this.items.boots;
+          this.js.jumping = false;
+          this.setSquash({ X: 0.8, Y: 1.2 });
+          playSfx(this.audio, 'lassoHook');
+          this.particles.burst(L.node.x, L.node.y, 12, { speedMin: 30, speedMax: 90, colors: ['#FFFFFF', '#43D9FF', '#FF2E88'], lifeMin: 0.15, lifeMax: 0.4 });
+          L.node.onPull?.();
+          return false;
+        }
         const h = this.hand();
         L.phase = 'swing';
         L.swing = createSwing(L.node, h.x, h.y, this.body.vx, this.body.vy);
         this.js.canDoubleJump = this.items.boots;
         this.body.onGround = false;
         this.body.platform = null;
+        this.body.dropTimer = LASSO.HOOK_GRACE;
         L.node.hooked = 0.3;
         playSfx(this.audio, 'lassoHook');
         this.setSquash({ X: 0.85, Y: 1.15 });
@@ -282,6 +297,7 @@ export class Choco {
     swingStep(s, dt, { moveX: mx, reel });
     // Mover el cuerpo hasta la nueva posición de la mano, chocando con los tiles
     const b = this.body;
+    if (b.dropTimer > 0) b.dropTimer = Math.max(0, b.dropTimer - dt);
     const hx = b.x + b.w / 2;
     const hy = b.y + b.h + LASSO.HAND_Y;
     moveBodyX(b, s.px - hx, map);

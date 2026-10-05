@@ -8,7 +8,7 @@
 // Las subclases cargan su mapa con setMap(), colocan entidades y sobrescriben los ganchos:
 //   drawBackground / drawWorld / drawForeground, levelUpdate(dt), onRespawn(), onShotHitTile()…
 import { Scene } from '../core/game.js';
-import { SCREEN, LIVES, HEALTH } from '../config/balance.js';
+import { SCREEN, LIVES, HEALTH, HOTFIX } from '../config/balance.js';
 import { aabbOverlap, isStomp } from '../systems/physics.js';
 import { Camera } from '../core/camera.js';
 import { Particles } from '../core/particles.js';
@@ -23,7 +23,7 @@ import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
 import { playSfx } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
-import { hasItem, maxHpFor, goldenFor, setCheckpoint, devLoadout } from '../game/progress.js';
+import { hasItem, maxHpFor, goldenFor, setCheckpoint, devLoadout, hotfixSkips } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
 import { ItemGetScene } from '../scenes/ItemGetScene.js';
 import { fxRng } from '../core/rng.js';
@@ -78,8 +78,10 @@ export class PlatformLevel extends Scene {
     const d = this.session?.data;
     const items = { staff: true, boots: false, laptop: false, shield: false, lasso: false };
     if (d) for (const k of Object.keys(items)) if (k !== 'staff') items[k] = hasItem(d, k);
-    const lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX };
-    return this.game.devMode && this.levelId !== null ? devLoadout(lo, this.levelId) : lo;
+    let lo = { items, maxHp: d ? maxHpFor(d) : HEALTH.START_MAX };
+    if (this.game.devMode && this.levelId !== null) lo = devLoadout(lo, this.levelId);
+    if (this.game.hotfix) lo.maxHp = HOTFIX.MAX_HP;
+    return lo;
   }
 
   // ---------- Construcción ----------
@@ -249,7 +251,7 @@ export class PlatformLevel extends Scene {
   respawn(costLife = true) {
     if (costLife && !this.game.infiniteLives) this.lives--;
     if (this.lives <= 0) {
-      this.game.flow.gameOver(this.game, this.levelId, { ...this.stats });
+      this.game.flow.gameOver(this.game, this.levelId, { ...this.stats }, this.gameOverOptions());
       return;
     }
     this.shots = [];
@@ -265,6 +267,16 @@ export class PlatformLevel extends Scene {
   // Gancho: reconstruir la sección (enemigos, bloques…) al reaparecer
   onRespawn() {}
 
+  // Gancho: opciones del Game Over (el nivel 5 conserva el checkpoint de antes del jefe)
+  gameOverOptions() {
+    return {};
+  }
+
+  // Modo Hotfix: la mitad de los checkpoints no se activan
+  checkpointOff(id) {
+    return this.game.hotfix && hotfixSkips(this.levelId, id);
+  }
+
   // Desde la pausa
   restartFromCheckpoint() {
     const c = this.choco;
@@ -278,6 +290,7 @@ export class PlatformLevel extends Scene {
 
   activateCheckpoint(s) {
     if (this.checkpoint && this.checkpoint.id === s.id) return;
+    if (this.checkpointOff(s.id)) return;
     this.checkpoint = { x: s.x, y: s.y, id: s.id, section: s.section };
     s.flash = 0.6;
     playSfx(this.game.audio, 'checkpoint');
@@ -458,7 +471,7 @@ export class PlatformLevel extends Scene {
       this.pendingRespawn = false;
       if (this.lives <= 1 && !g.infiniteLives) {
         this.lives = 0;
-        this.game.flow.gameOver(g, this.levelId, { ...this.stats });
+        this.game.flow.gameOver(g, this.levelId, { ...this.stats }, this.gameOverOptions());
         return;
       }
       const center = { x: Math.round(c.footX - this.camera.rx), y: Math.round(c.footY - 8 - this.camera.ry) };
@@ -526,6 +539,15 @@ export class PlatformLevel extends Scene {
     this.enemies = this.enemies.filter((e) => !e.dead);
     this.hazards = this.hazards.filter((h) => !h.dead);
 
+    // Modo Hotfix: sin power-ups de cacao (los granos y trozos son bits)
+    if (g.hotfix) {
+      for (const p of this.pickups) {
+        if (p.type === 'cacao' || p.type === 'chunk') {
+          p.type = 'bit';
+          p.size = 8;
+        }
+      }
+    }
     if (c.state === 'play') for (const p of this.pickups) p.update(dt, this);
     this.pickups = this.pickups.filter((p) => !p.dead);
 
@@ -647,7 +669,12 @@ export class PlatformLevel extends Scene {
     this.drawBackground(ctx, cx, cy);
     this.drawTiles(ctx, cx, cy);
     this.drawWorld(ctx, cx, cy);
-    for (const s of this.signs) (s.draw || this.drawSign).call(this, ctx, s, cx, cy);
+    for (const s of this.signs) {
+      const off = s.checkpoint && this.checkpointOff(s.id);
+      if (off) ctx.globalAlpha = 0.3;
+      (s.draw || this.drawSign).call(this, ctx, s, cx, cy);
+      ctx.globalAlpha = 1;
+    }
     for (const o of this.interactables) o.draw?.(ctx, o, cx, cy, this);
     for (const p of this.pickups) p.draw(ctx, cx, cy);
     this.particles.draw(ctx, cx, cy, false);

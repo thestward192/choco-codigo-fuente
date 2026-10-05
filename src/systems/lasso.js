@@ -36,14 +36,15 @@ export function nodeInReach(node, hand, facing, P = LASSO) {
   return angleBetween(dx, dy, facing, 0) <= P.CONE_HALF || angleBetween(dx, dy, 0, -1) <= P.CONE_HALF;
 }
 
-// El mejor nodo (el más cercano al alcance y con la vista libre) o null.
+// El mejor nodo (el más cercano al alcance y con la vista libre) o null. Los que tienen
+// `priority` (algo que se jala, como el núcleo de N.U.L.L.) ganan a los nodos comunes.
 export function pickNode(nodes, hand, facing, isSolid = null, TS = 16, P = LASSO) {
   let best = null;
   let bestD = Infinity;
   for (const n of nodes) {
     if (n.disabled || !nodeInReach(n, hand, facing, P)) continue;
     if (isSolid && !clearLine(isSolid, TS, hand.x, hand.y, n.x, n.y)) continue;
-    const d = Math.hypot(n.x - hand.x, n.y - hand.y);
+    const d = Math.hypot(n.x - hand.x, n.y - hand.y) - (n.priority ? 1000 : 0);
     if (d < bestD) {
       bestD = d;
       best = n;

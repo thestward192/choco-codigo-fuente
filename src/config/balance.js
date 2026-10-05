@@ -514,6 +514,8 @@ export const LASSO = {
   RELEASE_VY: -120,
   KEEP_MOMENTUM: 0.35, // segundos sin frenado en el aire tras soltar
   HAND_Y: -14, // la cuerda sale de la mano (relativo a los pies)
+  PULL_HOP: -170, // al jalar algo (el núcleo de N.U.L.L.) Choco sale con un saltito
+  HOOK_GRACE: 0.2, // al engancharse, ignora las plataformas de un sentido para salir de la cornisa
 };
 
 // Enemigos de Santa Cruz — docs/02_personajes.md
@@ -617,6 +619,117 @@ export const TORITO = {
   COLUMN_HITS: 2, // en la fase 2 una columna aguanta esto antes de romperse
   CHIP: { W: 12, H: 18, FROM_FLOOR: 6 }, // punto débil en la parte de atrás
   INTRO: 1.8,
+};
+
+// ---------- Nivel 5 · El Código Puro (docs/niveles/nivel_5_codigo_puro.md) ----------
+// El Stack: escalada vertical por secciones (Push, Firewall, Memoria fantasma, Punteros, Overflow)
+export const STACK = {
+  PUSH_DELAY: 0.3, // la siguiente plataforma del Push aparece tras pisar la anterior
+  PUSH_SLIDE: 0.45, // tarda en deslizarse desde la pared
+  SEGMENT_DELAY: 0.5, // Segmento corrupto: desaparece 0.5 s después de pisarlo
+  SEGMENT_RESPAWN: 2.6,
+  FIREWALL_KNOCKBACK: 150, // sin escudo, el fuego empuja hacia atrás
+  TURRET_INTERVAL: 2.4,
+  TURRET_TELEGRAPH: 0.6,
+  TURRET_SPEED: 80,
+  TURRET_RANGE: 190, // solo dispara si Choco está a esta distancia
+  BULLET_LIFE: 5,
+  RETURN_SPEED: 240, // una bala devuelta con parry vuela hacia quien la disparó
+  EXCEPTION_WARN: 0.8, // Excepción: aviso en el borde de la pantalla antes de cruzarla
+  EXCEPTION_SPEED: 140,
+  EXCEPTION_EVERY: { D: 3.4, E: 2.6 }, // por sección
+  FRAGMENT: { HP: 1, SPEED: 115, TELEGRAPH: 0.5, RANGE: 120, DASH: 0.9, REST: 0.9, W: 10, H: 10 },
+  OVERFLOW_SPEED: 12, // px/s: la masa de datos corruptos sube a ritmo constante
+  OVERFLOW_DELAY: 2.5, // tiempo antes de que empiece a subir
+  OVERFLOW_START: 40, // px debajo del suelo de la sección
+  OVERFLOW_PUSHBACK: 56, // al tocarla, baja un poco para dar aire
+  ECHO_TIME: 3.6, // los consejos de los ecos de los fundadores
+};
+
+// Jefe final: N.U.L.L. (4 fases + el parche)
+export const NULL_BOSS = {
+  W: 64,
+  H: 64,
+  INTRO: 1.2,
+  PHASE_PAUSE: 3, // pausa entre fases (diálogo y consejo); se recupera 1 cuadrito
+  HOVER_Y: 58, // centro del monitor en el tercio superior (debajo de la barra del jefe)
+  P1: {
+    HP: 6, // 6 golpes (o 2 cargados)
+    SLAM_TELEGRAPH: 0.6, // levanta las alas antes de golpear el suelo
+    WAVE_SPEED: 125,
+    WAVE_LOW_H: 10,
+    WAVE_HIGH: [16, 38], // banda alta: de 16 a 38 px sobre el suelo
+    GAP: 0.42, // separación entre ondas dobles y triples
+    HIGH_DELAY: 0.5, // la alta llega después de la baja: hace falta el doble salto
+    PILLAR_WARN: 0.5,
+    PILLAR_UP: 0.6,
+    PILLAR_H: 76,
+    WINDOW: 3, // ventana de daño: el monitor baja a la altura de las plataformas
+    WINDOW_Y: 100,
+    REST: 0.8,
+  },
+  P2: {
+    HITS: 4, // solo las balas devueltas con parry le hacen daño
+    TELEGRAPH: 0.6,
+    BULLET_SPEED: 68,
+    REFLECT_EVERY: 4, // una de cada tantas es reflejable (magenta con borde blanco)
+    SPIRAL_TIME: 3.6,
+    SPIRAL_RATE: 0.13,
+    FAN_N: 7,
+    FAN_SPREAD: 1.2, // rad
+    FAN_WAVES: 3,
+    FAN_GAP: 0.8,
+    RAIN_TIME: 3.4,
+    RAIN_RATE: 0.2,
+    REST: 1.1,
+  },
+  P3: {
+    HITS: 8, // golpes al punto débil de la real
+    COPIES: 3,
+    SHOT_EVERY: [2.0, 3.2],
+    SHOT_TELEGRAPH: 0.6,
+    SHOT_SPEED: 74,
+    FRAGMENTS: 3, // una copia falsa explota en estos Fragmentos
+    FAKE_RESPAWN: 2.2,
+    SHUFFLE: 0.6, // las copias se barajan tras cada golpe a la real
+    DARK: 0.66,
+    DRIFT: 6, // px de vaivén de las copias
+  },
+  P4: {
+    PULLS: 3, // 3 jalones + 3 disparos cargados
+    ORBIT_RX: 112,
+    ORBIT_RY: 36,
+    ORBIT_CY: 72,
+    ORBIT_SPEED: 0.42, // rad/s
+    LASER_EVERY: 3.4,
+    LASER_WARN: 0.8, // línea fina antes del barrido
+    LASER_SWEEP: 1.1,
+    LASER_ARC: 1.0, // rad que barre
+    LASER_LEN: 380,
+    LASER_HIT: 4, // px de grosor que hacen daño
+    HOOK_DIST: 44, // el núcleo es enganchable si pasa así de cerca de un nodo
+    EXPOSE: 3, // tras el jalón, el núcleo queda expuesto
+    PLATFORM_ON: 4.2,
+    PLATFORM_OFF: 2,
+    PLATFORM_BLINK: 0.8, // parpadea antes de desaparecer
+    COLLAPSE_TIME: 1.6, // el suelo se derrumba en píxeles
+  },
+};
+
+// Minijuego del parche: 4 líneas de 6 flechas en 20 s
+export const PATCH = {
+  LINES: 4,
+  ARROWS: 6,
+  TIME: 20,
+  ERROR_FLASH: 0.3,
+  TYPE_SPEED: 40, // letras por segundo al escribir cada línea
+};
+
+// Modo Hotfix (se desbloquea al terminar el juego): 1 cuadrito fijo, sin cacao, la mitad de los
+// checkpoints. Lista de checkpoints que se apagan por nivel.
+export const HOTFIX = {
+  MAX_HP: 1,
+  SKIP_CHECKPOINTS: { 1: [1], 2: [1], 3: ['openspace', 'servers'], 4: [1, 3], 5: [1] },
 };
 
 export const AUDIO = {

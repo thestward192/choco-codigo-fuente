@@ -16,6 +16,10 @@ import { Level2Scene } from '../levels/level2_una/Level2Scene.js';
 import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
 import { Level4Scene } from '../levels/level4_santacruz/Level4Scene.js';
 import { DevBattleScene } from './DevBattleScene.js';
+import { Level5Scene } from '../levels/level5_codigo/Level5Scene.js';
+import { EndingScene } from './EndingScene.js';
+import { FinalStatsScene } from './FinalStatsScene.js';
+import { ExtraScene } from './ExtraScene.js';
 
 export class DevMenuScene extends Scene {
   constructor(game, selected = 1) {
@@ -52,6 +56,11 @@ export class DevMenuScene extends Scene {
       else if (id === 'terraza' || id === 'deadline' || id === 'escudo') g.changeScene(() => new Level3Scene(g, { start: id }), { type: 'iris' });
       else if (id === 'level4') g.changeScene(() => new Level4Scene(g), { type: 'iris' });
       else if (['plaza', 'redondel', 'ruinas', 'torito', 'lazo'].includes(id)) g.changeScene(() => new Level4Scene(g, { start: id }), { type: 'iris' });
+      else if (id === 'level5') g.changeScene(() => new Level5Scene(g), { type: 'iris' });
+      else if (['push', 'firewall', 'fantasma', 'punteros', 'overflow', 'null', 'null2', 'null3', 'null4', 'parche'].includes(id)) g.changeScene(() => new Level5Scene(g, { start: id }), { type: 'glitch' });
+      else if (id === 'final') g.changeScene(() => new EndingScene(g), { type: 'fade' });
+      else if (id === 'estadisticas') g.changeScene(() => new FinalStatsScene(g), { type: 'fade' });
+      else if (id === 'extra') g.changeScene(() => new ExtraScene(g), { type: 'fade' });
     }
   }
 
