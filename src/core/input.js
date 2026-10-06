@@ -105,7 +105,11 @@ export class Input {
     if (pad.pressed.size > 0 || pad.ax || pad.ay) this.lastDevice = 'gamepad';
     this.axisX = pad.ax;
     this.axisY = pad.ay;
-    this.anyPressed = this.anyKeyLatched;
+    // Cualquier botón nuevo del gamepad también cuenta (pantalla "Presioná cualquier tecla")
+    let padNew = false;
+    for (const b of pad.pressed) if (!this._padPrev?.has(b)) padNew = true;
+    this._padPrev = pad.pressed;
+    this.anyPressed = this.anyKeyLatched || padNew;
     this.anyKeyLatched = false;
 
     for (const a of ACTIONS) {

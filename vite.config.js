@@ -38,6 +38,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsInlineLimit: 0,
+    // El juego es un solo paquete (arte y audio generados en código): ~750 kB, ~250 kB con gzip.
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     watch: { ignored: ['**/.snaps/**'] },

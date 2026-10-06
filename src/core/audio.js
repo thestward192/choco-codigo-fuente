@@ -103,6 +103,12 @@ export class AudioEngine {
     this.applyVolumes();
     if (c.state === 'suspended') c.resume();
     this.timer = setInterval(() => this._tick(), AUDIO.SCHEDULER_INTERVAL_MS);
+    // Si el navegador dejó el audio suspendido (por ejemplo, si se entró con un botón del gamepad,
+    // que no cuenta como gesto), se reanuda con la siguiente tecla, clic o toque.
+    const wake = () => {
+      if (c.state === 'suspended' && !document.hidden) c.resume();
+    };
+    for (const ev of ['keydown', 'pointerdown', 'touchend']) window.addEventListener(ev, wake);
     document.addEventListener('visibilitychange', () => {
       if (!this.ctx) return;
       if (document.hidden) this.ctx.suspend();

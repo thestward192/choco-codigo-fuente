@@ -150,6 +150,7 @@ export class Level3Scene extends TopdownLevel {
   }
 
   exit() {
+    super.exit();
     this.game.audio.setLayer('alarm', false, 0.1);
   }
 

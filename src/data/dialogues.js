@@ -21,7 +21,7 @@ export const TEXTS = {
   title: {
     subtitle: 'CÓDIGO FUENTE',
     pressEnter: 'Presioná Enter',
-    version: 'v0.7 · Hito 7',
+    version: 'v1.0',
   },
 
   mainMenu: {

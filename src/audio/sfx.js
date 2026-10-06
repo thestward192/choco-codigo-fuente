@@ -102,6 +102,13 @@ export const SFX = {
   },
   menuCancel: (a) => a.tone({ wave: 'pulse25', f0: N(71), f1: N(64), dur: 0.1, vol: 0.12 }),
   interact: (a) => a.tone({ wave: 'pulse25', f0: N(79), dur: 0.05, vol: 0.1 }),
+  // Vista Debug: encendido tipo terminal (clic + barrido + bip) y apagado descendente
+  debugOn: (a) => {
+    a.noise({ dur: 0.03, vol: 0.12, type: 'highpass', freq: 3000 });
+    a.tone({ wave: 'pulse12', f0: 300, f1: 1800, dur: 0.12, vol: 0.07, at: 0.02 });
+    a.tone({ wave: 'pulse25', f0: N(84), dur: 0.06, vol: 0.08, at: 0.14 });
+  },
+  debugOff: (a) => a.tone({ wave: 'pulse12', f0: 1400, f1: 200, dur: 0.12, vol: 0.06 }),
   // Prueba de sonido del Hito 0
   test: (a) => {
     [60, 64, 67, 72].forEach((m, i) => a.tone({ wave: 'pulse50', f0: N(m), dur: 0.09, vol: 0.13, at: i * 0.07 }));
@@ -536,6 +543,19 @@ Object.assign(SFX, {
   sparkle: (a) => [N(88), N(91), N(96)].forEach((f, i) => a.tone({ wave: 'triangle', f0: f, dur: 0.12, vol: 0.06, at: i * 0.06 })),
   cry: (a) => [0, 0.2, 0.4].forEach((t) => a.tone({ wave: 'triangle', f0: N(79), f1: N(74), dur: 0.16, vol: 0.06, at: t })),
 });
+
+// Zumbido suave mientras la Vista Debug está activa. Recibe el zumbido actual (o null) y devuelve
+// el que queda sonando.
+export function debugHum(audio, hum, active) {
+  if (active && !hum && audio?.ctx) {
+    hum = audio.sustained({ wave: 'triangle', f0: 110, vol: 0.025 });
+    hum.update(110, 3);
+  } else if (!active && hum) {
+    hum.stop();
+    hum = null;
+  }
+  return hum;
+}
 
 export function playSfx(audio, name) {
   const fn = SFX[name];

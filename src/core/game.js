@@ -5,6 +5,9 @@ import { Tweens, Ease } from './tween.js';
 import { drawText, wrapText } from '../art/font.js';
 import { TEXTS } from '../data/dialogues.js';
 
+// Herramientas de desarrollo (modo desarrolladora, atajos): fuera del build de producción.
+export const DEV_TOOLS = !!import.meta.env?.DEV;
+
 // Escena base: cada escena implementa enter/exit/update/draw.
 export class Scene {
   constructor(game) {
@@ -15,6 +18,7 @@ export class Scene {
   enter() {}
   exit() {}
   resume() {} // cuando la escena de arriba se quita
+  cover() {} // cuando se apila otra escena encima
   update(_dt) {}
   draw(_ctx) {}
 }
@@ -60,9 +64,10 @@ export class Game {
     if (o.keys) this.input.setBindings(o.keys);
   }
 
-  // Modo desarrolladora (Opciones): abre todos los mapas y no se gastan vidas.
+  // Modo desarrolladora (Opciones): abre todos los mapas y no se gastan vidas. Solo existe en
+  // desarrollo (npm run dev); el build de producción lo ignora aunque la partida lo tenga guardado.
   get devMode() {
-    return !!this.options.devMode;
+    return DEV_TOOLS && !!this.options.devMode;
   }
 
   get infiniteLives() {
@@ -118,6 +123,7 @@ export class Game {
   }
 
   push(scene) {
+    if (this.top) this.top.cover();
     this.scenes.push(scene);
     scene.enter();
   }

@@ -11,7 +11,7 @@ import { TopdownChoco } from '../entities/topdownChoco.js';
 import { drawText, drawTextBox } from '../art/font.js';
 import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
-import { playSfx } from '../audio/sfx.js';
+import { playSfx, debugHum } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
 import { hasItem, maxHpFor, goldenFor, devLoadout, hotfixSkips } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
@@ -174,6 +174,14 @@ export class TopdownLevel extends Scene {
     return !this.cutscene && !this.ending && !this.encounter && !this.game.transitioning && this.game.top === this;
   }
 
+  cover() {
+    this.hum = debugHum(this.game.audio, this.hum, false);
+  }
+
+  exit() {
+    this.hum = debugHum(this.game.audio, this.hum, false);
+  }
+
   openPause() {
     this.game.push(new PauseScene(this.game, this));
   }
@@ -219,7 +227,8 @@ export class TopdownLevel extends Scene {
     if (this.cutscene) this.cutscene.update(dt);
     if (this.choco.items.laptop) {
       const active = this.laptop.update(dt, g.input.down('debug') && this.choco.state === 'play' && !this.cutscene);
-      if (this.laptop.justToggled) playSfx(g.audio, active ? 'interact' : 'menuCancel');
+      if (this.laptop.justToggled) playSfx(g.audio, active ? 'debugOn' : 'debugOff');
+      this.hum = debugHum(g.audio, this.hum, active);
     }
     // Modo Hotfix: 1 cuadrito fijo (aunque se rescate a un fundador)
     if (g.hotfix && this.maxHp > HOTFIX.MAX_HP) {

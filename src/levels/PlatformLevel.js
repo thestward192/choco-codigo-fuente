@@ -21,7 +21,7 @@ import { T as TILE } from '../systems/tilemap.js';
 import { drawText, drawTextBox } from '../art/font.js';
 import { UI } from '../art/palettes.js';
 import { TEXTS } from '../data/dialogues.js';
-import { playSfx } from '../audio/sfx.js';
+import { playSfx, debugHum } from '../audio/sfx.js';
 import { Cutscene } from '../systems/cutscene.js';
 import { hasItem, maxHpFor, goldenFor, setCheckpoint, devLoadout, hotfixSkips } from '../game/progress.js';
 import { PauseScene } from '../scenes/PauseScene.js';
@@ -118,7 +118,12 @@ export class PlatformLevel extends Scene {
   enter() {}
 
   exit() {
+    this.hum = null;
     this.game.audio.stopAllSustained();
+  }
+
+  cover() {
+    this.hum = debugHum(this.game.audio, this.hum, false);
   }
 
   onSuspend() {
@@ -455,7 +460,8 @@ export class PlatformLevel extends Scene {
     // Vista Debug
     if (c.items.laptop) {
       const active = this.laptop.update(dt, inp.down('debug') && c.alive && c.state === 'play');
-      if (this.laptop.justToggled) playSfx(g.audio, active ? 'interact' : 'menuCancel');
+      if (this.laptop.justToggled) playSfx(g.audio, active ? 'debugOn' : 'debugOff');
+      this.hum = debugHum(g.audio, this.hum, active);
       this.map.ghostSolid = active;
     } else this.map.ghostSolid = false;
 

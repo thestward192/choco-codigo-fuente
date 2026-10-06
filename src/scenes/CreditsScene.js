@@ -9,12 +9,13 @@ import { loadLogo, drawLogo } from '../art/logo.js';
 import { founderSprite } from '../art/portraits.js';
 import { chocoFrame, ANIMS, FRAME_W, FRAME_H } from '../art/choco.js';
 import { FOUNDERS } from '../data/levels.js';
-import { SONG_TITULO } from '../audio/songs/titulo.js';
+import { SONG_CREDITOS, CREDITS_SONG_SECONDS } from '../audio/songs/creditos.js';
 import { Flow } from '../game/flow.js';
 import { ExtraScene } from './ExtraScene.js';
 
 const C = TEXTS.credits;
 const SPEED = 14; // px/s
+const PARADE_TOP = SCREEN.H - 32; // el texto se corta sobre el desfile
 
 export class CreditsScene extends Scene {
   // opts: { extra } → después de los créditos, la escena extra (15 Y doradas)
@@ -40,7 +41,7 @@ export class CreditsScene extends Scene {
   }
 
   enter() {
-    this.game.audio.playSong(SONG_TITULO);
+    this.game.audio.playSong(SONG_CREDITOS);
   }
 
   update(dt) {
@@ -59,7 +60,10 @@ export class CreditsScene extends Scene {
       this.holdT = (this.holdT || 0) + dt * fast;
     }
     if (this.leaving || this.game.transitioning) return;
-    if (this.holdT >= 3 || inp.pressed('cancel')) {
+    // Se espera también a que termine el popurrí (salvo que se esté acelerando con confirmar)
+    if (fast > 1) this.hurried = true;
+    const musicDone = this.hurried || this.t >= CREDITS_SONG_SECONDS;
+    if ((this.holdT >= 3 && musicDone) || inp.pressed('cancel')) {
       this.leaving = true;
       if (this.extra) this.game.changeScene(() => new ExtraScene(this.game), { type: 'fade', duration: 0.8 });
       else Flow.toTitle(this.game);
@@ -72,6 +76,11 @@ export class CreditsScene extends Scene {
     const bits = ['{', '}', ';', '0', '1', '<', '>', '/', '='];
     for (const c of this.code) drawText(ctx, bits[c.ch % bits.length], Math.round(c.x), Math.round(c.y), { color: '#152033', shadow: false });
 
+    // El texto sube hasta el borde del desfile, sin pasar por encima de los personajes
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, SCREEN.W, PARADE_TOP);
+    ctx.clip();
     let y = SCREEN.H - Math.round(this.scroll);
     for (const it of this.items) {
       if (y > -it.h && y < SCREEN.H) {
@@ -88,6 +97,7 @@ export class CreditsScene extends Scene {
       }
       y += it.h;
     }
+    ctx.restore();
     this.drawParade(ctx);
   }
 

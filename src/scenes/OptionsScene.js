@@ -1,7 +1,7 @@
 // Opciones — docs/06_menus_ui.md
 // Volúmenes 0–10, pantalla completa, escala, CRT, sacudida, glitch intenso, velocidad del texto
 // y controles. Los cambios se aplican al momento y se guardan al salir.
-import { Scene } from '../core/game.js';
+import { Scene, DEV_TOOLS } from '../core/game.js';
 import { SCREEN } from '../config/balance.js';
 import { drawText } from '../art/font.js';
 import { TEXTS } from '../data/dialogues.js';
@@ -69,7 +69,7 @@ export class OptionsScene extends Scene {
         { id: 'shake', label: T.shake, ...toggle('screenShake') },
         { id: 'glitch', label: T.glitch, ...toggle('intenseGlitch') },
         { id: 'textSpeed', label: T.textSpeed, ...cycle(SPEEDS, 'textSpeed', (v) => T.speeds[v]) },
-        { id: 'devMode', label: T.devMode, ...toggle('devMode', () => {}) },
+        ...(DEV_TOOLS ? [{ id: 'devMode', label: T.devMode, ...toggle('devMode', () => {}) }] : []),
         { id: 'controls', label: T.controls },
         { id: 'back', label: T.back },
       ],

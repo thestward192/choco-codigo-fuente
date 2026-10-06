@@ -446,3 +446,32 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
   - `parche`, `final`, `estadisticas` y `extra`.
   - También están en `?scene=dev`.
 - **F10 en el nivel 5:** en la pelea termina la fase actual; en el Stack lleva a Choco a la salida.
+
+## Hito 8 · Pulido y balance
+
+### Audio
+
+- **Popurrí de los créditos** (`src/audio/songs/creditos.js`):
+  - Toma los primeros compases de cada tema y los encadena a 144 BPM: Choco, Mundo Cartucho, la UNA, la batalla, DEADLINE, Santa Cruz y el Stack. Cierra con el final de la sección B del tema de Choco.
+  - Cada tramo termina con un redoble de caja. Una vuelta dura unos 38 s.
+  - "Gracias por jugar" queda en pantalla hasta que termina el popurrí. Si se acelera con confirmar, no se espera la música.
+- **Vista Debug:** se enciende con un clic, un barrido y un bip tipo terminal, y se apaga con un barrido hacia abajo. Mientras está activa suena un zumbido suave. El zumbido se corta al pausar, al entrar a una batalla o a cualquier escena que se abra encima, y al salir del nivel.
+- **Gamepad en "Presioná cualquier tecla":** un botón del control también entra. Algunos navegadores no aceptan el gamepad como gesto para activar el audio; en ese caso el audio arranca con la siguiente tecla, clic o toque.
+
+### Build de producción
+
+- **El modo desarrolladora de Opciones solo existe con `npm run dev`.** En el build no aparece, y una partida que lo tenga guardado lo ignora. Para volver a ponerlo en producción, se cambia `DEV_TOOLS` en `src/core/game.js`.
+- **Atajos `?scene=`:** se pasaron a `src/dev/shortcuts.js`, que solo se carga en desarrollo. El build no incluye la sala de pruebas, la prueba técnica, el menú de hitos, la batalla de prueba ni `core/debug.js`.
+- **Un solo archivo JS** de unos 750 kB (250 kB con gzip). Se subió el límite de la advertencia de tamaño de Vite a 1000 kB.
+- **Versión del título:** v1.0.
+
+### Revisión
+
+- **Textos:** una prueba revisa que toda pregunta y exclamación abra con ¿ y ¡, y que no falten tildes en las palabras comunes. Se exceptúan las pantallas de prueba y las frases cortadas a propósito con "—".
+- **Canciones:** una prueba revisa todas las canciones del juego: que las notas sean válidas y que los canales no se desfasen al repetir.
+- **Créditos:** el texto que sube se corta antes del desfile de Choco y los fundadores, para no pasarles por encima.
+- **Corrección:** el nivel 3 no detenía los sonidos sostenidos al salir (por ejemplo, la carga del báculo).
+- **Navegadores:**
+  - El build se probó en Chrome y Edge sin errores en consola: título, opciones, créditos y Nueva partida hasta el prólogo.
+  - Firefox no está instalado en esta máquina, así que falta probarlo a mano.
+- **Balance:** sin datos de partidas reales, no se cambió ningún número. Los tiempos objetivo de cada nivel están en su documento. Los ajustes se harán en `balance.js` con los tiempos y las muertes que muestra la pantalla de resultados.
