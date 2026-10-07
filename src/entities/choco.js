@@ -1,5 +1,5 @@
 // Choco en modo plataformas: física, báculo, vida, animación y efectos secundarios.
-import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO, HOTFIX } from '../config/balance.js';
+import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO, HOTFIX, DEV } from '../config/balance.js';
 import { createShield, shieldPress, shieldUpdate, shieldOn, shieldBlock } from '../systems/shield.js';
 import { pickNode, createSwing, swingStep, releaseVelocity } from '../systems/lasso.js';
 import { drawShieldBubble } from '../art/shield.js';
@@ -42,6 +42,7 @@ export class Choco {
     // Báculo
     this.cooldown = 0;
     this.poseT = 0;
+    this.aim = 'h'; // puntería del báculo (ver STAFF.AIM)
     this.charging = false;
     this.chargeT = 0;
     this.chargeReady = false;
@@ -107,6 +108,15 @@ export class Choco {
     return this.state !== 'dead';
   }
 
+  // Vuelo libre del modo desarrolladora (J): sin gravedad, sin colisiones y sin daño
+  get canNoclip() {
+    return this.state === 'play';
+  }
+  get noclip() {
+    const g = this.scene.game;
+    return !!(g?.devMode && g.noclip);
+  }
+
   get fx() {
     return this.scene.game.effects;
   }
@@ -131,6 +141,7 @@ export class Choco {
     if (this.flashT > 0) this.flashT -= dt;
     if (this.parryFlash > 0) this.parryFlash -= dt * 3;
     shieldUpdate(this.shield, dt);
+    if (this.scene.game?.devMode) this.shield.cooldown = 0; // modo desarrolladora: sin recarga
 
     if (this.state === 'dead') {
       this.updateDead(dt);
@@ -147,6 +158,10 @@ export class Choco {
 
     // Movimiento guionado en cinemáticas: un "control" falso en lugar del teclado
     if (this.state === 'auto') inp = this.autoInput;
+    if (this.state === 'play' && this.noclip) {
+      this.updateNoclip(dt, inp);
+      return;
+    }
     if (this.hurtT > 0) this.hurtT -= dt;
     if (this.launchT > 0) this.launchT -= dt;
     const control = this.hurtT <= 0;
@@ -195,6 +210,33 @@ export class Choco {
       this.safe = { x: this.footX, y: this.footY };
     }
     this.finishUpdate(dt, inp, control, moveX);
+  }
+
+  // Vuela con las flechas atravesando paredes y peligros (salto mantenido: más rápido)
+  updateNoclip(dt, inp) {
+    const b = this.body;
+    const map = this.scene.map;
+    if (this.lasso) this.detachLasso(false);
+    this.tether = null;
+    this.stopCharge();
+    this.hurtT = 0;
+    const mx = inp.moveX();
+    const my = inp.moveY();
+    const v = DEV.NOCLIP_SPEED * (inp.down('jump') ? DEV.NOCLIP_FAST : 1);
+    b.vx = mx * v;
+    b.vy = my * v;
+    b.x = Math.max(0, Math.min(map.pxW - b.w, b.x + b.vx * dt));
+    b.y = Math.max(0, Math.min(map.pxH - b.h, b.y + b.vy * dt));
+    b.onGround = false;
+    b.platform = null;
+    this.js.jumping = false;
+    this.js.canDoubleJump = this.items.boots;
+    this.moveInput = mx;
+    if (mx !== 0) this.facing = mx;
+    this.updateSquash(dt);
+    this.updateAnim(dt, mx);
+    this.updateFace(dt);
+    this.updateScarf(dt);
   }
 
   // Lo que corre siempre después de moverse: escudo, báculo, peligros y animación
@@ -381,6 +423,8 @@ export class Choco {
     if (!this.items.staff) return;
     const canAct = this.hurtT <= 0;
     const pressedNow = inp.pressed('shoot');
+    // La puntería sigue a las flechas mientras se dispara o se carga (y se queda durante la pose)
+    if (pressedNow || this.charging || this.poseT <= 0) this.aim = this.aimFrom(inp);
 
     if (canAct && inp.buffered('shoot') && this.cooldown <= 0 && this.scene.countShots(false) < STAFF.MAX_ON_SCREEN) {
       inp.consume('shoot');
@@ -429,14 +473,25 @@ export class Choco {
     }
   }
 
+  // Hacia dónde apunta el báculo según las flechas: ↑ (y diagonal con ← →); ↓ solo en el aire
+  aimFrom(inp) {
+    if (!inp) return 'h';
+    const side = inp.moveX() !== 0;
+    if (inp.down('up')) return side ? 'diagUp' : 'up';
+    if (inp.down('down') && !this.body.onGround) return side ? 'diagDown' : 'down';
+    return 'h';
+  }
+
   muzzle() {
     const f = this.currentFrameDef();
-    return { x: this.footX + this.facing * STAFF.MUZZLE_X, y: this.footY + STAFF.MUZZLE_Y + (f?.dy || 0) };
+    const a = STAFF.AIM[this.aim] || STAFF.AIM.h;
+    return { x: this.footX + this.facing * a.x, y: this.footY + a.y + (f?.dy || 0) };
   }
 
   fire(charged) {
     const m = this.muzzle();
-    this.scene.spawnShot(m.x, m.y, this.facing, charged);
+    const a = STAFF.AIM[this.aim] || STAFF.AIM.h;
+    this.scene.spawnShot(m.x, m.y, this.facing, charged, { x: a.dx * this.facing, y: a.dy });
     this.poseT = STAFF.SHOOT_POSE_TIME;
     this.anim.t = this.anim.name === 'shoot' ? 0 : this.anim.t;
     if (charged) {
@@ -465,7 +520,7 @@ export class Choco {
   // Recibe un golpe desde la posición x de la fuente. Devuelve true si hizo efecto.
   // ignoreShield: el calor no se bloquea. knockback: false para daño sin empujón.
   hurt(sourceX, { fromBelow = false, damage = 1, projectile = null, ignoreShield = false, knockback = true } = {}) {
-    if (this.state !== 'play' || this.invuln > 0) return false;
+    if (this.state !== 'play' || this.invuln > 0 || this.noclip) return false;
     if (this.scene.game.debug?.invincible) return false;
     // El escudo bloquea golpes y proyectiles; activado justo antes, refleja (parry)
     const blocked = ignoreShield ? null : shieldBlock(this.shield);
@@ -509,7 +564,8 @@ export class Choco {
       playSfx(this.audio, 'hurt');
       return true;
     }
-    this.hp -= damage;
+    // Modo desarrolladora: el golpe se siente, pero nunca deja a Choco sin vida
+    this.hp = this.scene.game.devMode ? Math.max(1, this.hp - damage) : this.hp - damage;
     this.scene.onChocoDamaged?.(this.hp);
     playSfx(this.audio, 'hurt');
     this.particles.burst(this.cx, this.cy, 10, { speedMin: 40, speedMax: 100, colors: CRUMBS, gravity: 260, lifeMin: 0.3, lifeMax: 0.7, size: 2, endSize: 1 });
@@ -519,7 +575,8 @@ export class Choco {
 
   die(cause) {
     if (this.state === 'dead') return;
-    if (this.scene.game.debug?.invincible && cause !== 'fall' && cause !== 'void') return;
+    const g = this.scene.game;
+    if ((g.debug?.invincible || g.devMode) && cause !== 'fall' && cause !== 'void') return;
     if (cause === 'fall' || cause === 'void') {
       // Caer al vacío también cuesta un cuadrito; si queda vida, reaparece en tierra firme.
       this.scene.onChocoFell?.(this);
@@ -640,11 +697,12 @@ export class Choco {
     if (shooting && name === 'idle') {
       const a = this.poseT > 0 ? ANIMS.shoot : ANIMS.charge;
       const t = this.poseT > 0 ? STAFF.SHOOT_POSE_TIME - this.poseT : this.chargeT;
-      return a.frames[this.frameIndex(a, t)];
+      const fr = a.frames[this.frameIndex(a, t)];
+      return this.aim && this.aim !== 'h' ? withShootArms(fr, this.aim) : fr;
     }
     const anim = ANIMS[name];
     let f = anim.frames[this.frameIndex(anim, name === 'jump' ? (this.anim.t > CHOCO_FX.JUMP_POSE_SWITCH ? 1 : 0) / anim.fps : this.anim.t)];
-    if (shooting && name !== 'spin' && name !== 'hurt') f = withShootArms(f);
+    if (shooting && name !== 'spin' && name !== 'hurt') f = withShootArms(f, this.aim);
     return f;
   }
 

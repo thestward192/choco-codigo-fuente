@@ -44,6 +44,7 @@ Este es el nivel donde se prueban juntos **todos** los objetos anteriores: doble
 
 - Sección de arena: Choco entra al redondel y las puertas se cierran. **3 oleadas** de Toros glitch que embisten desde ambos lados, con bombetas cayendo y el sol a pleno. Solo hay sombra bajo las gradas (en plataformas altas).
 - Hay que sobrevivir 60 s o derrotar 6 toros (4 disparos cada uno, o 2 cargados).
+- Cada toro se anuncia 0.8 s antes, con polvo y un bufido en su puerta. Si Choco está junto a esa puerta, el toro entra por la otra: nunca aparece encima de él.
 
 ### 4-D · Ruinas del Campanario (≈ 12 pantallas verticales) · Checkpoint antes del jefe
 

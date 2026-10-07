@@ -169,6 +169,28 @@ const STAFF_H_GRIP = { x: 2, y: 2 };
 // Posición del núcleo del báculo horizontal relativa a la mano
 export const STAFF_H_TIP = { x: 9 - STAFF_H_GRIP.x, y: 0 };
 
+// Báculo en diagonal (apuntando arriba-adelante); el de abajo-adelante es el mismo volteado
+const STAFF_D = [
+  '......c.',
+  '.....cCc',
+  '......c.',
+  '....M...',
+  '...m....',
+  '..m.....',
+  '.m......',
+  'm.......',
+];
+const STAFF_D_GRIP = { x: 2, y: 5 };
+const flipV = (rows) => [...rows].reverse();
+// Báculo de cada pose: filas y punto de agarre (la mano)
+const STAFFS = {
+  h: { rows: STAFF_H, grip: STAFF_H_GRIP },
+  v: { rows: STAFF_V, grip: STAFF_V_GRIP },
+  vDown: { rows: flipV(STAFF_V), grip: { x: STAFF_V_GRIP.x, y: STAFF_V.length - 1 - STAFF_V_GRIP.y } },
+  dUp: { rows: STAFF_D, grip: STAFF_D_GRIP },
+  dDown: { rows: flipV(STAFF_D), grip: { x: STAFF_D_GRIP.x, y: STAFF_D.length - 1 - STAFF_D_GRIP.y } },
+};
+
 // ---------- Utilidades de trazos ----------
 function line(x0, y0, x1, y1) {
   const pts = [];
@@ -323,6 +345,63 @@ const ARMS = {
     hand: [16, 14],
     staff: 'h',
   },
+  // Disparo apuntado (↑, diagonales y ↓ en el aire): el brazo del frente sigue al báculo
+  shootUp: {
+    l: [
+      [1, 14],
+      [1, 15],
+      [0, 16],
+    ],
+    r: [
+      [14, 13],
+      [15, 12],
+      [16, 11],
+    ],
+    hand: [16, 10],
+    staff: 'v',
+  },
+  shootDiagUp: {
+    l: [
+      [1, 14],
+      [1, 15],
+      [0, 16],
+    ],
+    r: [
+      [14, 14],
+      [15, 13],
+      [16, 12],
+    ],
+    hand: [16, 12],
+    staff: 'dUp',
+  },
+  shootDiagDown: {
+    l: [
+      [1, 14],
+      [1, 15],
+      [0, 16],
+    ],
+    r: [
+      [14, 14],
+      [15, 15],
+      [16, 15],
+    ],
+    hand: [16, 15],
+    staff: 'dDown',
+  },
+  shootDown: {
+    l: [
+      [1, 14],
+      [1, 15],
+      [0, 16],
+    ],
+    r: [
+      [14, 14],
+      [15, 14],
+      [16, 14],
+    ],
+    hand: [16, 14],
+    staff: 'vDown',
+  },
   raise1: {
     l: [
       [1, 14],
@@ -463,8 +542,10 @@ export const ANIMS = {
 };
 
 // Brazos de disparo sobre cualquier frame (correr disparando, saltar disparando)
-export function withShootArms(frame) {
-  return { ...frame, arms: 'shoot', face: 'determined' };
+// aim: 'h' | 'up' | 'diagUp' | 'diagDown' | 'down' (hacia dónde apunta el báculo)
+const SHOOT_ARMS = { h: 'shoot', up: 'shootUp', diagUp: 'shootDiagUp', diagDown: 'shootDiagDown', down: 'shootDown' };
+export function withShootArms(frame, aim = 'h') {
+  return { ...frame, arms: SHOOT_ARMS[aim] || 'shoot', face: 'determined' };
 }
 
 // ---------- Composición ----------
@@ -505,8 +586,8 @@ export function buildFrameRows(key) {
   // Báculo y brazo del frente
   if (hasStaff) {
     const [hx, hy] = arms.hand;
-    if (arms.staff === 'h') layers.push({ rows: STAFF_H, x: OX + hx - STAFF_H_GRIP.x + (dx || 0), y: OY + hy + dy - STAFF_H_GRIP.y });
-    else layers.push({ rows: STAFF_V, x: OX + hx - STAFF_V_GRIP.x + (dx || 0), y: OY + hy + dy - STAFF_V_GRIP.y });
+    const st = STAFFS[arms.staff] || STAFFS.v;
+    layers.push({ rows: st.rows, x: OX + hx - st.grip.x + (dx || 0), y: OY + hy + dy - st.grip.y });
   }
   layers.push(pixelsToLayer(arms.r.map(([x, y]) => [x + (dx || 0), y + dy, 'o'])));
   return compose(FRAME_W, FRAME_H, layers);

@@ -1,4 +1,6 @@
-// Input: teclado + gamepad, acciones abstractas, buffer de pulsaciones y remapeo.
+// Input: teclado + mouse + gamepad, acciones abstractas, buffer de pulsaciones y remapeo.
+// Los botones del mouse se tratan como teclas con código 'Mouse0' (izquierdo), 'Mouse1' (central),
+// 'Mouse2' (derecho), 'Mouse3' y 'Mouse4' (laterales): se pueden asignar a cualquier acción.
 import { ACTIONS, DEFAULT_KEYS, DEFAULT_PAD, PREVENT_DEFAULT } from '../config/controls.js';
 import { INPUT } from '../config/balance.js';
 
@@ -9,6 +11,7 @@ export class Input {
     this.keyDown = new Set();
     this.latchedPress = new Set(); // teclas presionadas entre pasos (toques muy cortos)
     this.latchedRelease = new Set();
+    this.suppressed = new Set(); // teclas ignoradas hasta soltarlas (atajos de desarrollo)
     this.state = {};
     for (const a of ACTIONS) {
       this.state[a] = { down: false, pressed: false, released: false, buffer: 0, heldTime: 0 };
@@ -41,6 +44,7 @@ export class Input {
     };
     this._onKeyUp = (e) => {
       this.keyDown.delete(e.code);
+      this.suppressed.delete(e.code);
       this.latchedRelease.add(e.code);
     };
     this._onBlur = () => {
@@ -55,6 +59,42 @@ export class Input {
     target.addEventListener('pointerdown', () => {
       this.anyKeyLatched = true;
     });
+    // Botones del mouse como teclas
+    this._onMouseDown = (e) => {
+      const code = mouseCode(e.button);
+      if (this.captureCallback) {
+        e.preventDefault?.();
+        const cb = this.captureCallback;
+        this.captureCallback = null;
+        cb(code);
+        return;
+      }
+      if (this.isBound(code)) e.preventDefault?.();
+      this.lastDevice = 'keyboard';
+      this.keyDown.add(code);
+      this.latchedPress.add(code);
+      for (const l of this.listeners) l(code);
+    };
+    this._onMouseUp = (e) => {
+      const code = mouseCode(e.button);
+      // Evita que los botones laterales naveguen hacia atrás/adelante si están asignados
+      if (this.isBound(code)) e.preventDefault?.();
+      this.keyDown.delete(code);
+      this.suppressed.delete(code);
+      this.latchedRelease.add(code);
+    };
+    target.addEventListener('mousedown', this._onMouseDown);
+    target.addEventListener('mouseup', this._onMouseUp);
+    // Clic derecho asignado (o reasignando): sin menú contextual
+    target.addEventListener('contextmenu', (e) => {
+      if (this.captureCallback || this.isBound('Mouse2')) e.preventDefault?.();
+    });
+  }
+
+  // ¿La tecla (o botón del mouse) está asignada a alguna acción?
+  isBound(code) {
+    for (const a of ACTIONS) if (this.keys[a]?.includes(code)) return true;
+    return false;
   }
 
   onKey(fn) {
@@ -64,6 +104,13 @@ export class Input {
   // Captura la siguiente tecla (para la pantalla de controles).
   captureNextKey(cb) {
     this.captureCallback = cb;
+  }
+
+  // La tecla deja de contar para las acciones hasta que se suelte (por ejemplo, J del vuelo libre,
+  // que también es disparar).
+  suppress(code) {
+    this.suppressed.add(code);
+    this.latchedPress.delete(code);
   }
 
   setBindings(keys) {
@@ -119,6 +166,7 @@ export class Input {
       let latchedP = false;
       let latchedR = false;
       for (const k of keys) {
+        if (this.suppressed.has(k)) continue;
         if (this.keyDown.has(k)) down = true;
         if (this.latchedPress.has(k)) latchedP = true;
         if (this.latchedRelease.has(k)) latchedR = true;
@@ -180,8 +228,15 @@ export class Input {
   }
 }
 
+export function mouseCode(button) {
+  return `Mouse${button}`;
+}
+
 export function prettyKey(code) {
   if (!code) return '—';
+  const mouse = { Mouse0: 'CLIC IZQ.', Mouse1: 'CLIC MEDIO', Mouse2: 'CLIC DER.', Mouse3: 'MOUSE 4', Mouse4: 'MOUSE 5' };
+  if (mouse[code]) return mouse[code];
+  if (code.startsWith('Mouse')) return `MOUSE ${Number(code.slice(5)) + 1}`;
   const map = {
     ArrowLeft: '←',
     ArrowRight: '→',

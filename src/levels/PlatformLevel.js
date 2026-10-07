@@ -147,8 +147,9 @@ export class PlatformLevel extends Scene {
     return n;
   }
 
-  spawnShot(x, y, dir, charged) {
-    this.shots.push(new Shot(x, y, dir, charged));
+  // aim: dirección {x, y} del disparo (por defecto horizontal hacia dir)
+  spawnShot(x, y, dir, charged, aim = null) {
+    this.shots.push(new Shot(x, y, dir, charged, aim));
   }
 
   addBits(n, x, y) {
@@ -226,9 +227,10 @@ export class PlatformLevel extends Scene {
 
   onChocoDamaged() {}
 
-  // Caer al vacío: en el prólogo vuelve a la última plataforma; en los niveles es muerte.
+  // Caer al vacío: en el prólogo (y en el modo desarrolladora) vuelve a la última plataforma;
+  // en los niveles es muerte.
   onChocoFell(c) {
-    if (this.noDeath) {
+    if (this.noDeath || this.game.devMode) {
       this.returnToSafe(c);
       return;
     }
@@ -459,7 +461,7 @@ export class PlatformLevel extends Scene {
 
     // Vista Debug
     if (c.items.laptop) {
-      const active = this.laptop.update(dt, inp.down('debug') && c.alive && c.state === 'play');
+      const active = this.laptop.update(dt, inp.down('debug') && c.alive && c.state === 'play', g.devMode);
       if (this.laptop.justToggled) playSfx(g.audio, active ? 'debugOn' : 'debugOff');
       this.hum = debugHum(g.audio, this.hum, active);
       this.map.ghostSolid = active;

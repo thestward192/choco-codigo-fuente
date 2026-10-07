@@ -302,7 +302,7 @@ export class Level5Scene extends PlatformLevel {
         playSfx(this.game.audio, 'overflowRumble');
       }
     }
-    if (c.alive && c.state === 'play' && c.footY > o.y + 3) {
+    if (c.alive && c.state === 'play' && !c.noclip && c.footY > o.y + 3) {
       playSfx(this.game.audio, 'overflowHit');
       this.game.effects.glitch(0.3, 0.8);
       this.popups.push({ text: L5.overflowHit, x: c.cx, y: c.body.y - 8, t: 0, color: '#FF5AA8' });

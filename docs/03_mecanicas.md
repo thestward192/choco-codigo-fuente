@@ -15,7 +15,7 @@ Todas las medidas usan la resolución interna de **320×180 px**, tiles de **16�
 | Interactuar / hackear / hablar | E | ↑ en plataformas | Y (Triángulo) |
 | Pausa | Esc | P / Enter | Start |
 
-- Los controles se pueden **reasignar** en Opciones.
+- Los controles se pueden **reasignar** en Opciones y desde la pausa, con teclas o con botones del mouse (izquierdo, central, derecho y laterales).
 - La acción de un objeto no obtenido no hace nada (ni sonido).
 - Soportar gamepad con la Gamepad API, con zona muerta de 0.25 en los sticks.
 - **Input buffer:** los botones de salto y disparo guardan la pulsación 0.1 s para que un toque un poco temprano siga contando.
@@ -61,6 +61,7 @@ Todas las medidas usan la resolución interna de **320×180 px**, tiles de **16�
 | Especial | — | Atraviesa enemigos |
 | Cadencia | 0.25 s, máximo 2 en pantalla | Carga completa a los 0.8 s |
 
+- **Puntería:** mantener ↑ al disparar apunta hacia arriba; ↑ con ← o → apunta en diagonal hacia arriba. En el aire, ↓ apunta hacia abajo y ↓ con ← o → en diagonal hacia abajo. En el suelo, ↓ no apunta, porque baja de las plataformas de un sentido. El disparo cargado se apunta igual, al soltar.
 - Mientras carga, Choco se mueve al 70 % de velocidad.
 - Enemigos **Blindados** reflejan el disparo normal hacia atrás.
 - En el nivel 2 el báculo es un comando de batalla. En el nivel 3 el disparo **aturde** a un bot 2 s pero hace ruido en un radio de 80 px (riesgo-recompensa).

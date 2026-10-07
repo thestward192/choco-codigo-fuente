@@ -1,6 +1,6 @@
-// Controles: lista de acciones con tecla principal y alterna. Desde Opciones se pueden
-// reasignar (con detección de conflictos: si la tecla ya se usa, se intercambian).
-// Desde la pausa se muestra solo para consultar.
+// Controles: lista de acciones con tecla principal y alterna. Se pueden reasignar desde Opciones
+// y desde la pausa (con detección de conflictos: si la tecla ya se usa, se intercambian).
+// readOnly: solo consulta (muestra también el gamepad).
 import { Scene } from '../core/game.js';
 import { SCREEN } from '../config/balance.js';
 import { drawText } from '../art/font.js';

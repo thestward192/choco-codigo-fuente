@@ -475,3 +475,66 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
   - El build se probó en Chrome y Edge sin errores en consola: título, opciones, créditos y Nueva partida hasta el prólogo.
   - Firefox no está instalado en esta máquina, así que falta probarlo a mano.
 - **Balance:** sin datos de partidas reales, no se cambió ningún número. Los tiempos objetivo de cada nivel están en su documento. Los ajustes se harán en `balance.js` con los tiempos y las muertes que muestra la pantalla de resultados.
+
+## Ajustes después del Hito 8
+
+### Nivel 5
+
+- **Plataformas donde Choco no cabía parado:** Choco mide 20 px de alto y estas plataformas quedaban a una sola fila (16 px) de un techo sólido. Al subir a ellas se golpeaba la cabeza y caía.
+  - 5-C: el último descanso (columnas 5–8) estaba justo debajo de la parte sólida de la cornisa de salida, y el hueco de un sentido para subir (9–11) quedaba al lado. Además, al saltar desde la última fantasma (2–3), la cornisa sólida de arriba cortaba el salto antes de llegar a la altura del descanso.
+    - Ahora el tramo de un sentido va de la columna 2 a la 11.
+    - Se comparó simulando con la física del juego todas las combinaciones de salto, doble salto y movimiento. Fantasma → descanso pasó de salir en el 2,9 % de las combinaciones al 33 %; los otros saltos entre fantasmas de la sección salen en un ~27 %. Descanso → cornisa sale en el 82 %.
+    - También se probó bajar el descanso una fila, pero la subida a la cornisa bajaba al 48 %.
+  - 5-D: igual con la última cornisa (columnas 2–5) y el hueco de 3–5. El tramo de un sentido ahora va de la 2 a la 5.
+  - 5-B: la plataforma de G-14 queda a una fila del candado 1, pero solo mientras el candado está cerrado, y no hace falta pararse ahí. Se dejó igual.
+  - Una prueba revisa que sobre toda plataforma de los niveles 1, 4 y 5 quepa Choco. Los candados no cuentan porque se abren.
+  - Por un malentendido se había bajado una plataforma fantasma de 5-E; se dejó como estaba.
+
+### Modo desarrolladora (solo `npm run dev`)
+
+- **No se muere nunca:**
+  - Los golpes se sienten: empujón, parpadeo y sonido. Quitan vida, pero nunca la bajan de 1.
+  - Las muertes directas se ignoran: aplastamiento, calor, etc.
+  - Caer al vacío devuelve a la última plataforma segura, como en el prólogo.
+  - Vale para los niveles de plataformas y los cenitales.
+- **Vuelo libre con J:**
+  - Funciona en los niveles de plataformas. J lo enciende y lo apaga.
+  - Choco vuela con las flechas, sin gravedad ni colisiones, atraviesa paredes y no recibe daño. Mantener salto lo hace más rápido: `DEV.NOCLIP_SPEED` y `DEV.NOCLIP_FAST`.
+  - La masa del Overflow lo ignora mientras vuela.
+  - J también dispara. Al usar el atajo, la tecla deja de contar hasta que se suelta (`Input.suppress`), para que no salga un disparo.
+  - Aparece un aviso en pantalla al encenderlo o apagarlo.
+- **Habilidades infinitas:**
+  - La Vista Debug no gasta batería y no se bloquea.
+  - El Escudo Firewall no tiene recarga: se puede volver a activar en cuanto se apaga.
+  - Las nubes de vapor de Hezron no se acaban.
+  - En las batallas por turnos la RAM siempre está llena.
+  - El doble salto sigue igual (uno por salto), para que las secciones de saltos se puedan probar como las juega la gente. Para moverse sin límites está el vuelo libre con J.
+
+### Controles
+
+- **Reasignar teclas desde la pausa:** antes, la pantalla de Controles solo se podía editar desde Opciones. Desde la pausa era de solo lectura. Ahora se edita desde los dos lados, con el mismo intercambio cuando la tecla ya está en uso. Los cambios se guardan en las opciones.
+- **"Saltar" en vez de "Saltar / confirmar":** confirmar en los menús es una acción aparte (Espacio, Z o Enter) que no se reasigna. Si alguien movía el salto a otra tecla, la etiqueta daba a entender que confirmar también cambiaba.
+- **Botones del mouse:**
+  - Se pueden asignar a cualquier acción, igual que una tecla. Internamente son `Mouse0` (izquierdo), `Mouse1` (central), `Mouse2` (derecho), `Mouse3` y `Mouse4` (laterales).
+  - Si el clic derecho está asignado, no se abre el menú contextual. Si los botones laterales están asignados, no navegan hacia atrás ni adelante en el navegador.
+  - Se acortaron el texto de ayuda y la etiqueta "Disparar (mantené: carga)" para que quepan en la pantalla.
+
+### Báculo apuntado
+
+- **Ocho direcciones:**
+  - ↑ dispara hacia arriba y ↑ con ← o → en diagonal hacia arriba.
+  - En el aire, ↓ dispara hacia abajo y ↓ con ← o → en diagonal hacia abajo.
+  - En el suelo ↓ no apunta, porque con ↓ Choco baja de las plataformas de un sentido.
+  - Las direcciones y los puntos de salida están en `STAFF.AIM`.
+- **Arte:**
+  - Poses nuevas de brazo y báculo: vertical arriba, diagonal arriba, diagonal abajo y vertical abajo.
+  - El báculo diagonal es un sprite nuevo de 8×8; el de abajo es el mismo volteado.
+  - El proyectil no se rota: las llaves `{ }` se leen igual en cualquier dirección y así siguen nítidas.
+- **Enemigos:** un disparo recto hacia arriba o hacia abajo no tiene dirección horizontal, así que no empuja a los enemigos hacia ningún lado.
+
+### Nivel 4 · Redondel
+
+- **Error corregido:** la pelea arranca apenas Choco pasa la puerta izquierda, y la primera oleada sacaba un toro por esa misma puerta en el acto. El toro aparecía encima de Choco y le quitaba vida. Al reintentar, sin el diálogo de introducción, pasaba de inmediato.
+- **Arreglo:**
+  - Cada toro se anuncia `REDONDEL.SPAWN_WARN` (0.8 s) antes, con polvo y bufido en su puerta.
+  - Si Choco está a menos de `REDONDEL.SPAWN_SAFE` (96 px) de esa puerta, el toro entra por la otra.

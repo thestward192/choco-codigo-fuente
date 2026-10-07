@@ -422,6 +422,7 @@ export class BattleScene extends Scene {
     this.t += dt;
     const inp = this.game.input;
     const b = this.b;
+    if (this.game.devMode) b.choco.ram = BATTLE.RAM_MAX; // modo desarrolladora: RAM infinita
     if (this.msg) this.msg.t += dt;
     if (this.winBanner) this.winBanner.t += dt;
     if (this.itemPop) this.itemPop.t += dt;

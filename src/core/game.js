@@ -48,6 +48,18 @@ export class Game {
     this.applyOptions();
     if (!save.canPersist) this.notify(TEXTS.system.cantSave, 5);
 
+    // Modo desarrolladora: J activa/desactiva el vuelo libre en los niveles de plataformas
+    this.noclip = false;
+    if (DEV_TOOLS) {
+      input.onKey((code) => {
+        if (code !== 'KeyJ' || !this.devMode || !this.top?.choco?.canNoclip) return;
+        input.suppress(code);
+        this.noclip = !this.noclip;
+        this.toasts = this.toasts.filter((t) => t.text !== TEXTS.debug.noclipOn && t.text !== TEXTS.debug.noclipOff);
+        this.notify(this.noclip ? TEXTS.debug.noclipOn : TEXTS.debug.noclipOff, 2);
+      });
+    }
+
     window.addEventListener('blur', () => this.suspend());
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.suspend();

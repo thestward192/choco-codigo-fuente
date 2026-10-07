@@ -59,6 +59,15 @@ export const STAFF = {
   RECOIL_PX: 1,
   MUZZLE_X: 15, // salida del disparo (núcleo del báculo) relativa al centro de los pies
   MUZZLE_Y: -10,
+  // Disparo apuntado: salida del núcleo (x hacia donde mira Choco) y dirección del proyectil.
+  // ↑ en el suelo o en el aire; ↓ solo en el aire (en el suelo ↓ baja de las plataformas).
+  AIM: {
+    h: { x: 15, y: -10, dx: 1, dy: 0 },
+    up: { x: 8, y: -22, dx: 0, dy: -1 },
+    diagUp: { x: 12, y: -16, dx: 0.7071, dy: -0.7071 },
+    diagDown: { x: 12, y: -5, dx: 0.7071, dy: 0.7071 },
+    down: { x: 8, y: -2, dx: 0, dy: 1 },
+  },
 };
 
 // Vida: la barra de chocolate
@@ -596,6 +605,8 @@ export const REDONDEL = {
   ],
   BOMB_EVERY: [4.5, 3.2, 2.4], // bombetas que caen del cielo por oleada
   GOLDEN_WAVE: 2, // la Y dorada aparece en la tercera oleada (índice 2)
+  SPAWN_WARN: 0.8, // polvo y bufido en la puerta antes de que entre cada toro (telegrafiado)
+  SPAWN_SAFE: 96, // si Choco está a menos de esto de la puerta, el toro entra por la otra
 };
 
 // Jefe: El Torito Kernel (80×56)
@@ -727,6 +738,12 @@ export const PATCH = {
 
 // Modo Hotfix (se desbloquea al terminar el juego): 1 cuadrito fijo, sin cacao, la mitad de los
 // checkpoints. Lista de checkpoints que se apagan por nivel.
+// Modo desarrolladora (solo npm run dev): vuelo libre con J para probar los niveles
+export const DEV = {
+  NOCLIP_SPEED: 180, // px/s volando y atravesando paredes
+  NOCLIP_FAST: 2.5, // multiplicador manteniendo salto
+};
+
 export const HOTFIX = {
   MAX_HP: 1,
   SKIP_CHECKPOINTS: { 1: [1], 2: [1], 3: ['openspace', 'servers'], 4: [1, 3], 5: [1] },

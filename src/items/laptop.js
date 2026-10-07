@@ -10,12 +10,17 @@ export class Laptop {
     this.justToggled = false;
   }
 
-  // wantsOn: el jugador mantiene el botón de la Vista Debug
-  update(dt, wantsOn) {
+  // wantsOn: el jugador mantiene el botón de la Vista Debug.
+  // infinite: modo desarrolladora, la batería no se gasta.
+  update(dt, wantsOn, infinite = false) {
+    if (infinite) {
+      this.battery = LAPTOP.BATTERY_MAX;
+      this.locked = false;
+    }
     const was = this.active;
     this.active = wantsOn && !this.locked && this.battery > 0;
     if (this.active) {
-      this.battery -= LAPTOP.DRAIN * dt;
+      if (!infinite) this.battery -= LAPTOP.DRAIN * dt;
       this.idleT = 0;
       if (this.battery <= 0) {
         this.battery = 0;

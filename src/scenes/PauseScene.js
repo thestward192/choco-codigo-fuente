@@ -65,7 +65,7 @@ export class PauseScene extends Scene {
       g.pop();
       this.level.restartFromCheckpoint();
     } else if (r === 'options') g.push(new OptionsScene(g));
-    else if (r === 'controls') g.push(new ControlsScene(g, { readOnly: true }));
+    else if (r === 'controls') g.push(new ControlsScene(g, { readOnly: false }));
     else if (r === 'map') {
       g.push(
         new ConfirmScene(g, this.level.quitAsk || T.toMapAsk, () => {

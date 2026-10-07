@@ -85,6 +85,7 @@ export class TopdownChoco {
     if (this.cooldown > 0) this.cooldown -= dt;
     if (this.shootPose > 0) this.shootPose -= dt;
     shieldUpdate(this.shield, dt);
+    if (this.scene.game?.devMode) this.shield.cooldown = 0; // modo desarrolladora: sin recarga
     this.blinkT -= dt;
     if (this.blinkT < -0.12) this.blinkT = fxRng.range(2, 4.5);
 
@@ -267,7 +268,8 @@ export class TopdownChoco {
     }
     this.invuln = HEALTH.INVINCIBLE_TIME;
     s.game.effects.hitstop(HEALTH.HURT_HITSTOP_FRAMES);
-    this.hp -= damage;
+    // Modo desarrolladora: el golpe se siente, pero nunca deja a Choco sin vida
+    this.hp = s.game.devMode ? Math.max(1, this.hp - damage) : this.hp - damage;
     playSfx(s.game.audio, 'hurt');
     s.particles.burst(this.footX, this.eyeY, 10, { speedMin: 30, speedMax: 90, colors: ['#5C3521', '#83522F', '#B07A4A'], lifeMin: 0.3, lifeMax: 0.6, size: 2, endSize: 1 });
     s.onChocoDamaged?.(this.hp);

@@ -461,3 +461,29 @@ describe('Música del nivel 5', () => {
     for (const l of NULL_LAYERS) expect(SONG_NULL_FINAL.channels.some((c) => c.layer === l), l).toBe(true);
   });
 });
+
+describe('Espacio para pararse en las plataformas', () => {
+  it('sobre cada plataforma cabe Choco (los candados no cuentan: se abren)', async () => {
+    const sets = [
+      [await import('../src/levels/level1_cartucho/maps.js'), 'level1Sections', 'L1_LEGEND'],
+      [await import('../src/levels/level4_santacruz/maps.js'), 'level4Sections', 'SC_LEGEND'],
+      [{ level5Sections, CODE_LEGEND }, 'level5Sections', 'CODE_LEGEND'],
+    ];
+    const tight = [];
+    for (const [mod, fn, leg] of sets) {
+      for (const [id, s] of Object.entries(mod[fn]())) {
+        const m = new Tilemap([...s.rows], mod[leg]);
+        m.ghostSolid = true;
+        for (let y = 1; y < s.rows.length; y++) {
+          for (let x = 0; x < s.rows[y].length; x++) {
+            if (!'=gf'.includes(s.rows[y][x])) continue;
+            let free = 0;
+            for (let yy = y - 1; yy >= 0 && (s.rows[yy][x] === 'L' || !m.isSolid(x, yy)); yy--) free += TS;
+            if (free < PLATFORMER.HITBOX_H) tight.push(`${fn} ${id} x${x} fila ${y}`);
+          }
+        }
+      }
+    }
+    expect(tight).toEqual([]);
+  });
+});

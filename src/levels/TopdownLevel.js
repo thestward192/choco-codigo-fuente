@@ -226,7 +226,7 @@ export class TopdownLevel extends Scene {
     }
     if (this.cutscene) this.cutscene.update(dt);
     if (this.choco.items.laptop) {
-      const active = this.laptop.update(dt, g.input.down('debug') && this.choco.state === 'play' && !this.cutscene);
+      const active = this.laptop.update(dt, g.input.down('debug') && this.choco.state === 'play' && !this.cutscene, g.devMode);
       if (this.laptop.justToggled) playSfx(g.audio, active ? 'debugOn' : 'debugOff');
       this.hum = debugHum(g.audio, this.hum, active);
     }

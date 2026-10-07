@@ -155,7 +155,7 @@ export const TEXTS = {
     textSpeed: 'Velocidad del texto',
     controls: 'Controles',
     devMode: 'Modo desarrolladora',
-    devModeOn: 'Mapas abiertos · vidas infinitas',
+    devModeOn: 'Mapas abiertos · no morís · J: volar',
     back: 'Volver',
     yes: 'Sí',
     no: 'No',
@@ -166,9 +166,9 @@ export const TEXTS = {
 
   controls: {
     title: 'Controles',
-    hint: 'ENTER reasignar · ← → tecla principal/alterna · ESC volver',
+    hint: 'ENTER reasignar (teclas o mouse) · ← → columna · ESC volver',
     readOnlyHint: 'ESC volver · Los controles se reasignan en Opciones',
-    press: (action) => `Presioná una tecla para: ${action}`,
+    press: (action) => `Tecla o clic para: ${action}`,
     swapped: (other) => `Intercambiada con: ${other}`,
     reset: 'Restaurar controles por defecto',
     resetDone: 'Controles restaurados',
@@ -178,8 +178,8 @@ export const TEXTS = {
       right: 'Derecha',
       up: 'Arriba',
       down: 'Abajo',
-      jump: 'Saltar / confirmar',
-      shoot: 'Disparar (mantener = cargar)',
+      jump: 'Saltar',
+      shoot: 'Disparar (mantené: carga)',
       shield: 'Escudo Firewall',
       lasso: 'Lazo de Fibra Óptica',
       debug: 'Vista Debug',
@@ -787,6 +787,8 @@ export const TEXTS = {
     infiniteLives: 'VIDAS INFINITAS',
     stepping: 'CUADRO A CUADRO (F7 avanza)',
     bossDemo: 'BUG DE PRUEBA',
+    noclipOn: 'Vuelo libre: atravesás todo (J para apagar)',
+    noclipOff: 'Vuelo libre apagado',
   },
 
   // Menú de desarrollo (solo con ?scene=dev)

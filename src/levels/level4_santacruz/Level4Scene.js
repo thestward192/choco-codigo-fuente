@@ -458,7 +458,7 @@ export class Level4Scene extends PlatformLevel {
       if (r.wave > 0) this.showBanner(L4.redondel.wave(r.wave + 1), '', null, 1.6);
       waves[r.wave].toros.forEach((side, i) => {
         r.spawns ||= [];
-        r.spawns.push({ side, t: i * 1.2 });
+        r.spawns.push({ side, t: i * 1.2 + REDONDEL.SPAWN_WARN });
       });
       if (r.wave === REDONDEL.GOLDEN_WAVE && !this.goldenY[1]) {
         const g = d.golden;
@@ -467,14 +467,29 @@ export class Level4Scene extends PlatformLevel {
         playSfx(this.game.audio, 'goldenY');
       }
     }
+    const gateX = (side) => (side < 0 ? (d.gateL + 1) * TS + 8 : d.gateR * TS - 8);
+    // Nunca encima de Choco: si está junto a esa puerta, el toro entra por la otra
+    const safeSide = (side) => (Math.abs(c.cx - gateX(side)) < REDONDEL.SPAWN_SAFE ? -side : side);
+    const floorY = this.section.floor * TS;
     for (const sp of r.spawns || []) {
+      if (sp.done) continue;
       sp.t -= dt;
-      if (sp.t <= 0 && !sp.done) {
-        sp.done = true;
-        const x = sp.side < 0 ? (d.gateL + 1) * TS + 8 : d.gateR * TS - 8;
-        this.enemies.push(new Toro(x, this.section.floor * TS, { dir: -sp.side, arena: true }));
+      // Aviso: polvo y bufido en la puerta por donde va a entrar
+      if (sp.t <= REDONDEL.SPAWN_WARN && !sp.warned) {
+        sp.warned = true;
+        sp.side = safeSide(sp.side);
         playSfx(this.game.audio, 'toroCharge');
-        this.particles.burst(x, this.section.floor * TS - 4, 14, { angle: -Math.PI / 2, spread: Math.PI, speedMin: 20, speedMax: 70, colors: ['#B85E36', '#E6D488'], lifeMin: 0.3, lifeMax: 0.6 });
+      }
+      if (sp.warned && sp.t > 0 && R.chance(0.5)) {
+        const wx = gateX(sp.side);
+        this.particles.spawn({ x: wx + R.range(-6, 6), y: floorY - 2, vx: R.range(-20, 20), vy: R.range(-50, -15), gravity: 120, life: 0.45, colors: ['#B85E36', '#E6D488'] });
+      }
+      if (sp.t <= 0) {
+        sp.done = true;
+        sp.side = safeSide(sp.side);
+        const x = gateX(sp.side);
+        this.enemies.push(new Toro(x, floorY, { dir: -sp.side, arena: true }));
+        this.particles.burst(x, floorY - 4, 14, { angle: -Math.PI / 2, spread: Math.PI, speedMin: 20, speedMax: 70, colors: ['#B85E36', '#E6D488'], lifeMin: 0.3, lifeMax: 0.6 });
       }
     }
     // Bombetas que caen del cielo

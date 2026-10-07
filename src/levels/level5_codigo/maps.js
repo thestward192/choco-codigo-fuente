@@ -119,7 +119,10 @@ function buildB() {
 // ---------- 5-C · Memoria fantasma ----------
 function buildC() {
   const H = 32;
-  const { b, G } = shaft(H, [9, 11]);
+  // El tramo de un sentido de la cornisa va de la pared izquierda al hueco (2–11): cubre el último
+  // descanso (5–8), donde Choco (20 px) no cabría bajo un techo sólido, y el camino desde la última
+  // fantasma (2–3), donde la cornisa sólida le cortaba el salto a la altura del descanso.
+  const { b, G } = shaft(H, [2, 11]);
   b.set(3, G - 1, 'P');
   // Tramo 1: tres fantasmas hasta el primer descanso
   b.hline(7, 8, G - 3, 'g');
@@ -130,7 +133,7 @@ function buildC() {
   b.hline(8, 9, G - 15, 'g');
   b.hline(4, 5, G - 18, 'g');
   b.hline(2, 3, G - 21, 'g');
-  b.hline(5, 8, G - 24, '='); // descanso
+  b.hline(5, 8, G - 24, '='); // descanso, bajo la cornisa de un sentido
   // Desvío de la Y dorada: cadena fantasma larga hacia la derecha (exige gastar la batería)
   b.set(17, G - 15, 'g');
   b.hline(14, 15, G - 18, 'g');
@@ -145,7 +148,8 @@ function buildC() {
 // Pozo central sin piso alto: cornisas en las paredes y un nodo sobre el vacío entre cada par.
 function buildD() {
   const H = 30;
-  const { b, G } = shaft(H, [3, 5]);
+  // El tramo de un sentido llega hasta la pared (2–5): la última cornisa queda debajo
+  const { b, G } = shaft(H, [2, 5]);
   b.set(4, G - 1, 'P');
   b.set(6, G - 1, '!');
   const steps = [

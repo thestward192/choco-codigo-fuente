@@ -876,7 +876,8 @@ export class Level3Scene extends TopdownLevel {
       playSfx(this.game.audio, 'denied');
       return;
     }
-    this.state.vapor[id] = left - 1;
+    // Modo desarrolladora: las nubes de vapor no se acaban
+    if (!this.game.devMode) this.state.vapor[id] = left - 1;
     const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[c.dir];
     let tx = c.footX + d[0] * VAPOR.THROW_DIST;
     let ty = c.footY + d[1] * VAPOR.THROW_DIST;
