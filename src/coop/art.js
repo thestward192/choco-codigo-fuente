@@ -1,8 +1,8 @@
 // Dibujos compartidos de las pantallas del Modo Sincronizado: personajes en los menús,
 // cajitas del código de sala e indicador de ping.
-import { SpriteCache } from '../art/bake.js';
-import { buildFrameRows, frameKey, chocoFrame, PALETTE, FRAME_W, FRAME_H } from '../art/choco.js';
-import { TAPITA_SKETCH, COOP, UI } from '../art/palettes.js';
+import { chocoFrame, FRAME_W, FRAME_H, ANIMS as CHOCO_ANIMS } from '../art/choco.js';
+import { ANIMS as TAPITA_ANIMS, tapitaFrame, FRAME_W as TAPITA_W, ANCHOR_Y as TAPITA_ANCHOR } from '../art/tapita.js';
+import { COOP, UI } from '../art/palettes.js';
 import { drawText } from '../art/font.js';
 import { pingQuality } from '../net/session.js';
 
@@ -10,26 +10,30 @@ export { CHARS } from './lobbyState.js';
 export const charColor = (who) => (who === 'tapita' ? COOP.tapita : COOP.choco);
 export const otherChar = (who) => (who === 'tapita' ? 'choco' : 'tapita');
 
-let tapitaCache = null;
-
-// Sprite de un personaje del cooperativo. Tapita es un boceto (Choco con su paleta) hasta el Hito 10.
-export function coopSprite(who, frame, face = 'normal', hasStaff = true) {
-  if (who !== 'tapita') return chocoFrame(frame, face, hasStaff);
-  if (!tapitaCache) tapitaCache = new SpriteCache(buildFrameRows, { ...PALETTE, ...TAPITA_SKETCH });
-  return tapitaCache.get(frameKey(frame, face, false));
-}
+const pickFrame = (anim, t) => {
+  const n = anim.frames.length;
+  const i = Math.floor(t * anim.fps);
+  return anim.frames[anim.loop === false ? Math.min(n - 1, i) : i % n];
+};
 
 // Dibuja un personaje con los pies en (footX, footY).
-// opts: anim ({fps, frames, loop}), t (segundos), scale, flip, face, staff, sx/sy (squash), alpha
-export function drawCoopChar(ctx, who, footX, footY, { anim, t = 0, scale = 2, flip = false, face = 'normal', staff = true, sx = 1, sy = 1, alpha = 1, frame = null } = {}) {
-  let f = frame;
-  if (!f) {
-    const n = anim.frames.length;
-    let i = Math.floor(t * anim.fps);
-    i = anim.loop === false ? Math.min(n - 1, i) : i % n;
-    f = anim.frames[i];
+// opts: anim (nombre: 'idle', 'run', 'victory'…, o una animación de Choco), t (segundos), scale,
+// flip, face, staff, sx/sy (squash), alpha, frame (pose fija: en Tapita, el brazo estirado)
+export function drawCoopChar(ctx, who, footX, footY, { anim = 'idle', t = 0, scale = 2, flip = false, face = 'normal', staff = true, sx = 1, sy = 1, alpha = 1, frame = null } = {}) {
+  const name = typeof anim === 'string' ? anim : Object.keys(CHOCO_ANIMS).find((k) => CHOCO_ANIMS[k] === anim) || 'idle';
+  if (who === 'tapita') {
+    const A = TAPITA_ANIMS[name] || TAPITA_ANIMS.idle;
+    const f = frame ? TAPITA_ANIMS.throw.frames[1] : pickFrame(A, t);
+    const spr = tapitaFrame(f, face);
+    const dw = Math.max(1, Math.round(TAPITA_W * scale * sx));
+    const dh = Math.max(1, Math.round(spr.h * scale * sy));
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(spr.get(flip), Math.round(footX - dw / 2), Math.round(footY - TAPITA_ANCHOR * scale * sy), dw, dh);
+    ctx.globalAlpha = 1;
+    return;
   }
-  const spr = coopSprite(who, f, face, staff);
+  const f = frame || pickFrame(typeof anim === 'string' ? CHOCO_ANIMS[name] || CHOCO_ANIMS.idle : anim, t);
+  const spr = chocoFrame(f, face, staff);
   const dw = Math.max(1, Math.round(FRAME_W * scale * sx));
   const dh = Math.max(1, Math.round(FRAME_H * scale * sy));
   ctx.globalAlpha = alpha;

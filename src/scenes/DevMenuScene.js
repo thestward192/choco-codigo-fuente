@@ -63,8 +63,9 @@ export class DevMenuScene extends Scene {
       else if (id === 'extra') g.changeScene(() => new ExtraScene(g), { type: 'fade' });
       else if (id === 'modo') Flow.toModeSelect(g);
       else if (id === 'coop') Flow.toCoopMenu(g);
-      else if (id === 'coopLocal' || id === 'sala') {
-        import('../coop/LocalCoopScene.js').then(({ LocalCoopScene }) => g.changeScene(() => new LocalCoopScene(g, { solo: id === 'sala', pj: 'tapita' }), { type: 'glitch' }));
+      else if (id === 'coopLocal' || id === 'sala' || id === 'coopPrologo' || id === 'coopLab') {
+        const sala = id === 'coopPrologo' ? 'prologue' : id === 'coopLab' ? 'lab' : 'test';
+        import('../coop/LocalCoopScene.js').then(({ LocalCoopScene }) => g.changeScene(() => new LocalCoopScene(g, { solo: id === 'sala', pj: 'tapita', sala }), { type: 'glitch' }));
       }
     }
   }

@@ -2,6 +2,7 @@
 //   ?coop=local → las dos vistas del cooperativo en la misma página, conectadas en memoria (loopback),
 //                 con el mismo teclado: Choco a la izquierda (WASD) y Tapita a la derecha (flechas).
 //   ?scene=sala → la sala de pruebas cooperativa con un solo personaje (?pj=tapita para Tapita).
+//   &sala=prologo | elementos | pruebas → qué sala se abre (por defecto, la de pruebas del Hito 10)
 // ?lag=150 también funciona aquí. No es un modo de juego: el cooperativo local está fuera de alcance.
 import { Scene } from '../core/game.js';
 import { SCREEN } from '../config/balance.js';
@@ -13,7 +14,10 @@ import { UI, COOP as COOP_COLORS } from '../art/palettes.js';
 import { LoopHub } from '../net/loopTransport.js';
 import { LagTransport } from '../net/transport.js';
 import { CoopSession } from '../net/session.js';
-import { CoopTestRoom } from './CoopTestRoom.js';
+import { Flow } from '../game/flow.js';
+
+// ?sala=… → id de la sala
+const SALAS = { prologo: 'prologue', elementos: 'lab', pruebas: 'test' };
 
 // Teclas de cada jugador (asignación completa: lo que no está queda sin tecla)
 function keymap(map) {
@@ -33,6 +37,8 @@ const P1_KEYS = keymap({
   debug: ['KeyQ'],
   interact: ['KeyE'],
   signal: ['KeyT'],
+  confirm: ['KeyE'],
+  pause: ['Escape'],
 });
 const P2_KEYS = keymap({
   left: ['ArrowLeft'],
@@ -46,10 +52,12 @@ const P2_KEYS = keymap({
   debug: ['KeyU', 'Numpad4'],
   interact: ['KeyO', 'Numpad5'],
   signal: ['KeyP', 'Numpad6'],
+  confirm: ['KeyO', 'Numpad5'],
+  pause: ['Backspace'],
 });
 
 export class LocalCoopScene extends Scene {
-  constructor(game, { solo = false, pj = null } = {}) {
+  constructor(game, { solo = false, pj = null, sala = null } = {}) {
     super(game);
     this.online = true;
     this.solo = solo;
@@ -59,6 +67,7 @@ export class LocalCoopScene extends Scene {
     const params = new URLSearchParams(globalThis.location?.search || '');
     this.lag = Math.max(0, Number(params.get('lag')) || 0);
     this.soloChar = (pj || params.get('pj')) === 'tapita' ? 'tapita' : 'choco';
+    this.sala = sala || SALAS[params.get('sala')] || 'test';
     this.start();
   }
 
@@ -74,7 +83,7 @@ export class LocalCoopScene extends Scene {
     this.sessions = [host];
     await host.create();
     if (this.solo) {
-      this.rooms = [new CoopTestRoom(this.game, { session: host, mine: this.soloChar, local: true, onLeave: () => this.restart() })];
+      this.rooms = [this.makeRoom(host, this.soloChar, null)];
       this.rooms[0].enter();
       return;
     }
@@ -82,19 +91,22 @@ export class LocalCoopScene extends Scene {
     this.sessions.push(guest);
     await guest.join(host.code);
     this.inputs = [new Input(window, { keys: P1_KEYS, usePad: false }), new Input(window, { keys: P2_KEYS, usePad: false })];
-    this.rooms = [
-      new CoopTestRoom(this.game, { session: host, mine: 'choco', input: this.inputs[0], local: true, onLeave: () => this.restart() }),
-      new CoopTestRoom(this.game, { session: guest, mine: 'tapita', input: this.inputs[1], local: true, onLeave: () => this.restart() }),
-    ];
+    this.rooms = [this.makeRoom(host, 'choco', this.inputs[0]), this.makeRoom(guest, 'tapita', this.inputs[1])];
     this.views = this.rooms.map(() => createCanvas(SCREEN.W, SCREEN.H));
     this.game.renderer.setSize(SCREEN.W * 2, SCREEN.H);
     this.rooms[0].enter();
   }
 
+  makeRoom(session, mine, input) {
+    return Flow.makeCoopStage(this.game, { map: this.sala, mine, session, input, local: true, seed: 1, onLeave: () => this.restart() });
+  }
+
   // Al terminar la sala, otra vez desde el principio
   restart() {
+    if (this.restarting) return;
+    this.restarting = true;
     const g = this.game;
-    g.changeScene(() => new LocalCoopScene(g, { solo: this.solo, pj: this.soloChar }), { type: 'fade' });
+    g.changeScene(() => new LocalCoopScene(g, { solo: this.solo, pj: this.soloChar, sala: this.sala }), { type: 'fade' });
   }
 
   exit() {

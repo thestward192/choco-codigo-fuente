@@ -88,7 +88,6 @@ export const TEXTS = {
     player: (n) => `Jugador ${n}`,
     you: 'VOS',
     chars: { choco: 'Choco', tapita: 'Tapita' },
-    sketch: 'boceto',
     ready: 'LISTO',
     pickHint: '← → personaje · ENTER listo · C copiar código · ESC salir',
     unreadyHint: 'ESC: ya no estoy listo',
@@ -115,6 +114,8 @@ export const TEXTS = {
       debug: 'DEBUG',
       planted: 'ANCLA',
       umbrella: 'SOMBRILLA',
+      heat: 'CALOR',
+      air: 'AIRE',
       status: { menu: 'en el menú', lost: 'desconectado', respawn: 'reapareciendo' },
     },
 
@@ -140,6 +141,110 @@ export const TEXTS = {
         void: 'Choco cruza con el lazo. Con su Vista Debug, el puente fantasma aguanta a los dos.',
         exit: 'Salida: entren los dos para volver a la sala de espera.',
       },
+      memory: '¡Un recuerdo! (cuenta para los dos)',
+      signNow: '¡Firmá la otra!',
+    },
+
+    skipBoth: 'Los dos: mantengan ESC',
+
+    // Prólogo cooperativo "Prueba de conexión" (Hito 11) — docs/coop/01_historia_coop.md
+    prologue: {
+      title: 'Prueba de conexión',
+      connecting: 'CONECTANDO',
+      intro: [
+        { who: 'choco', face: 'normal', text: '¿Tapita? ¿Me ves?' },
+        { who: 'tapita', face: 'worried', text: 'Te veo, pero te movés a pedacitos. ¿Eso es normal?' },
+        { who: 'choco', face: 'happy', text: 'Es la primera prueba. Diay, todo lo nuevo se ve así.' },
+        { who: 'tapita', face: 'happy', text: 'Bueno. Si algo falla, yo lo encuentro. Reproducible. Anotalo.' },
+      ],
+      lag: [
+        { who: 'lag', text: 'hola... hola... ¿se escucha?... se escucha.' },
+        { who: 'lag', text: 'gracias por abrir el puerto... puerto... a mí nadie me abre nada.' },
+        { who: 'tapita', face: 'worried', text: 'Choco... eso es un bug.' },
+        { who: 'choco', face: 'surprised', text: 'Ese bug acaba de hablar.' },
+        { who: 'lag', text: 'voy a ponerme cómodo en sus recuerdos. ustedes tranquilos. ya llegan. todos llegan. tarde.' },
+      ],
+      signs: {
+        move: 'Prueba de conexión. Muévanse y salten. Con T ponen una señal "¡Aquí!"; mantenela y movela con las flechas.',
+        door: 'Puerta doble: Choco en el marco cian y Tapita en el ámbar, los dos a la vez.',
+        stack: 'Pared muy alta: Choco se para sobre Tapita y salta desde ahí. Arriba hay un botón que le abre el pasillo a ella.',
+        heavy: 'Botón pesado (ámbar): solo se hunde con Tapita. Del otro lado de la compuerta hay uno liviano.',
+        terminal: 'Terminales de doble firma: cada uno en una y E al mismo tiempo (menos de medio segundo).',
+        bar: 'Ya casi conectamos. Vayan juntos a la puerta.',
+      },
+    },
+
+    // Sala de elementos (Hito 11): un elemento de puzzle por estación
+    lab: {
+      title: 'Sala de elementos',
+      signs: {
+        start: 'Sala de elementos: una estación por cada elemento de puzzle. Cada cartel es un checkpoint.',
+        buttons: 'Gris: cualquiera. Ámbar: peso 2 (Tapita). Ámbar con rayas: peso 3 (Tapita plantada, o con Choco encima). La palanca deja la compuerta abierta.',
+        pound: 'Botón de martillazo (↓ + mazo en el aire): queda activo 6 s. El martillazo también rompe el azúcar agrietado.',
+        targets: 'Dianas de código { }: solo el báculo de Choco. La de arriba se alcanza apuntando en diagonal.',
+        terminals: 'Doble firma: E en las dos terminales con menos de medio segundo de diferencia.',
+        scale: 'Balanza: baja el lado con más peso. La cornisa se alcanza desde el plato que sube.',
+        water: 'Choco nada (↓ bucea; 10 s de aire, la burbuja lo recarga). Tapita se disuelve: que cruce encima de Choco o jalada con el lazo. La cortina se tapa con melcocha o se cruza con el escudo de Choco.',
+        heat: 'Calor: las planchas queman a Choco (montado en Tapita, no). El vapor solo se cruza bajo la hoja sombrilla.',
+        boxes: 'Cajas: el mazo las empuja, el disparo cargado rompe las chicas y el lazo las jala. El ventilador eleva a Choco.',
+        exit: 'Salida doble: cada uno en su marco.',
+      },
+    },
+
+    // Mapa de conexiones (selector de mapas) — docs/coop/05_menus_coop.md
+    map: {
+      title: 'choco@chc:~$ ./mapa_de_conexiones',
+      names: {
+        prologue: 'Prueba de conexión',
+        lab: 'Sala de elementos',
+        c1: 'Puntarenas: el Puerto',
+        c2: 'La casa de Juan Carlos',
+        c3: 'La Chicharronera',
+        c4: 'La Sala',
+      },
+      short: { prologue: 'Prueba', lab: 'Elementos', c1: 'Puntarenas', c2: 'Juan Carlos', c3: 'Chicharronera', c4: 'La Sala' },
+      subtitles: {
+        prologue: 'La primera prueba',
+        lab: 'Un elemento de puzzle por estación',
+        c1: 'El recuerdo del paseo al puerto',
+        c2: 'Tarde de piscina y carne asada',
+        c3: 'Los domingos de pailas',
+        c4: 'Donde vive la conexión',
+      },
+      locked: 'Se abre al limpiar los tres recuerdos',
+      memories: (n) => `Recuerdos ${n}/3`,
+      notDone: 'Sin jugar',
+      building: 'En construcción: por ahora se juega la sala de elementos',
+      hostProgress: 'Progreso del anfitrión',
+      waitingHost: 'Esperando al anfitrión…',
+      hintHost: '← → ↑ ↓ elegir · ENTER entrar · ESC sala de espera',
+      hintGuest: '← → ↑ ↓ tu cursor · T sugerir · el anfitrión elige',
+      suggested: 'Tu compañero sugiere este',
+      back: '¿Volver a la sala de espera?',
+      leaveGuest: '¿Salir de la sala?',
+    },
+
+    // Tarjeta del mapa y resultados
+    card: {
+      label: (n) => (n ? `RECUERDO ${n}` : 'PRÓLOGO'),
+      final: 'FINAL',
+      lab: 'SALA DE PRUEBAS',
+    },
+    results: {
+      title: '¡Recuerdo sincronizado!',
+      titleLab: '¡Sala completada!',
+      time: 'Tiempo',
+      grade: 'Nota',
+      falls: 'Caídas',
+      bits: 'Bits',
+      crystals: 'Cristales',
+      memories: 'Recuerdos',
+      sync: 'Sincronía',
+      syncNote: 'llegaron juntos',
+      newBest: '¡Récord!',
+      continue: 'ENTER: continuar',
+      waiting: 'Esperando a tu compañero…',
+      both: 'Los dos confirman para seguir',
     },
 
     // Pausa en línea (el juego no se detiene)
@@ -376,6 +481,8 @@ export const TEXTS = {
     stack: 'MC Stack Overflow',
     office: 'Compa de oficina',
     deadline: 'DEADLINE',
+    tapita: 'Tapita',
+    lag: 'L.A.G.',
   },
 
   credits: {
@@ -963,6 +1070,8 @@ export const TEXTS = {
       { id: 'coop', label: 'Hito 9 · Menú cooperativo (salas)' },
       { id: 'coopLocal', label: 'Hito 10 · Sala cooperativa con dos vistas en un teclado' },
       { id: 'sala', label: 'Hito 10 · Sala cooperativa con Tapita sola' },
+      { id: 'coopPrologo', label: 'Hito 11 · Prólogo cooperativo (dos vistas)' },
+      { id: 'coopLab', label: 'Hito 11 · Sala de elementos (dos vistas)' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },

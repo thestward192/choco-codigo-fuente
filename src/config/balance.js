@@ -810,6 +810,75 @@ export const COOP = {
   ARROW_MARGIN: 10,
   // Parpadeo de los enemigos aturdidos por el martillazo
   STUN_BLINK: 0.12,
+
+  // ---------- Hito 11: agua, calor e interacciones avanzadas ----------
+  // Agua para Choco (docs/coop/03_mecanicas_coop.md)
+  WATER: {
+    SHALLOW_MULT: 0.7, // agua hasta la mitad del cuerpo: camina al 70 %
+    SWIM_SPEED: 70, // px/s horizontal nadando
+    SWIM_ACCEL: 420,
+    RISE_SPEED: 70, // sube solo a la superficie
+    DIVE_SPEED: 60, // con ↓ bucea
+    UP_SPEED: 95, // con ↑ debajo del agua sube más rápido
+    STROKE: -110, // saltar debajo del agua: una brazada hacia arriba
+    FLOAT_Y: 7, // flotando, la superficie queda a esta altura desde la cabeza
+    BOB: 1, // px de vaivén al flotar
+    WATER_ACCEL: 380, // qué tan rápido cambia la velocidad vertical en el agua
+    JUMP_OUT: -280, // salto desde la superficie
+    SHOT_MULT: 0.5, // disparos debajo del agua: mitad de velocidad y alcance
+    SPLASH_VY: 60, // caer al agua más rápido que esto salpica
+    // Tapita: más de la mitad del cuerpo debajo del agua la disuelve; con los pies adentro se daña
+    TAPITA_DISSOLVE: 0.5,
+    TAPITA_WET: 3, // px de pies mojados que ya cuentan como salpicadura
+  },
+  OXYGEN: {
+    MAX: 10, // s debajo del agua
+    REFILL: 6, // por segundo en la superficie
+    AFTER_DAMAGE: 4, // al quedarse sin oxígeno pierde 1 cuadrito y queda con esto
+    SURFACE_TIME: 1.2, // s que sale a flote solo después de quedarse sin aire
+    BUBBLE_RESPAWN: 4, // s para que vuelva una burbuja de aire
+    WARN: 3, // el medidor parpadea con menos de esto
+  },
+  // Calor de Choco en el cooperativo: los números de HEAT, salvo lo que cambie cada mapa
+  HOT_PLATE_BOUNCE: -220, // rebote al pisar una plancha caliente o aceite
+  // Escudo compartido: Tapita a esta distancia (borde con borde) queda dentro de la burbuja
+  SHIELD_SHARE_DIST: 12,
+  // Lazo sobre Tapita sin plantar: la jala hacia Choco
+  PULL_SPEED: 120,
+  PULL_MAX_TIME: 1.6,
+  PULL_STOP: 14, // px: llegó
+  // Elementos de puzzle
+  PUZZLE: {
+    WEIGHT: { choco: 1, tapita: 2, tapitaPlanted: 3 },
+    BUTTON_NEED: { light: 1, heavy: 2, xheavy: 3 },
+    POUND_BUTTON_RANGE: 20, // px desde el centro del botón
+    POUND_BUTTON_TIME: 6, // los de martillazo con temporizador quedan activos esto
+    TERMINAL_WINDOW: 0.5, // s entre las dos firmas
+    TERMINAL_RANGE: 14, // px para usar una terminal o palanca
+    SCALE_SPEED: 40, // px/s de la balanza
+    GATE_SPEED: 4, // aperturas por segundo (0..1)
+    TARGET_TIME: 5, // dianas con temporizador
+    FAN_LIFT: 2200, // px/s² con que la corriente lleva a Choco hacia FAN_MAX_UP
+    FAN_MAX_UP: -150,
+    FAN_TAPITA: 0.12, // a Tapita apenas la mueve
+    PLUG_TIME: 6, // melcocha tapando un ventilador, chorro o cortina
+    CURTAIN_DAMAGE: 1,
+    BOX_SLIDE: 0.12, // s que tarda una caja en moverse 1 tile
+    BOX_FALL: 0.08, // s por tile al caer
+    EXIT_HOLD: 0.5, // los dos en su marco durante esto
+    SYNC_WINDOW: 3, // s: llegaron "sincronizados" a la puerta doble
+  },
+  // Diálogos en línea: avanzan cuando los dos confirman, o solos después de esto
+  DIALOGUE_AUTO: 4,
+  SKIP_HOLD: 1, // s que los dos mantienen Esc para saltar una cinemática
+  // Nota de cada mapa según el tiempo (s): S si es menor que el primero, A el segundo, B el tercero
+  RANKS: {
+    prologue: [150, 240, 360],
+    c1: [600, 840, 1200],
+    c2: [600, 840, 1200],
+    c3: [600, 840, 1200],
+    c4: [720, 1000, 1400],
+  },
 };
 
 export const DEV = {

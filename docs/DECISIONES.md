@@ -605,3 +605,60 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Vista Debug compartida** ya funciona en la sala de pruebas (para el puente fantasma), aunque el plan la ponía en el Hito 11.
 - **`?coop=local`:** las dos vistas en una página, con el lienzo interno de 640×180 y un teclado para cada uno (sin gamepad). **`?scene=sala`** abre la sala con un solo personaje (`&pj=tapita`). Las dos son solo para depurar.
 - **Señal en el gamepad:** Back/Select. En la pantalla de controles del modo solo no aparece; en la del cooperativo reemplaza a "Caminar sigiloso", que no se usa.
+
+## Hito 11 · Coop: puzzles, agua, prólogo cooperativo, mapa y guardado
+
+### Elementos de puzzle
+
+- **El anfitrión manda en los puzzles:** calcula cada elemento con su personaje y con el del compañero (interpolado 100 ms atrás) y lo manda en `world` como un número por elemento. Por eso un botón que pisa el invitado se hunde unos 150 ms después en su pantalla; a cambio, los dos ven siempre lo mismo.
+- **Las cajas no pesan sobre los botones.** Si pesaran, una caja reemplazaría al compañero y un jugador solo pasaría puzzles de dos.
+- **Cajas:** se mueven de a un tile (el mazo de Tapita empuja; el lazo de Choco jala desde la esquina de arriba de la caja que le queda cerca) y caen si no hay nada abajo. El disparo cargado rompe solo las chicas. No se mueven encima de nadie.
+- **Compuertas:** no se cierran si hay alguien adentro. Su franja de color dice quién las abre (gris, ámbar, cian o magenta con rayas).
+- **Terminales de doble firma:** la firma del invitado se fecha medio ping antes, lo que tardó en llegar, para que la ventana de 0.5 s sea justa con latencia.
+- **Cortinas:** el agua daña a Tapita y la tapan la melcocha o el escudo de Choco. La hoja sombrilla no protege de la cortina de agua, porque es un chorro y no gotas (la tabla del diseño solo da esas dos soluciones). El vapor daña a Choco salvo bajo la sombrilla. La melcocha tapa una cortina o un ventilador al chocar con el chorro, no solo al pegarse en la boquilla: el diseño dice "si pega en un chorro".
+- **Bloques de azúcar:** el martillazo rompe los que están bajo los pies y los pegados a los costados, a la altura de Tapita.
+- **Si caen los dos**, el puzzle de toda la sala vuelve a empezar, pero las puertas dobles ya cumplidas quedan abiertas.
+- **Recuerdos:** son de los dos; cualquiera los junta y cuentan para los dos. La sala ya los soporta (`m` en el mapa), pero los primeros llegan con C1.
+
+### Agua y calor
+
+- **Agua:** la superficie es lo que cuenta; debajo, todo es agua hasta el fondo. Choco flota con la cabeza afuera, bucea con ↓, sube con ↑ y sale saltando desde la superficie. Debajo del agua, saltar es una brazada.
+- **Oxígeno:** sin aire, Choco pierde un cuadrito, queda con 4 s de aire y sale a flote solo durante 1.2 s.
+- **Agua baja con el tile `v` (charco de medio tile):** con tiles de 16 px no había forma de hacerla, porque un tile de agua ya le pasa de la mitad a Choco (20 px).
+- **Tapita y el agua:** con los pies mojados (3 px) se daña y rebota; con más de la mitad del cuerpo adentro se disuelve. Se ve el charco dorado con la hoja flotando en las dos pantallas, en vez del efecto de píxeles.
+- **Calor:** el de Choco usa los números de `HEAT` del nivel 4. La sombra de la sombrilla llega 1 tile a cada lado de Tapita y hasta 3 tiles hacia abajo.
+
+### Interacciones
+
+- **Tapita es un nodo de lazo** en la computadora de Choco. Plantada, Choco se columpia de ella. Sin plantar, el lazo la jala en línea recta a 120 px/s, sin gravedad, hasta 1.6 s; Choco tiene que estar en el suelo y no da el saltito de los nodos que se jalan.
+- **Escudo compartido:** Tapita queda dentro de la burbuja si está a 12 px o menos de Choco, borde con borde. Se dibuja una burbuja grande que cubre a los dos.
+
+### Diálogos y cinemática
+
+- **Diálogos en línea:** se dibujan dentro de la sala, no como una escena encima, porque la sala no se puede pausar. Van arriba, debajo del HUD, para no tapar a los personajes. Una marquita de cada color dice quién ya confirmó y una barrita muestra el avance solo de 4 s.
+- **Saltar:** los dos mantienen Esc, con un anillo por jugador. El del compañero se calcula con el aviso de que empezó a mantener, así que alcanza con que él lleve medio segundo.
+- **L.A.G.:**
+  - Habla con eco: el texto aparece dos veces, la copia atrasada 4 letras, y cada bip se repite tarde.
+  - Se ve como un reloj de arena de paquetes con dos caras (cian y ámbar), con una copia atrasada 4 cuadros, que es su firma visual.
+  - "Todo se pone gris" es una capa de saturación sobre la pantalla; el diálogo queda a color.
+- **Líneas nuevas del prólogo:** se agregó una línea de Tapita ("Reproducible. Anotalo.", su frase) al diálogo de entrada, y dos líneas cortas entre las de L.A.G. ("Eso es un bug." / "Ese bug acaba de hablar.").
+
+### Mapa, tarjeta y resultados
+
+- **Primera vez:** "Empezar" en la sala de espera lleva al prólogo cooperativo si el anfitrión no lo ha terminado; si ya lo terminó, al mapa de conexiones.
+- **Mientras C1, C2 y C3 no existan,** se juega la sala de elementos en su lugar (la tarjeta lo avisa) y el resultado se guarda para ese mapa. Igual que los niveles en construcción del modo solo, sirve para probar el flujo completo, La Sala incluida.
+- **En el mapa** también están el prólogo (para repetirlo) y la sala de elementos.
+- **El invitado tiene su propio cursor chico.** Con la señal o Enter sugiere un nodo, que parpadea en su color en la pantalla del anfitrión.
+- **La tarjeta del mapa no se salta,** para que los dos entren juntos a la sala.
+- **Nota:** se calcula con el tiempo del anfitrión, con los límites de `COOP.RANKS`. Los del prólogo y La Sala son iniciales.
+
+### Guardado
+
+- **Clave aparte:** `choco-codigo-fuente:v1:coop`. Cada uno guarda en su computadora el prólogo terminado, el resultado de cada mapa (mejor nota, mejor tiempo y recuerdos acumulados) y el último checkpoint.
+- **El progreso del anfitrión:** al empezar un mapa se usa su checkpoint, y su progreso es el que muestra el mapa de conexiones.
+- La sala de elementos no se guarda.
+
+### Arreglos de hitos anteriores
+
+- **Sonido `dive`:** el del martillazo de Tapita (Hito 10) reemplazaba el del modo solo, que usan el zanate de Santa Cruz y un enemigo del nivel 5. Ahora se llama `poundDive` y el modo solo suena igual que antes.
+- **Tapita en los menús:** la sala de espera y la selección de modo todavía la dibujaban como el boceto del Hito 9. Ahora usan su sprite y se quitó la etiqueta "boceto".

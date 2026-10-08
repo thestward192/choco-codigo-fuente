@@ -6,8 +6,9 @@
 // La escena le da: map, particles, game, melee(rect, daño, dir), pound(x, y), throwMelcocha(...),
 // onPlayerFell(p), onPlayerDied(p).
 import { PLATFORMER, COOP, HEALTH, EFFECTS, SQUASH, CHOCO_FX, DEV } from '../config/balance.js';
-import { createBody, createJumpState, stepPlatformer, moveY } from '../systems/physics.js';
-import { ANIMS, FRAME_W, ANCHOR_Y, CAPE_ANCHOR, CAPE_COLORS, CRYSTALS, OX, OY, PALETTE, tapitaFrame } from '../art/tapita.js';
+import { createBody, createJumpState, stepPlatformer, moveX as moveBodyX, moveY } from '../systems/physics.js';
+import { tapitaWaterState } from '../systems/water.js';
+import { ANIMS, FRAME_W, ANCHOR_Y, CAPE_ANCHOR, CAPE_COLORS, CRYSTALS, OX, OY, PALETTE, tapitaFrame, tapitaDissolve } from '../art/tapita.js';
 import { playSfx } from '../audio/sfx.js';
 import { fxRng } from '../core/rng.js';
 
@@ -54,6 +55,8 @@ export class Tapita {
     this.clingLeft = C.CLING_TIME;
     this.wallLock = 0;
     this.riding = false; // parada sobre el compañero (lo decide la escena)
+    // Jalada por el lazo de Choco: { x, y, t }
+    this.pull = null;
 
     this.anim = { name: 'idle', t: 0 };
     this.squash = { x: 1, y: 1, vx: 0, vy: 0 };
@@ -161,6 +164,11 @@ export class Tapita {
       this.finish(dt, 0);
       return;
     }
+    if (this.pull) {
+      this.updatePull(dt);
+      this.finish(dt, 0);
+      return;
+    }
 
     // Movimiento
     let moveX = control && !this.planted && this.wallLock <= 0 ? inp.moveX() : 0;
@@ -240,6 +248,49 @@ export class Tapita {
     b.platform = null;
     if (mx) this.facing = mx;
     this.updateLooks(dt, mx);
+  }
+
+  // ---------- Jalada por el lazo de Choco (cooperativo) ----------
+  // Va en línea recta hacia (x, y) a PULL_SPEED, sin gravedad: sirve para cruzar vacíos cortos
+  // o salir del agua a tiempo.
+  startPull(x, y) {
+    if (this.state !== 'play' || this.planted) return;
+    this.pull = { x, y, t: 0 };
+    this.action = this.action === 'pound' ? null : this.action;
+    this.cling = null;
+    this.umbrella = false;
+    this.setSquash({ X: 0.8, Y: 1.2 });
+    playSfx(this.audio, 'lassoHook');
+  }
+
+  updatePull(dt) {
+    const P = this.pull;
+    const b = this.body;
+    P.t += dt;
+    const dx = P.x - this.footX;
+    const dy = P.y - this.footY;
+    const d = Math.hypot(dx, dy);
+    if (d <= COOP.PULL_STOP || P.t >= COOP.PULL_MAX_TIME) {
+      this.endPull();
+      return;
+    }
+    const v = COOP.PULL_SPEED;
+    b.vx = (dx / d) * v;
+    b.vy = (dy / d) * v;
+    b.onGround = false;
+    b.platform = null;
+    moveBodyX(b, b.vx * dt, this.scene.map);
+    moveY(b, b.vy * dt, this.scene.map);
+    if (b.hitWall || (b.onGround && Math.abs(dx) <= COOP.PULL_STOP * 1.5)) this.endPull();
+    if (dx) this.facing = Math.sign(dx);
+    if (R.chance(0.4)) this.particles.spawn({ x: this.footX, y: this.cy, vx: -b.vx * 0.2, vy: -b.vy * 0.2, life: 0.25, colors: ['#43D9FF', '#FFFFFF', PALETTE.c] });
+  }
+
+  endPull() {
+    this.pull = null;
+    this.body.vx *= 0.4;
+    this.body.vy = Math.min(this.body.vy, 0) * 0.3;
+    this.setSquash({ X: 1.2, Y: 0.85 });
   }
 
   // ---------- Pared ----------
@@ -344,7 +395,7 @@ export class Tapita {
       if (this.actionT >= C.POUND_HOVER) {
         this.poundPhase = 'dive';
         this.actionT = 0;
-        playSfx(this.audio, 'dive');
+        playSfx(this.audio, 'poundDive');
       }
       return;
     }
@@ -438,6 +489,17 @@ export class Tapita {
     const b = this.body;
     const map = this.scene.map;
     if (map.touchesSpikes(b.x, b.y, b.w, b.h)) this.hurt(this.cx - this.facing, { fromBelow: true });
+    // Agua (cooperativo): los pies mojados la dañan; más de la mitad del cuerpo la disuelve
+    const zone = this.scene.waterZoneFor?.(b);
+    if (zone) {
+      const st = tapitaWaterState(b, zone);
+      if (st === 'dissolve') {
+        if (this.scene.game.devMode) this.scene.returnToSafe?.(this);
+        else this.die('water');
+        return;
+      }
+      if (st === 'wet') this.hurt(this.cx - this.facing, { fromBelow: true, water: 'pool' });
+    }
     if (map.overlapsType(b.x, b.y, b.w, b.h, 4 /* T.VOID */, 3)) this.fall();
     if (b.y > map.pxH + HEALTH.FALL_DEATH_MARGIN) this.fall();
   }
@@ -448,9 +510,17 @@ export class Tapita {
   }
 
   // Plantada no la empujan: recibe el golpe pero no sale volando.
-  hurt(sourceX, { fromBelow = false, damage = 1, knockback = true } = {}) {
+  // water: 'drop' (gotas y salpicaduras: la protegen la sombrilla y el escudo de Choco),
+  // 'stream' (chorro o cortina: solo el escudo) o 'pool' (meterse al agua: nada la protege).
+  hurt(sourceX, { fromBelow = false, damage = 1, knockback = true, water = null } = {}) {
     if (this.state !== 'play' || this.invuln > 0 || this.noclip) return false;
     if (this.scene.game.debug?.invincible) return false;
+    if (water === 'drop' && this.umbrella) return 'umbrella';
+    if ((water === 'drop' || water === 'stream') && this.scene.sharedShieldCovers?.(this)) {
+      this.scene.onSharedShieldBlock?.(this);
+      return 'shield';
+    }
+    if (this.pull) this.pull = null;
     const dir = Math.sign(this.cx - sourceX) || -this.facing;
     this.invuln = HEALTH.INVINCIBLE_TIME;
     this.flashT = CHOCO_FX.HIT_FLASH_TIME;
@@ -485,6 +555,8 @@ export class Tapita {
     this.action = null;
     this.umbrella = false;
     this.cling = null;
+    this.pull = null;
+    if (cause === 'water') playSfx(this.audio, 'dissolve');
     this.body.vx = 0;
     this.body.vy = 0;
     this.fx.hitstop(HEALTH.DEATH_HITSTOP_FRAMES);
@@ -538,6 +610,7 @@ export class Tapita {
     if (this.state === 'victory') return 'victory';
     if (this.hurtT > 0) return 'hurt';
     if (this.action === 'pound') return 'pound';
+    if (this.pull) return 'fall';
     if (this.action === 'plant') return 'plant';
     if (this.action === 'mazo') return 'mazo';
     if (this.action === 'throw') return 'throw';
@@ -694,6 +767,11 @@ export class Tapita {
     if (this.umbrella) s.um = Math.round(this.umbrellaT * 100) / 100;
     if (this.cling) s.cl = this.cling.dir;
     if (this.caramel) s.car = 1;
+    if (this.pull) s.pu = 1;
+    if (this.state === 'dead') {
+      s.dc = this.deathCause;
+      s.dt = Math.round(this.deadT * 100) / 100;
+    }
     return s;
   }
 
@@ -724,16 +802,29 @@ export class Tapita {
     this.umbrellaT = s.um || 0;
     this.cling = s.cl ? { dir: s.cl, t: 0 } : null;
     this.caramel = !!s.car;
+    this.pull = s.pu ? { x: this.footX, y: this.footY, t: 0 } : null;
+    this.deathCause = s.dc || null;
+    this.deadT = s.dt || 0;
     this.updateFace(dt);
     this.updateCape(dt);
   }
 
   // ---------- Dibujo ----------
   draw(ctx, camX, camY) {
-    if (this.state === 'dead') return;
     const footX = Math.round(this.footX - camX);
     const footY = Math.round(this.footY - camY);
     const flip = this.facing < 0;
+    if (this.state === 'dead') {
+      // Disuelta en el agua: un charco dorado con la hoja flotando
+      if (this.deathCause === 'water' && this.deadT < 1.4) {
+        const k = Math.min(7, Math.floor(this.deadT * 10));
+        const spr = tapitaDissolve(k);
+        ctx.globalAlpha = this.deadT > 1 ? 1 - (this.deadT - 1) / 0.4 : 1;
+        ctx.drawImage(spr.get(flip), footX - Math.round(FRAME_W / 2), footY - ANCHOR_Y);
+        ctx.globalAlpha = 1;
+      }
+      return;
+    }
     if (this.invuln > 0 && this.flashT <= 0 && Math.floor(this.invuln / CHOCO_FX.INVULN_BLINK) % 2 === 0) return;
 
     const f = this.currentFrameDef();

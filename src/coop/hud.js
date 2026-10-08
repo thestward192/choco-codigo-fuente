@@ -141,6 +141,32 @@ export class CoopHud {
         ctx.fillStyle = k >= 1 ? UI.green : '#2A5A3A';
         ctx.fillRect(5, y + 9, Math.round(20 * k), 2);
       }
+      let row = y + 15;
+      // Calor (solo en zonas calientes): naranja al sol, celeste en la sombra
+      if (s.heat) {
+        const h = s.heat;
+        ctx.fillStyle = '#0B0D16';
+        ctx.fillRect(4, row, 22, 6);
+        ctx.fillStyle = h.drip && Math.floor(this.t * 8) % 2 ? '#FF5A5A' : h.shade ? '#8AD8FF' : '#FF8A3A';
+        ctx.fillRect(5, row + 1, Math.round(20 * Math.min(1, h.v01)), 4);
+        drawText(ctx, T.heat, 29, row - 1, { color: h.shade ? '#8AD8FF' : '#FF8A3A', shadow: UI.shadow });
+        row += 9;
+      }
+      // Oxígeno (solo con la cabeza debajo del agua): 5 burbujas
+      if (s.oxygen01 !== undefined) {
+        const n = 5;
+        const warn = s.oxygen01 < 0.3;
+        for (let i = 0; i < n; i++) {
+          const fill = s.oxygen01 * n - i;
+          ctx.fillStyle = '#0A2A5A';
+          ctx.fillRect(5 + i * 5, row, 4, 4);
+          if (fill > 0) {
+            ctx.fillStyle = warn && Math.floor(this.t * 6) % 2 ? '#FF5A5A' : '#8AD8FF';
+            ctx.fillRect(6 + i * 5, row + 1, 2, 2);
+          }
+        }
+        drawText(ctx, T.air, 31, row - 2, { color: '#8AD8FF', shadow: UI.shadow });
+      }
       return;
     }
     // Tapita: melcochas disponibles (2 bolitas) y estado de plantada

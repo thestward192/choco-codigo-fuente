@@ -25,6 +25,9 @@ export const SPEAKERS = {
   stack: { color: '#E0343F', pitch: 250, glitch: true },
   office: { color: '#A8B0C0', pitch: 480, glitch: true },
   deadline: { color: '#FF5A5A', pitch: 200, glitch: true },
+  // Modo Sincronizado
+  tapita: { color: '#FFB13B', pitch: 640 },
+  lag: { color: '#B8B8E0', pitch: 240 },
 };
 
 const BOX = { x: 4, y: SCREEN.H - 50, w: SCREEN.W - 8, h: 46 };

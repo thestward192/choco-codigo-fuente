@@ -50,8 +50,17 @@ export class Melcocha {
         if (this.dist > C.MELCOCHA_RANGE * 1.5 || this.y > map.pxH + 32) this.pop(scene, false);
         return;
       }
-      // ¿Enemigo?
       const box = { x: nx - BALL / 2, y: ny - BALL / 2, w: BALL, h: BALL };
+      // ¿Un chorro, una cortina o un ventilador? Lo tapa (cooperativo)
+      const stream = scene.streamAt?.(box);
+      if (stream) {
+        this.x = nx;
+        this.y = ny;
+        scene.plugStream(stream);
+        this.pop(scene, true);
+        return;
+      }
+      // ¿Enemigo?
       const e = scene.enemyAt?.(box);
       if (e) {
         this.x = nx;

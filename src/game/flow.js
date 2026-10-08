@@ -2,6 +2,7 @@
 //   Presentación → Título → Selección de modo
 //     Modo solo → Menú principal → (Nueva partida → Ranura → Prólogo | Continuar → Mapa)
 //     Cooperativo → Menú cooperativo → (Crear sala | Unirse) → Sala de espera
+//       → (prólogo cooperativo la primera vez) → Mapa de conexiones → Tarjeta → Sala → Resultados
 //   Mapa → Tarjeta de título → Nivel → Resultados → Mapa
 //   Nivel → Pausa / Game Over
 import { Session } from './session.js';
@@ -30,6 +31,12 @@ import { CoopMenuScene } from '../coop/CoopMenuScene.js';
 import { JoinScene } from '../coop/JoinScene.js';
 import { LobbyScene } from '../coop/LobbyScene.js';
 import { CoopTestRoom } from '../coop/CoopTestRoom.js';
+import { CoopStage } from '../coop/CoopStage.js';
+import { CoopPrologue } from '../coop/CoopPrologue.js';
+import { CoopMapScene } from '../coop/CoopMapScene.js';
+import { CoopCardScene } from '../coop/CoopCardScene.js';
+import { CoopResultsScene } from '../coop/CoopResultsScene.js';
+import { LAB_STAGE } from '../coop/stages/lab.js';
 
 export const Flow = {
   toTitle(game, { type = 'fade' } = {}) {
@@ -57,9 +64,34 @@ export const Flow = {
     game.changeScene(() => new LobbyScene(game), { type: 'glitch' });
   },
 
-  // Sala cooperativa. mine: el personaje de esta computadora ('choco' | 'tapita')
+  // Sala de pruebas cooperativa del Hito 10. mine: el personaje de esta computadora
   toCoopRoom(game, { mine }) {
     game.changeScene(() => new CoopTestRoom(game, { session: game.coop, mine }), { type: 'iris' });
+  },
+
+  toCoopMap(game, opts = {}) {
+    game.changeScene(() => new CoopMapScene(game, opts), { type: 'glitch' });
+  },
+
+  // Empezar un mapa: roles = { host, guest } (qué personaje es cada uno). Tarjeta y después la sala.
+  startCoopStage(game, { map, seed = 0, cp = null, roles = null }) {
+    if (roles && roles.host && roles.guest && roles.host !== roles.guest) game.coopRoles = roles;
+    const r = game.coopRoles || { host: 'choco', guest: 'tapita' };
+    const mine = game.coop?.isHost === false ? r.guest : r.host;
+    const enter = () => game.changeScene(() => this.makeCoopStage(game, { map, mine, seed, cp }), { type: 'iris' });
+    game.changeScene(() => new CoopCardScene(game, { map, onDone: enter }), { type: 'fade', duration: 0.25 });
+  },
+
+  // Salas cooperativas. Los mapas que todavía no existen (C1–C4) abren la sala de elementos.
+  makeCoopStage(game, { map, mine, seed = 0, cp = null, session = game.coop, input = null, onLeave = null, local = false }) {
+    const base = { session, mine, input, onLeave, local, tag: seed || null, cp };
+    if (map === 'prologue') return new CoopPrologue(game, base);
+    if (map === 'test') return new CoopTestRoom(game, base);
+    return new CoopStage(game, { ...base, stage: LAB_STAGE, mapId: map === 'lab' ? 'lab' : map, cp: map === 'lab' ? null : cp });
+  },
+
+  toCoopResults(game, data) {
+    game.changeScene(() => new CoopResultsScene(game, data), { type: 'fade' });
   },
 
   toCredits(game, opts = {}) {

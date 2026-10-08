@@ -601,7 +601,42 @@ function deadlinePortrait(g, face) {
   g.outline('o');
 }
 
-const BUILDERS = { oscar, stward, hezron, fabiola, choco, tapita, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait, office, deadline: deadlinePortrait };
+// L.A.G. (Lógica de Atraso Global): un reloj de arena hecho de paquetes de datos, con dos caras
+// (una en cada mitad) que hablan con un segundo de diferencia — docs/coop/01_historia_coop.md
+function lagPortrait(g, face) {
+  // Tapas de arriba y de abajo
+  g.rect(5, 1, 26, 3, 'K').frame(5, 1, 26, 3, 'k');
+  g.rect(5, 28, 26, 30, 'K').frame(5, 28, 26, 30, 'k');
+  g.hline(6, 25, 2, 'M').hline(6, 25, 29, 'M');
+  // Vidrio: dos bulbos unidos por un cuello
+  for (let y = 4; y <= 27; y++) {
+    const top = y <= 15;
+    const hw = top ? Math.max(1, Math.round(9.5 - (y - 4) * 0.78)) : Math.max(1, Math.round(1 + (y - 16) * 0.78));
+    g.hline(16 - hw, 15 + hw, y, 'N');
+    g.set(16 - hw - 1, y, 'M').set(16 + hw, y, 'M');
+  }
+  // Paquetes: arriba quedan pocos, abajo se amontonan
+  for (const [x, y] of [[10, 6], [14, 5], [19, 6], [12, 9], [17, 8]]) g.rect(x, y, x + 1, y + 1, 'w');
+  for (const [x, y] of [[9, 24], [12, 25], [15, 24], [18, 25], [21, 24], [11, 22], [17, 22], [14, 21], [20, 22]]) g.rect(x, y, x + 1, y + 1, 'W');
+  g.set(15, 14, 'w').set(16, 16, 'w').set(15, 18, 'W');
+  // Caras: la de arriba cian y la de abajo ámbar (la misma frase, un segundo tarde)
+  const faceAt = (cy, eye) => {
+    const happy = face === 'happy';
+    if (happy) {
+      g.pts([[11, cy + 1], [12, cy], [13, cy + 1], [18, cy + 1], [19, cy], [20, cy + 1]], eye);
+    } else {
+      g.rect(11, cy, 12, cy + 1, eye).rect(19, cy, 20, cy + 1, eye);
+      g.set(11, cy, 'e').set(19, cy, 'e');
+    }
+    g.hline(14, 17, cy + 3, happy ? eye : 'K');
+  };
+  faceAt(9, 'c');
+  faceAt(19, 'C');
+  // Brillo del vidrio
+  g.vline(9, 6, 9, 'w').vline(22, 19, 22, 'g');
+}
+
+const BUILDERS = { oscar, stward, hezron, fabiola, choco, tapita, lag: lagPortrait, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait, office, deadline: deadlinePortrait };
 
 export function buildPortraitRows(key) {
   const [who, face] = key.split(':');

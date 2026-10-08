@@ -98,10 +98,19 @@ Todos los mensajes son JSON con un campo `type`.
 | `ack` | Invitado | Al recibir un `ev` | Número de secuencia recibido (el anfitrión reenvía si no llega en 500 ms) |
 | `menu` | Los dos | Al abrir o cerrar la pausa | Para mostrar el ícono "en el menú" |
 | `bye` | Los dos | Al salir | Salida limpia |
+| `nav` | Anfitrión | Al cambiar de pantalla fuera de las salas | A dónde van los dos: `map` (mapa de conexiones, con quién es quién), `results` o `lobby` |
+| `cur` | Los dos | En el mapa de conexiones y en los resultados | `prog` (progreso del anfitrión), `sel` (su cursor), `gc` y `sug` (cursor y sugerencia del invitado), `hi` (el invitado pide el progreso) y `ok` (confirmó los resultados) |
 
 **Acciones (`act`, sin confirmación) del Hito 10:** `shot` (disparo, para dibujarlo), `hit` y `stomp` (golpe del invitado a un enemigo; los aplica el anfitrión), `stick` (enemigo pegado con melcocha), `pound` (martillazo: el anfitrión aturde enemigos y Choco salta si está cerca), `mel` (melcocha lanzada) y `signal` (señal "¡Aquí!").
 
 **Eventos (`ev`, confiables) del Hito 10:** `kill` y `squash` (enemigo vencido), `melStick` y `melPop` (dónde se pegó o se deshizo una melcocha), `cp` (checkpoint de los dos), `take` (objeto tomado), `reset` (cayeron los dos), `full` (estado completo al volver de una desconexión) y `end` (los dos en la salida).
+
+**Hito 11 (puzzles):**
+
+- **Estado de los puzzles:** viaja en `world` como `pz`, un número por elemento en el orden fijo de la sala (botón activo o lo que le queda al temporizador, compuerta abierta, cuenta de la terminal, posición de la balanza…). Lo calcula el anfitrión con su personaje y con el del compañero interpolado.
+- **Acciones nuevas:** `use` (el invitado firma una terminal o mueve una palanca; la firma se fecha medio ping antes), `target` (disparo en una diana), `push` (mazo o lazo sobre una caja), `break` (disparo cargado a una caja chica), `pull` (Choco jala a Tapita con el lazo), `dlg` (confirmó la caja de diálogo) y `skip` (mantiene Esc para saltar).
+- **Eventos nuevos:** `door` (puerta doble cumplida, con la diferencia de llegada para la sincronía), `box` y `boxBreak` (caja movida o rota), `sugar` (bloques de azúcar rotos), `plug` (melcocha que tapa una cortina o un ventilador), `lag` (empieza la cinemática del prólogo) y `stageFull` (puertas, cajas y azúcar al volver de una desconexión). `end` ahora lleva el tiempo y la sincronía.
+- **Marca de sala:** cada `ev` y `ack` lleva `r`, la semilla de la sala. Al cambiar de pantalla puede llegar tarde un evento de la sala anterior: con otra marca se ignora y no se confirma.
 
 **Estado del personaje (`me`):** posición, velocidad, dirección, animación y frame, vida, flags (en el suelo, montado, plantado, escudo, Vista Debug, sombrilla, buceando) y puntería.
 

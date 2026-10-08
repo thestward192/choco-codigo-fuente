@@ -80,8 +80,10 @@ export class SnapshotBuffer {
 // Lo que no se confirma en ACK_RESEND ms se vuelve a mandar (por ejemplo, tras una reconexión).
 export class ReliableChannel {
   // send(msg): manda un mensaje del juego · now(): ms
-  constructor(send, { resend = NET.ACK_RESEND, now = () => Date.now() } = {}) {
+  // tag: marca de la sala (los mensajes de otra sala, que llegan tarde, se ignoran)
+  constructor(send, { resend = NET.ACK_RESEND, now = () => Date.now(), tag = null } = {}) {
     this.out = send;
+    this.tag = tag;
     this.resend = resend;
     this.now = now;
     this.seq = 0;
@@ -93,15 +95,25 @@ export class ReliableChannel {
   send(d) {
     const seq = ++this.seq;
     this.pending.set(seq, { d, at: this.now() });
-    this.out({ type: 'ev', seq, d });
+    this.out(this.tagged({ type: 'ev', seq, d }));
     return seq;
+  }
+
+  tagged(m) {
+    if (this.tag !== null) m.r = this.tag;
+    return m;
+  }
+
+  // ¿El mensaje es de otra sala?
+  foreign(msg) {
+    return this.tag !== null && msg?.r !== undefined && msg.r !== this.tag;
   }
 
   // Mensaje 'ev' recibido: confirma siempre y devuelve d solo la primera vez.
   receive(msg) {
     const seq = msg?.seq;
-    if (!Number.isInteger(seq) || seq <= 0) return null;
-    this.out({ type: 'ack', seq });
+    if (!Number.isInteger(seq) || seq <= 0 || this.foreign(msg)) return null;
+    this.out(this.tagged({ type: 'ack', seq }));
     if (seq <= this.base || this.seen.has(seq)) return null;
     this.seen.add(seq);
     while (this.seen.has(this.base + 1)) {
@@ -111,7 +123,8 @@ export class ReliableChannel {
     return msg.d;
   }
 
-  ack(seq) {
+  ack(seq, msg = null) {
+    if (this.foreign(msg)) return;
     this.pending.delete(seq);
   }
 
@@ -121,7 +134,7 @@ export class ReliableChannel {
     for (const [seq, p] of this.pending) {
       if (now - p.at >= this.resend) {
         p.at = now;
-        this.out({ type: 'ev', seq, d: p.d });
+        this.out(this.tagged({ type: 'ev', seq, d: p.d }));
       }
     }
   }

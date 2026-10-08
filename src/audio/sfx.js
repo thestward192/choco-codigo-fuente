@@ -553,7 +553,7 @@ Object.assign(SFX, {
     a.tone({ wave: 'triangle', f0: a.vary(180), f1: 90, dur: 0.1, vol: 0.22 });
   },
   spin: (a) => a.tone({ wave: 'pulse12', f0: 500, f1: 1100, dur: 0.12, vol: 0.06 }),
-  dive: (a) => a.tone({ wave: 'pulse25', f0: 900, f1: 260, dur: 0.18, vol: 0.08 }),
+  poundDive: (a) => a.tone({ wave: 'pulse25', f0: 900, f1: 260, dur: 0.18, vol: 0.08 }),
   // Martillazo: golpe grave con onda
   pound: (a) => {
     a.noise({ dur: 0.35, vol: 0.4, type: 'lowpass', freq: 700, freq1: 80 });
@@ -591,6 +591,73 @@ Object.assign(SFX, {
   respawn: (a) => [N(72), N(79), N(84)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.07, vol: 0.09, at: i * 0.05 })),
   // Choco sale impulsado por la onda del martillazo
   boost: (a) => a.tone({ wave: 'pulse25', f0: a.vary(300), f1: 900, dur: 0.12, vol: 0.12 }),
+
+  // --- Hito 11: agua, calor y elementos de puzzle ---
+  splash: (a) => {
+    a.noise({ dur: 0.22, vol: 0.22, type: 'bandpass', freq: a.vary(1400), freq1: 500, q: 1 });
+    a.tone({ wave: 'sine', f0: a.vary(500), f1: 180, dur: 0.12, vol: 0.08 });
+  },
+  swim: (a) => a.noise({ dur: 0.1, vol: 0.08, type: 'bandpass', freq: a.vary(900), freq1: 1500, q: 2 }),
+  breath: (a) => a.tone({ wave: 'sine', f0: a.vary(700), f1: 1200, dur: 0.08, vol: 0.06 }),
+  airBubble: (a) => [0, 0.05, 0.1].forEach((t, i) => a.tone({ wave: 'sine', f0: a.vary(600 + i * 250), f1: 1400, dur: 0.05, vol: 0.06, at: t })),
+  noAir: (a) => {
+    a.tone({ wave: 'pulse25', f0: 300, f1: 120, dur: 0.25, vol: 0.12 });
+    a.noise({ dur: 0.3, vol: 0.12, type: 'bandpass', freq: 800, q: 2 });
+  },
+  oxygenLow: (a) => a.tone({ wave: 'pulse12', f0: N(76), dur: 0.05, vol: 0.06 }),
+  // Tapita se disuelve: burbujeo que baja
+  dissolve: (a) => {
+    for (let i = 0; i < 6; i++) a.tone({ wave: 'sine', f0: 900 - i * 110, f1: 500 - i * 60, dur: 0.07, vol: 0.07, at: i * 0.08 });
+    a.noise({ dur: 0.6, vol: 0.1, type: 'lowpass', freq: 1200, freq1: 200 });
+  },
+  hotPlate: (a) => {
+    a.noise({ dur: 0.2, vol: 0.18, type: 'highpass', freq: 3000, freq1: 6000 });
+    a.tone({ wave: 'pulse25', f0: 600, f1: 300, dur: 0.1, vol: 0.08 });
+  },
+  // Botones, palancas y compuertas
+  buttonDown: (a) => {
+    a.tone({ wave: 'triangle', f0: N(60), dur: 0.05, vol: 0.12 });
+    a.noise({ dur: 0.04, vol: 0.1, type: 'lowpass', freq: 900 });
+  },
+  buttonUp: (a) => a.tone({ wave: 'triangle', f0: N(55), dur: 0.05, vol: 0.08 }),
+  heavyStrain: (a) => a.tone({ wave: 'triangle', f0: N(43), f1: N(45), dur: 0.12, vol: 0.08 }),
+  gateMove: (a) => {
+    a.noise({ dur: 0.28, vol: 0.12, type: 'bandpass', freq: 500, q: 3 });
+    a.tone({ wave: 'pulse25', f0: 110, f1: 90, dur: 0.25, vol: 0.05 });
+  },
+  targetHit: (a) => [N(79), N(86)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.06, vol: 0.1, at: i * 0.05 })),
+  targetOff: (a) => a.tone({ wave: 'pulse25', f0: N(74), f1: N(62), dur: 0.12, vol: 0.07 }),
+  timerTick: (a) => a.tone({ wave: 'pulse12', f0: N(84), dur: 0.02, vol: 0.05 }),
+  // Terminal de doble firma: primer toque, cuenta y acorde de éxito (dos notas)
+  signFirst: (a) => a.tone({ wave: 'pulse25', f0: N(72), dur: 0.08, vol: 0.1 }),
+  signOk: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(72), dur: 0.35, vol: 0.09 });
+    a.tone({ wave: 'pulse25', f0: N(79), dur: 0.35, vol: 0.09 });
+    a.tone({ wave: 'triangle', f0: N(48), dur: 0.35, vol: 0.12 });
+  },
+  signFail: (a) => a.tone({ wave: 'pulse25', f0: N(64), f1: N(58), dur: 0.15, vol: 0.08 }),
+  boxPush: (a) => a.noise({ dur: 0.14, vol: 0.18, type: 'lowpass', freq: a.vary(500), freq1: 200 }),
+  boxBreak: (a) => {
+    a.noise({ dur: 0.25, vol: 0.3, type: 'lowpass', freq: 1800, freq1: 200 });
+    for (let i = 0; i < 3; i++) a.tone({ wave: 'triangle', f0: a.vary(300 - i * 60), dur: 0.05, vol: 0.08, at: i * 0.04 });
+  },
+  sugarBreak: (a) => {
+    a.noise({ dur: 0.3, vol: 0.26, type: 'highpass', freq: 1500, freq1: 400 });
+    [0, 0.04, 0.09].forEach((t) => a.tone({ wave: 'triangle', f0: a.vary(N(88)), dur: 0.04, vol: 0.05, at: t }));
+  },
+  plug: (a) => a.tone({ wave: 'sine', f0: 400, f1: 160, dur: 0.14, vol: 0.12 }),
+  fanHum: (a) => a.noise({ dur: 0.2, vol: 0.04, type: 'bandpass', freq: 300, q: 2 }),
+  doorReady: (a) => [N(67), N(72), N(76), N(79)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.08, vol: 0.08, at: i * 0.06 })),
+  // L.A.G. (voz con eco y el sonido que se atrasa)
+  lagWarp: (a) => {
+    a.tone({ wave: 'triangle', f0: 220, f1: 55, dur: 1.2, vol: 0.15, curve: 'lin' });
+    a.noise({ dur: 1.2, vol: 0.08, type: 'lowpass', freq: 800, freq1: 100 });
+  },
+  floorSplit: (a) => {
+    a.noise({ dur: 0.8, vol: 0.35, type: 'lowpass', freq: 1200, freq1: 60 });
+    a.tone({ wave: 'sine', f0: 90, f1: 30, dur: 0.8, vol: 0.3 });
+  },
+  loadingStuck: (a) => [0, 0.3, 0.6].forEach((t) => a.tone({ wave: 'pulse12', f0: N(81), dur: 0.04, vol: 0.05, at: t })),
 });
 
 // Zumbido suave mientras la Vista Debug está activa. Recibe el zumbido actual (o null) y devuelve

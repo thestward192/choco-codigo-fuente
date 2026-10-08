@@ -1,9 +1,10 @@
 // Choco en modo plataformas: física, báculo, vida, animación y efectos secundarios.
-import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO, HOTFIX, DEV } from '../config/balance.js';
+import { PLATFORMER, STAFF, HEALTH, EFFECTS, SQUASH, CHOCO_FX, SHIELD, LASSO, HOTFIX, DEV, COOP } from '../config/balance.js';
 import { createShield, shieldPress, shieldUpdate, shieldOn, shieldBlock } from '../systems/shield.js';
 import { pickNode, createSwing, swingStep, releaseVelocity } from '../systems/lasso.js';
 import { drawShieldBubble } from '../art/shield.js';
 import { createBody, createJumpState, stepPlatformer, stompBounce, moveX as moveBodyX, moveY } from '../systems/physics.js';
+import { createSwimState, swimStep, breathe, chocoWaterState } from '../systems/water.js';
 import { ANIMS, FRAME_W, FRAME_H, LED_POS, SCARF_ANCHOR, chocoFrame, chocoMelt, withShootArms } from '../art/choco.js';
 import { playSfx } from '../audio/sfx.js';
 import { fxRng } from '../core/rng.js';
@@ -58,6 +59,9 @@ export class Choco {
     this.launchT = 0; // tras soltar el lazo conserva el impulso en el aire
     // Jalón del lazo de un Sabanero: { x, speed }
     this.tether = null;
+    // Agua del Modo Sincronizado (en el modo solo las escenas no tienen agua y queda 'dry')
+    this.swim = createSwimState();
+    this.waterState = 'dry';
 
     // Cara y detalles
     this.blinkIn = R.range(CHOCO_FX.BLINK_MIN, CHOCO_FX.BLINK_MAX);
@@ -170,6 +174,9 @@ export class Choco {
     // Cooperativo: cargando a Tapita no hay doble salto (en el modo solo noDoubleJump nunca se usa)
     this.js.hasBoots = this.items.boots && !this.noDoubleJump;
 
+    // Cooperativo: en agua profunda flota y nada (sin lazo ni física normal)
+    if (this.updateWater(dt, inp, control, moveX)) return;
+
     // Lazo: lanzar, columpiarse y soltar (mientras se columpia no corre la física normal)
     if (this.updateLasso(dt, inp, control)) {
       this.finishUpdate(dt, inp, control, moveX);
@@ -193,7 +200,7 @@ export class Choco {
         jumpBuffered: control && !tied && inp.buffered('jump'),
         jumpHeld: inp.down('jump'),
         down: inp.down('down'),
-        speedMult: speedMult * (this.extraSpeedMult ?? 1),
+        speedMult: speedMult * (this.extraSpeedMult ?? 1) * (this.waterState === 'shallow' ? COOP.WATER.SHALLOW_MULT : 1),
         keepMomentum: this.launchT > 0,
       },
       dt,
@@ -261,6 +268,55 @@ export class Choco {
     this.updateGroundFx(dt);
   }
 
+  // ---------- Agua (Modo Sincronizado) ----------
+  // Devuelve true si está nadando (y ya se movió en este paso).
+  updateWater(dt, inp, control, moveX) {
+    const zone = this.scene.waterZoneFor?.(this.body);
+    const prev = this.waterState;
+    this.waterState = zone && this.state === 'play' ? chocoWaterState(this.body, zone) : 'dry';
+    // Chapuzón al entrar
+    if (prev === 'dry' && this.waterState !== 'dry' && this.body.vy > COOP.WATER.SPLASH_VY) this.scene.splash?.(this.footX, zone.y, this.body.vy);
+    if (this.waterState !== 'deep') {
+      breathe(this.swim, dt);
+      return false;
+    }
+    if (this.lasso) this.detachLasso(false);
+    this.tether = null;
+    const b = this.body;
+    const ev = swimStep(
+      b,
+      this.swim,
+      { moveX, up: control && inp.down('up'), down: control && inp.down('down'), jumpPressed: control && inp.buffered('jump') },
+      dt,
+      this.scene.map,
+      zone,
+    );
+    if (ev.jumpedOut || ev.stroke) inp.consume('jump');
+    if (moveX !== 0) this.facing = moveX;
+    this.js.canDoubleJump = this.items.boots;
+    this.js.jumping = ev.jumpedOut;
+    this.js.coyote = 0;
+    if (ev.jumpedOut) {
+      this.setSquash(SQUASH.JUMP);
+      playSfx(this.audio, 'jump');
+      this.scene.splash?.(this.footX, zone.y, 120);
+    } else if (ev.stroke) {
+      this.setSquash({ X: 0.85, Y: 1.15 });
+      playSfx(this.audio, 'swim');
+    }
+    if (ev.outOfAir) {
+      playSfx(this.audio, 'noAir');
+      this.hurt(this.cx, { ignoreShield: true, knockback: false });
+    }
+    this.skidding = false;
+    this.finishUpdate(dt, inp, control, moveX);
+    return true;
+  }
+
+  get swimming() {
+    return this.waterState === 'deep';
+  }
+
   // ---------- Lazo de Fibra Óptica ----------
   hand() {
     return { x: this.footX, y: this.footY + LASSO.HAND_Y };
@@ -303,9 +359,12 @@ export class Choco {
         // Algo que se jala (el núcleo de N.U.L.L.): no se columpia, lo trae y suelta con un saltito
         if (L.node.pull) {
           this.lasso = null;
-          this.body.vy = Math.min(this.body.vy, LASSO.PULL_HOP);
-          this.js.canDoubleJump = this.items.boots;
-          this.js.jumping = false;
+          // Jalar a Tapita (cooperativo): Choco se queda en el suelo
+          if (!L.node.noHop) {
+            this.body.vy = Math.min(this.body.vy, LASSO.PULL_HOP);
+            this.js.canDoubleJump = this.items.boots;
+            this.js.jumping = false;
+          }
           this.setSquash({ X: 0.8, Y: 1.2 });
           playSfx(this.audio, 'lassoHook');
           this.particles.burst(L.node.x, L.node.y, 12, { speedMin: 30, speedMax: 90, colors: ['#FFFFFF', '#43D9FF', '#FF2E88'], lifeMin: 0.15, lifeMax: 0.4 });
@@ -664,6 +723,7 @@ export class Choco {
     if (this.forceAnim) return this.forceAnim;
     if (this.state === 'victory') return 'victory';
     if (this.hurtT > 0) return 'hurt';
+    if (this.waterState === 'deep') return this.swim.under ? 'fall' : moveX !== 0 ? 'run' : 'idle';
     if (!b.onGround) {
       if (this.spinT > 0) return 'spin';
       return b.vy < 0 ? 'jump' : 'fall';

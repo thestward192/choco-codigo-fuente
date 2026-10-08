@@ -21,6 +21,7 @@ import { defaultLobby, applyPick, parseLobby } from './lobbyState.js';
 import { copyText } from './clipboard.js';
 import { ensureSession, NetMeter } from './common.js';
 import { Flow } from '../game/flow.js';
+import { loadCoop } from './coopSave.js';
 
 const T = TEXTS.coop;
 const PANEL = { x: 8, y: 6, w: 304, h: 152 };
@@ -122,8 +123,13 @@ export class LobbyScene extends Scene {
       this.setLobby(next);
     } else if (d.type === GAME.START) {
       // El anfitrión dice quién es quién (por si el último estado no llegó)
-      const mine = d.guest === 'choco' || d.guest === 'tapita' ? d.guest : this.lobby.guest.char;
-      this.started(mine);
+      this.started({ map: d.map, seed: d.seed, cp: d.cp ?? null, roles: { host: d.host, guest: d.guest } });
+    } else if (d.type === GAME.NAV && d.to === 'map') {
+      if (!this.alive) return;
+      this.alive = false;
+      if (d.roles) this.game.coopRoles = { host: d.roles.host, guest: d.roles.guest };
+      playSfx(this.game.audio, 'portalEnter');
+      Flow.toCoopMap(this.game);
     }
   }
 
@@ -163,18 +169,31 @@ export class LobbyScene extends Scene {
     else this.session.sendGame({ type: GAME.PICK, char: next.guest.char, ready: next.guest.ready });
   }
 
-  // Hito 10: los dos van a la sala de pruebas cooperativa (el mapa de conexiones llega en el Hito 11)
+  // La primera vez (según el progreso del anfitrión) va el prólogo cooperativo; después, el mapa
+  // de conexiones.
   start() {
     const l = this.lobby;
-    this.session.sendGame({ type: GAME.START, map: 'test', seed: Math.floor(Math.random() * 2 ** 31), host: l.host.char, guest: l.guest.char });
-    this.started(l.host.char);
+    const roles = { host: l.host.char, guest: l.guest.char };
+    this.game.coopRoles = roles;
+    const prog = loadCoop(this.game.save);
+    if (!prog.maps.prologue.done) {
+      const cp = prog.checkpoint?.map === 'prologue' ? prog.checkpoint.id : null;
+      const seed = Math.floor(Math.random() * 2 ** 31);
+      this.session.sendGame({ type: GAME.START, map: 'prologue', seed, host: roles.host, guest: roles.guest, cp });
+      this.started({ map: 'prologue', seed, cp, roles });
+      return;
+    }
+    this.session.sendGame({ type: GAME.NAV, to: 'map', roles });
+    this.alive = false;
+    playSfx(this.game.audio, 'portalEnter');
+    Flow.toCoopMap(this.game);
   }
 
-  started(mine) {
+  started({ map, seed, cp, roles }) {
     if (!this.alive) return;
     this.alive = false;
     playSfx(this.game.audio, 'portalEnter');
-    Flow.toCoopRoom(this.game, { mine });
+    Flow.startCoopStage(this.game, { map, seed, cp, roles });
   }
 
   showBanner(text, color) {
@@ -306,7 +325,6 @@ export class LobbyScene extends Scene {
     const name = T.chars[p.char];
     drawText(ctx, name, x, FEET_Y + 5, { align: 'center', bold: true, color: charColor(p.char) });
     // Tapita todavía es un boceto (diseño final en el Hito 10)
-    if (p.char === 'tapita') drawText(ctx, T.sketch, x + measureText(name, true) / 2 + 5, FEET_Y + 6, { color: '#4A4E66', shadow: false });
 
     if (p.ready) {
       const pop = this.stamp[slot] > 0 ? Ease.outBack(1 - this.stamp[slot] / STAMP_POP) : 1;

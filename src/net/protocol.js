@@ -38,7 +38,12 @@ export const GAME = {
   ACK: 'ack', // confirmación de un ev
   MENU: 'menu', // los dos: abrió o cerró la pausa
   BYE: 'bye', // los dos: salida limpia
+  NAV: 'nav', // anfitrión: cambio de pantalla (mapa de conexiones, resultados, sala de espera)
+  CUR: 'cur', // los dos, fuera de las salas: cursor del mapa, sugerencias y confirmaciones
 };
+
+// Pantallas a las que lleva NAV
+export const NAV_TO = ['map', 'results', 'lobby'];
 
 export const ROLE = { HOST: 'host', GUEST: 'guest' };
 
@@ -121,6 +126,8 @@ export function parseServerMessage(msg) {
 export function parseGameMessage(d) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   if (!Object.values(GAME).includes(d.type)) return null;
+  if (d.type === GAME.NAV && !NAV_TO.includes(d.to)) return null;
+  if (d.type === GAME.CUR && typeof d.k !== 'string') return null;
   return d;
 }
 

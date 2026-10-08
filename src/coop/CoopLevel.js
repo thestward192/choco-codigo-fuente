@@ -11,7 +11,7 @@
 // Las subclases construyen la sala en buildRoom() (mapa, apariciones, enemigos, objetos, carteles)
 // y la dibujan con drawBackground / drawTiles / drawWorld.
 import { Scene } from '../core/game.js';
-import { SCREEN, COOP, PLATFORMER, ENEMIES } from '../config/balance.js';
+import { SCREEN, COOP, PLATFORMER, ENEMIES, HEAT, SHIELD } from '../config/balance.js';
 import { NET } from '../config/net.js';
 import { aabbOverlap, isStomp } from '../systems/physics.js';
 import { Camera } from '../core/camera.js';
@@ -22,7 +22,10 @@ import { Melcocha } from '../entities/melcocha.js';
 import { Shot } from '../entities/projectile.js';
 import { Laptop } from '../items/laptop.js';
 import { LAPTOP } from '../config/balance.js';
-import { shieldCharge01 } from '../systems/shield.js';
+import { shieldCharge01, shieldOn } from '../systems/shield.js';
+import { createHeat, heatStep, heatDripping, inZones } from '../systems/heat.js';
+import { waterAt, pointInWater } from '../systems/water.js';
+import { drawShieldBubble } from '../art/shield.js';
 import { SnapshotBuffer, ReliableChannel, RateTimer } from '../net/sync.js';
 import { GAME } from '../net/protocol.js';
 import { drawText, drawTextBox } from '../art/font.js';
@@ -36,6 +39,7 @@ import { CoopHud } from './hud.js';
 import { charColor, otherChar } from './art.js';
 import { NetMeter } from './common.js';
 import { CoopPauseScene } from './CoopPauseScene.js';
+import { CoopDialogue } from './dialogue.js';
 
 const TS = SCREEN.TILE;
 const T = TEXTS.coop.room;
@@ -76,8 +80,10 @@ export function makeCharacter(scene, kind, footX, footY) {
 
 export class CoopLevel extends Scene {
   // opts: { session, mine: 'choco' | 'tapita', input (otro control para ?coop=local), onLeave(reason) }
-  constructor(game, { session, mine, input = null, onLeave = null, local = false } = {}) {
+  constructor(game, opts = {}) {
     super(game);
+    const { session, mine, input = null, onLeave = null, local = false, tag = null } = opts;
+    this.opts = opts; // las subclases leen aquí su definición (buildRoom corre antes que su constructor)
     this.online = true; // no se pausa al perder el foco
     this.session = session;
     this.isHost = session.isHost;
@@ -103,7 +109,17 @@ export class CoopLevel extends Scene {
     this.lassoNodes = [];
     this.checkpoint = null;
     this.respawnT = 0;
-    this.stats = { time: 0, falls: 0 };
+    this.stats = { time: 0, falls: 0, partnerFalls: 0, partnerCount: 0 };
+    // Agua y calor (las salas las llenan): rectángulos en píxeles
+    this.water = [];
+    this.heatZones = [];
+    this.shadeZones = [];
+    this.heat = createHeat();
+    this.heatT = 0;
+    this.plateT = 0;
+    // Tapita como nodo del lazo de Choco (en la computadora de Choco)
+    this.partnerNode = { x: 0, y: 0, partnerNode: true, hooked: 0 };
+    this.dialogue = null; // CoopDialogue en curso
     this.bits = 0;
     this.crystals = 0;
     this.banner = null;
@@ -113,7 +129,7 @@ export class CoopLevel extends Scene {
     this.noDeath = false;
     this.partner = { kind: this.theirs, entity: null, buf: new SnapshotBuffer(), s: null, mode: null, present: false, inMenu: false, lastSt: 'play', plat: null, prevX: null, prevY: null };
 
-    this.reliable = new ReliableChannel((m) => this.send(m), { now: nowMs });
+    this.reliable = new ReliableChannel((m) => this.send(m), { now: nowMs, tag });
     this.meTimer = new RateTimer(NET.ME_RATE);
     this.worldTimer = new RateTimer(NET.WORLD_RATE);
 
@@ -205,7 +221,7 @@ export class CoopLevel extends Scene {
         break;
       }
       case GAME.ACK:
-        this.reliable.ack(d.seq);
+        this.reliable.ack(d.seq, d);
         break;
       case GAME.MENU:
         this.partner.inMenu = !!d.open;
@@ -265,14 +281,24 @@ export class CoopLevel extends Scene {
     // Los que el anfitrión ya no manda se fueron (el efecto llega por ev)
     for (const it of this.enemies) if (!seen.has(it.id) && it.e.state === 'walk' && it.buf.latest) it.gone = true;
     this.enemies = this.enemies.filter((it) => !it.gone);
+    this.onWorldExtra(d);
+  }
+
+  // Para las subclases: el resto del mensaje world (puzzles)
+  onWorldExtra() {}
+  worldExtra() {
+    return null;
   }
 
   onAct(d) {
     switch (d.k) {
-      case 'shot':
-        this.shots.push(Object.assign(new Shot(d.x, d.y, d.dir, !!d.ch, d.aim || null), { remote: true }));
+      case 'shot': {
+        const sh = Object.assign(new Shot(d.x, d.y, d.dir, !!d.ch, d.aim || null), { remote: true });
+        if (d.w) this.slowShot(sh);
+        this.shots.push(sh);
         playSfx(this.game.audio, d.ch ? 'shootCharged' : 'shoot');
         break;
+      }
       case 'hit':
         if (this.isHost) this.damageEnemy(d.id, d.dmg, d.dir);
         break;
@@ -295,10 +321,25 @@ export class CoopLevel extends Scene {
       case 'signal':
         this.addSignal(d.x, d.y, this.theirs);
         break;
+      case 'pull':
+        // Choco me jala con el lazo
+        if (this.player.kind === 'tapita' && this.player.alive) this.player.startPull(d.x, d.y);
+        break;
+      case 'dlg':
+        this.dialogue?.partnerOk(d.i);
+        break;
+      case 'skip':
+        if (this.dialogue) this.dialogue.partnerHold = !!d.on;
+        this.skipPartner = !!d.on;
+        break;
       default:
+        this.onStageAct(d);
         break;
     }
   }
+
+  onStageAct() {}
+  onStageEvent() {}
 
   onEvent(e) {
     switch (e.k) {
@@ -333,7 +374,10 @@ export class CoopLevel extends Scene {
         break;
       case 'take': {
         const pk = this.pickups.find((q) => q.id === e.id);
-        if (pk) pk.taken = true;
+        if (pk && !pk.taken) {
+          pk.taken = true;
+          if (pk.kind !== 'memory') this.stats.partnerCount++;
+        }
         break;
       }
       case 'reset':
@@ -347,9 +391,12 @@ export class CoopLevel extends Scene {
         }
         break;
       case 'end':
+        if (e.sync !== undefined) this.syncPct = e.sync;
+        if (typeof e.time === 'number') this.stats.time = e.time;
         this.finish();
         break;
       default:
+        this.onStageEvent(e);
         break;
     }
   }
@@ -362,8 +409,19 @@ export class CoopLevel extends Scene {
   }
 
   spawnShot(x, y, dir, charged, aim = null) {
-    this.shots.push(new Shot(x, y, dir, charged, aim));
-    this.act('shot', { x: Math.round(x), y: Math.round(y), dir, ch: charged ? 1 : 0, aim });
+    const s = new Shot(x, y, dir, charged, aim);
+    // Debajo del agua: mitad de velocidad y de alcance
+    const wet = pointInWater(this.water, x, y);
+    if (wet) this.slowShot(s);
+    this.shots.push(s);
+    this.act('shot', { x: Math.round(x), y: Math.round(y), dir, ch: charged ? 1 : 0, aim, w: wet ? 1 : 0 });
+  }
+
+  slowShot(s) {
+    const k = COOP.WATER.SHOT_MULT;
+    s.vx *= k;
+    s.vy *= k;
+    s.range *= k;
   }
 
   addBits(n, x, y) {
@@ -374,7 +432,7 @@ export class CoopLevel extends Scene {
 
   // Golpe del mazo de Tapita sobre los enemigos de la zona
   melee(box, damage, dir) {
-    let hit = false;
+    let hit = this.onMelee(box, dir);
     for (const it of this.enemies) {
       if (it.e.state !== 'walk' || !aabbOverlap(box, it.e.body)) continue;
       hit = true;
@@ -409,6 +467,19 @@ export class CoopLevel extends Scene {
     this.ev('squash', { id });
   }
 
+  // Para las subclases: el mazo sobre cajas (devuelve true si pegó en algo)
+  onMelee() {
+    return false;
+  }
+  // Martillazo (anfitrión): botones de martillazo y bloques de azúcar
+  onPoundHost() {}
+  // Disparo propio: dianas y cajas (devuelve true si el disparo se gastó)
+  onShot() {
+    return false;
+  }
+  // Melcocha propia pegada: puede tapar un ventilador o una cortina
+  onMelStuck() {}
+
   enemyAt(box) {
     const it = this.enemies.find((q) => q.e.state === 'walk' && aabbOverlap(box, q.e.body));
     return it || null;
@@ -435,6 +506,7 @@ export class CoopLevel extends Scene {
 
   onMelcochaStuck(m) {
     this.ev('melStick', { id: m.id, x: m.plat.x, y: m.plat.y });
+    this.onMelStuck(m);
   }
 
   // Martillazo de Tapita en (x, y)
@@ -460,6 +532,7 @@ export class CoopLevel extends Scene {
         const b = it.e.body;
         if (it.e.state === 'walk' && Math.abs(b.x + b.w / 2 - x) <= C.POUND_RADIUS && Math.abs(b.y + b.h - y) <= 24) it.stun = C.POUND_STUN;
       }
+      this.onPoundHost(x, y);
     }
     const p = this.player;
     if (p.kind === 'choco' && p.state === 'play') {
@@ -507,7 +580,7 @@ export class CoopLevel extends Scene {
   onPlayerDied(p) {
     this.stats.falls++;
     this.respawnT = COOP.RESPAWN_TIME;
-    this.pixelate(p, this.mine);
+    if (p.deathCause !== 'water') this.pixelate(p, this.mine);
     if (p.lasso) p.lasso = null;
   }
 
@@ -542,6 +615,7 @@ export class CoopLevel extends Scene {
     this.shots = [];
     this.enemies = [];
     this.enemyIds = -1; // los ids vuelven a empezar igual en las dos computadoras
+    this.resetStage(); // puzzles de la sala (las subclases)
     this.buildEntities(); // enemigos de nuevo (los objetos tomados siguen tomados)
     this.respawnT = 0;
     this.respawn();
@@ -556,6 +630,129 @@ export class CoopLevel extends Scene {
     playSfx(this.game.audio, 'checkpoint');
     this.particles.burst(s.x, s.y - 14, 10, { speedMin: 20, speedMax: 50, colors: ['#6FE08A', '#FFFFFF'], lifeMin: 0.2, lifeMax: 0.5 });
     if (announce) this.ev('cp', { id });
+  }
+
+  // ---------- Agua, calor y escudo compartido ----------
+  waterZoneFor(body) {
+    return this.water.length ? waterAt(this.water, body) : null;
+  }
+
+  // Chapuzón: gotas y un sonido (cualquiera de los dos personajes)
+  splash(x, y, vy = 120) {
+    playSfx(this.game.audio, 'splash');
+    const n = Math.min(18, 6 + Math.round(vy / 25));
+    this.particles.burst(x, y, n, { angle: -Math.PI / 2, spread: 1.1, speedMin: 40, speedMax: 60 + vy * 0.4, colors: ['#FFFFFF', '#8AD8FF', '#43A8E0'], gravity: 420, lifeMin: 0.25, lifeMax: 0.6 });
+    this.ripples = this.ripples || [];
+    this.ripples.push({ x, y, t: 0 });
+  }
+
+  // ¿El personaje Choco (propio o compañero) está bajo sombra? Sombra fija o la hoja de Tapita.
+  chocoShaded(choco) {
+    if (inZones(this.shadeZones, choco.footX, choco.cy)) return true;
+    const t = choco === this.player ? (this.partner.present && this.partner.s?.st === 'play' && this.partner.s.um !== undefined ? this.partner.entity : null) : this.player.kind === 'tapita' && this.player.umbrella && this.player.alive ? this.player : null;
+    if (!t) return false;
+    const reach = t.body.w / 2 + COOP.TAPITA.UMBRELLA_SHADE;
+    return Math.abs(choco.footX - t.footX) <= reach && choco.footY >= t.body.y - 2 && choco.footY <= t.footY + 3 * TS;
+  }
+
+  // Lo que le pasa al personaje propio por el lugar donde está (calor y planchas calientes)
+  updateEnvironment(dt) {
+    const p = this.player;
+    if (this.plateT > 0) this.plateT -= dt;
+    if (p.kind !== 'choco' || !p.alive || p.state !== 'play') return;
+    // Calor: el medidor del nivel 4 en las zonas calientes
+    const hot = this.heatZones.length > 0 && inZones(this.heatZones, p.footX, p.cy);
+    this.inHeat = hot;
+    if (hot || this.heat.value > 0) {
+      const sun = hot && !this.chocoShaded(p);
+      this.shaded = hot && !sun;
+      if (heatStep(this.heat, dt, sun, this.heatRate ?? HEAT.SUN_RATE) === 'burn') {
+        playSfx(this.game.audio, 'heatBurn');
+        p.hurt(p.cx, { ignoreShield: true, knockback: false });
+      }
+      if (heatDripping(this.heat) && R.chance(0.15)) this.particles.spawn({ x: p.footX + R.range(-5, 5), y: p.body.y + R.range(4, 14), vy: 10, gravity: 300, life: 0.4, color: R.pick([CHOCO_PAL.b, CHOCO_PAL.l]) });
+    }
+    // Planchas calientes y aceite: daño y rebote (encima de Tapita no las toca)
+    const b = p.body;
+    if (b.onGround && !b.platform && this.touchesChar(b, 'h')) {
+      if (p.hurt(p.cx - p.facing, { knockback: false })) {
+        playSfx(this.game.audio, 'hotPlate');
+        b.vy = COOP.HOT_PLATE_BOUNCE;
+        b.onGround = false;
+        p.js.jumping = false;
+        this.particles.burst(p.footX, p.footY, 10, { angle: -Math.PI / 2, spread: 1.2, speedMin: 30, speedMax: 90, colors: ['#FFFFFF', '#FFB13B', '#FF5A2A'], lifeMin: 0.2, lifeMax: 0.45 });
+      }
+    }
+  }
+
+  // ¿Los pies del cuerpo están sobre un tile con el carácter ch?
+  touchesChar(b, ch) {
+    const ty = Math.floor((b.y + b.h + 1) / TS);
+    const x0 = Math.floor((b.x + 1) / TS);
+    const x1 = Math.floor((b.x + b.w - 1) / TS);
+    for (let tx = x0; tx <= x1; tx++) if (this.map.charAt(tx, ty) === ch) return true;
+    return false;
+  }
+
+  // Escudo compartido: Tapita a 12 px o menos (borde con borde) de Choco con el escudo activo
+  shieldGap(a, b) {
+    const dx = Math.max(0, Math.abs(a.footX - b.footX) - (a.body.w + b.body.w) / 2);
+    const dy = Math.max(0, Math.abs(a.cy - b.cy) - (a.body.h + b.body.h) / 2);
+    return Math.max(dx, dy);
+  }
+
+  sharedShield() {
+    const P = this.partner;
+    if (!P.present || !P.s || P.s.st !== 'play' || !this.player.alive) return false;
+    const me = this.player;
+    const choco = me.kind === 'choco' ? me : P.entity;
+    const tapita = me.kind === 'tapita' ? me : P.entity;
+    const on = me.kind === 'choco' ? shieldOn(me.shield) : !!P.s.sh;
+    return on && this.shieldGap(choco, tapita) <= COOP.SHIELD_SHARE_DIST;
+  }
+
+  sharedShieldCovers(t) {
+    return t === this.player && this.sharedShield();
+  }
+
+  onSharedShieldBlock(t) {
+    playSfx(this.game.audio, 'shieldBlock');
+    this.particles.burst(t.cx, t.body.y, 8, { speedMin: 30, speedMax: 90, colors: ['#FFFFFF', '#8AE8FF', '#43D9FF'], lifeMin: 0.15, lifeMax: 0.35 });
+  }
+
+  // ---------- Lazo sobre Tapita ----------
+  // En la computadora de Choco, Tapita es un nodo: plantada se columpia de ella; sin plantar (y
+  // con Choco en el suelo) el lazo la jala hacia él.
+  updatePartnerNode() {
+    const P = this.partner;
+    const n = this.partnerNode;
+    const p = this.player;
+    const i = this.lassoNodes.indexOf(n);
+    let want = false;
+    if (p.kind === 'choco' && p.alive && P.present && P.s && P.s.st === 'play' && P.s.ride === undefined && !p.body.platform?.partner) {
+      const planted = P.s.ac === 'plant';
+      if (planted || p.body.onGround || p.lasso?.node === n) {
+        want = true;
+        n.x = P.entity.footX;
+        n.y = P.entity.body.y + 5;
+        n.pull = !planted;
+        n.noHop = true;
+        n.onPull = () => this.pullPartner();
+      }
+    }
+    if (want && i < 0) this.lassoNodes.push(n);
+    else if (!want && i >= 0) {
+      this.lassoNodes.splice(i, 1);
+      if (p.lasso?.node === n) p.detachLasso(false);
+    }
+    if (n.hooked > 0) n.hooked -= 1 / 60;
+  }
+
+  pullPartner() {
+    const p = this.player;
+    if (!p.body.onGround) return;
+    this.act('pull', { x: Math.round(p.footX + p.facing * 10), y: Math.round(p.footY) });
+    this.pullLine = 0.25;
   }
 
   // ---------- Señal ----------
@@ -610,10 +807,7 @@ export class CoopLevel extends Scene {
     if (this.ended) {
       this.particles.update(dt);
       this.player.updateSquash?.(dt);
-      if (this.endT > 0 && (this.endT -= dt) <= 0) {
-        if (this.onLeave) this.onLeave('done');
-        else this.game.flow.toCoopLobby(this.game);
-      }
+      if (this.endT > 0 && (this.endT -= dt) <= 0) this.afterFinish();
       if (this.banner && (this.banner.t -= dt) <= 0) this.banner = null;
       return;
     }
@@ -624,7 +818,8 @@ export class CoopLevel extends Scene {
       return;
     }
 
-    if (!this.local && !this.menuOpen && inp.pressed('pause') && !g.transitioning) {
+    // Durante un diálogo o una cinemática, Esc es para saltar (los dos lo mantienen)
+    if (!this.local && !this.menuOpen && !this.dialogue && !this.cutsceneLock && inp.pressed('pause') && !g.transitioning) {
       this.openPause();
       return;
     }
@@ -651,10 +846,23 @@ export class CoopLevel extends Scene {
       p.noDoubleJump = carried;
     }
 
+    // Diálogo en línea: avanza cuando confirman los dos (o solo, a los 4 s)
+    if (this.dialogue) {
+      this.dialogue.update(dt, inp, this);
+      if (this.dialogue.done) {
+        const cb = this.dialogue.onDone;
+        this.dialogue = null;
+        cb?.();
+      }
+    }
+
     // Personaje propio
-    const aiming = !this.menuOpen && this.updateSignal(dt);
-    const control = this.menuOpen || aiming ? STILL : inp;
+    const busy = this.menuOpen || !!this.dialogue || !!this.cutsceneLock;
+    const aiming = !busy && this.updateSignal(dt);
+    const control = busy || aiming ? STILL : inp;
+    this.updatePartnerNode();
     if (p.alive) p.update(dt, control);
+    this.updateEnvironment(dt);
     if (p.kind === 'tapita') p.riding = !!p.body.platform?.partner;
     if (!p.alive && this.respawnT > 0) {
       this.respawnT -= dt;
@@ -704,7 +912,10 @@ export class CoopLevel extends Scene {
       const b = it.e.body;
       return [it.id, Math.round((b.x + b.w / 2) * 10) / 10, Math.round((b.y + b.h) * 10) / 10, it.e.dir, it.e.state === 'walk' ? 0 : 1, it.stun > 0 ? 1 : 0, it.stuck > 0 ? 1 : 0];
     });
-    this.send({ type: GAME.WORLD, ts: Math.round(nowMs()), e });
+    const msg = { type: GAME.WORLD, ts: Math.round(nowMs()), e };
+    const extra = this.worldExtra();
+    if (extra) Object.assign(msg, extra);
+    this.send(msg);
   }
 
   // ¿El compañero está parado encima de mi personaje?
@@ -729,7 +940,12 @@ export class CoopLevel extends Scene {
       s.y = me.body.y;
     }
     // Se cayó: efecto de píxeles una vez
-    if (s.st === 'dead' && P.lastSt !== 'dead') this.pixelate(P.entity, P.kind);
+    if (s.st === 'dead' && P.lastSt !== 'dead') {
+      this.stats.partnerFalls++;
+      // Disuelta en el agua: se ve el charco; si no, se pixela
+      if (s.dc !== 'water') this.pixelate(P.entity, P.kind);
+      else playSfx(this.game.audio, 'dissolve');
+    }
     if (s.st !== 'dead' && P.lastSt === 'dead') this.particles.burst(s.x, s.y - 8, 16, { speedMin: 20, speedMax: 70, colors: PIXEL_COLORS[P.kind], lifeMin: 0.2, lifeMax: 0.5, size: 2, endSize: 1 });
     P.lastSt = s.st;
     P.s = s;
@@ -806,6 +1022,8 @@ export class CoopLevel extends Scene {
 
   updateShots(dt) {
     for (const s of this.shots) {
+      // Antes de moverse: dianas y cajas (las cajas son sólidas y apagarían el disparo)
+      if (!s.dead && !s.remote && this.onShot(s, dt)) continue;
       s.update(dt, this);
       if (s.dead || s.remote) continue;
       for (const it of this.enemies) {
@@ -875,6 +1093,14 @@ export class CoopLevel extends Scene {
     this.send({ type: GAME.MENU, open });
   }
 
+  resetStage() {}
+
+  // Después del cartel de "completada": las subclases van a los resultados
+  afterFinish() {
+    if (this.onLeave) this.onLeave('done');
+    else this.game.flow.toCoopLobby(this.game);
+  }
+
   // Termina la sala para los dos (llegaron a la salida)
   finish() {
     if (this.ended) return;
@@ -918,6 +1144,10 @@ export class CoopLevel extends Scene {
       s.partner = { kind: P.kind, hp: Math.max(0, P.s.hp ?? 0), maxHp: COOP.TAPITA.HP, status, ping: this.session.peer.ping };
     }
     s.count = p.kind === 'choco' ? { kind: 'bits', n: this.bits } : { kind: 'crystals', n: this.crystals };
+    if (p.kind === 'choco') {
+      if (this.inHeat || this.heat.value > 0) s.heat = { v01: this.heat.value / HEAT.MAX, shade: !!this.shaded, drip: heatDripping(this.heat) };
+      if (p.swim && (p.swim.under || p.swim.oxygen < COOP.OXYGEN.MAX)) s.oxygen01 = p.swim.oxygen / COOP.OXYGEN.MAX;
+    }
     return s;
   }
 
@@ -946,18 +1176,125 @@ export class CoopLevel extends Scene {
       if (P.inMenu) this.drawMenuIcon(ctx, P.entity, cx, cy);
     }
     if (this.player.alive) this.player.draw(ctx, cx, cy);
+    if (this.player.kind === 'tapita' && this.player.state === 'dead') this.player.draw(ctx, cx, cy); // charco de disolverse
+    if (P.present && P.s && P.s.st === 'dead' && P.kind === 'tapita') P.entity.draw(ctx, cx, cy);
+    this.drawSharedShield(ctx, cx, cy);
+    this.drawPullLine(ctx, cx, cy);
+    this.drawWater(ctx, cx, cy);
+    this.drawOxygen(ctx, cx, cy);
     this.particles.draw(ctx, cx, cy, true);
     this.drawForeground(ctx, cx, cy);
     if (this.map.ghostSolid) this.drawDebugTint(ctx, cx, cy);
     for (const s of this.signals) this.drawSignal(ctx, s, cx, cy);
     if (this.aim && this.aim.t > COOP.SIGNAL_HOLD) this.drawAim(ctx, cx, cy);
-    this.drawPartnerArrow(ctx, cx, cy);
+    if (!this.cutsceneLock) this.drawPartnerArrow(ctx, cx, cy);
 
     this.hud.draw(ctx, this.hudState());
     if (this.activeSign && this.activeSign.t > 0.5 && this.activeSign.text) this.drawSignText(ctx, this.activeSign);
     if (!this.player.alive && this.respawnT > 0) this.drawRespawn(ctx);
     if (this.banner) this.drawBanner(ctx);
+    this.drawOverlay(ctx);
+    if (this.dialogue) this.dialogue.draw(ctx, this);
     if (this.frozen) this.drawFrozen(ctx);
+  }
+
+  // Para las subclases: lo que va encima del HUD (cuenta de la terminal, cinemáticas)
+  drawOverlay() {}
+
+  // Agua: cuerpo azul translúcido con la superficie animada y brillo (adelante de los personajes)
+  drawWater(ctx, cx, cy) {
+    if (!this.water.length) return;
+    for (const z of this.water) {
+      const x0 = Math.round(z.x - cx);
+      const y0 = Math.round(z.y - cy);
+      if (x0 > SCREEN.W || x0 + z.w < 0 || y0 > SCREEN.H || y0 + z.h < 0) continue;
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#1E6FB0';
+      ctx.fillRect(x0, y0 + 2, z.w, z.h - 2);
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#0A2A5A';
+      ctx.fillRect(x0, y0 + 10, z.w, Math.max(0, z.h - 10));
+      ctx.globalAlpha = 1;
+      // Superficie con ondas
+      for (let x = 0; x < z.w; x += 2) {
+        const wy = Math.round(Math.sin((x + z.x) * 0.15 + this.t * 3) * 1.2);
+        ctx.fillStyle = (x + Math.floor(this.t * 20)) % 14 < 3 ? '#FFFFFF' : '#8AD8FF';
+        ctx.fillRect(x0 + x, y0 + wy, 2, 1);
+        ctx.fillStyle = '#43A8E0';
+        ctx.fillRect(x0 + x, y0 + wy + 1, 2, 1);
+      }
+      // Brillos que suben
+      if (R.chance(0.04 * (z.w / 64))) this.particles.spawn({ x: z.x + R.range(4, z.w - 4), y: z.y + R.range(8, Math.max(9, z.h - 2)), vy: -12, life: 0.8, color: '#8AD8FF' });
+    }
+    if (this.ripples) {
+      for (const r of this.ripples) {
+        r.t += 1 / 60;
+        const w = Math.round(4 + r.t * 30);
+        ctx.globalAlpha = Math.max(0, 1 - r.t / 0.6);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(Math.round(r.x - w - cx), Math.round(r.y - cy), 3, 1);
+        ctx.fillRect(Math.round(r.x + w - 3 - cx), Math.round(r.y - cy), 3, 1);
+        ctx.globalAlpha = 1;
+      }
+      this.ripples = this.ripples.filter((r) => r.t < 0.6);
+    }
+  }
+
+  // Burbujas de oxígeno sobre la cabeza de Choco (5 burbujas = 10 s)
+  drawOxygen(ctx, cx, cy) {
+    const p = this.player;
+    if (p.kind !== 'choco' || !p.alive || !p.swim || (!p.swim.under && p.swim.oxygen >= COOP.OXYGEN.MAX)) return;
+    const n = 5;
+    const left = p.swim.oxygen / COOP.OXYGEN.MAX;
+    const warn = p.swim.oxygen < COOP.OXYGEN.WARN;
+    const x0 = Math.round(p.footX - cx - (n * 5) / 2);
+    const y = Math.round(p.body.y - cy - 10 + (warn ? Math.sin(this.t * 20) : 0));
+    for (let i = 0; i < n; i++) {
+      const fill = Math.max(0, Math.min(1, left * n - i));
+      const x = x0 + i * 5;
+      ctx.fillStyle = '#0A2A5A';
+      ctx.fillRect(x, y, 4, 4);
+      if (fill <= 0) continue;
+      ctx.fillStyle = warn && Math.floor(this.t * 6) % 2 ? '#FF5A5A' : '#8AD8FF';
+      ctx.fillRect(x + 1, y + 1, 2, 2);
+      if (fill > 0.5) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(x + 1, y + 1, 1, 1);
+      }
+    }
+  }
+
+  // Escudo compartido: una burbuja grande que cubre a los dos
+  drawSharedShield(ctx, cx, cy) {
+    if (!this.sharedShield()) return;
+    const a = this.player;
+    const b = this.partner.entity;
+    const mx = (a.footX + b.footX) / 2;
+    const my = (a.cy + b.cy) / 2;
+    const r = Math.round(Math.hypot(a.footX - b.footX, a.cy - b.cy) / 2 + 15);
+    drawShieldBubble(ctx, Math.round(mx - cx), Math.round(my - cy), { t: this.t, r: Math.min(r, SHIELD.RADIUS * 3) });
+  }
+
+  // Lazo jalando a Tapita: una cuerda cian entre la mano de Choco y ella
+  drawPullLine(ctx, cx, cy) {
+    const me = this.player;
+    const P = this.partner;
+    if (!P.present || !P.s) return;
+    const choco = me.kind === 'choco' ? me : P.entity;
+    const tapita = me.kind === 'tapita' ? me : P.entity;
+    if (!tapita.pull && !(this.pullLine > 0)) return;
+    if (this.pullLine > 0) this.pullLine -= 1 / 60;
+    const h = choco.hand();
+    const x0 = h.x - cx;
+    const y0 = h.y - cy;
+    const x1 = tapita.footX - cx;
+    const y1 = tapita.cy - cy;
+    const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+    for (let i = 0; i <= n; i += 1) {
+      const k = i / n;
+      ctx.fillStyle = (i + Math.floor(this.t * 60)) % 8 < 2 ? '#FFFFFF' : '#43D9FF';
+      ctx.fillRect(Math.round(x0 + (x1 - x0) * k), Math.round(y0 + (y1 - y0) * k), 1, 1);
+    }
   }
 
   drawBackground(ctx) {

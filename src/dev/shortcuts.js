@@ -10,7 +10,8 @@
 // ?scene=overflow, ?scene=null (jefe final; null2, null3, null4 = fases), ?scene=parche,
 // ?scene=final (cinemática final), ?scene=estadisticas, ?scene=extra (escena de las 15 Y),
 // ?scene=modo (selección de modo), ?scene=coop (menú cooperativo), ?scene=unirse (escribir código),
-// ?scene=sala (sala de pruebas cooperativa sola, sin compañero) y ?coop=local (dos vistas, un teclado)
+// ?scene=sala (sala de pruebas cooperativa sola, sin compañero) y ?coop=local (dos vistas, un teclado);
+// las dos aceptan &sala=prologo | elementos | pruebas. ?scene=mapa-coop (mapa de conexiones, sin red)
 export async function devStart(game, direct) {
   let next = null;
   if (direct === 'room') {
@@ -55,6 +56,9 @@ export async function devStart(game, direct) {
   } else if (direct === 'sala') {
     const { LocalCoopScene } = await import('../coop/LocalCoopScene.js');
     next = () => new LocalCoopScene(game, { solo: true });
+  } else if (direct === 'mapa-coop') {
+    const { CoopMapScene } = await import('../coop/CoopMapScene.js');
+    next = () => new CoopMapScene(game);
   } else if (direct === 'dev') {
     const { DevMenuScene } = await import('../scenes/DevMenuScene.js');
     next = () => new DevMenuScene(game);
