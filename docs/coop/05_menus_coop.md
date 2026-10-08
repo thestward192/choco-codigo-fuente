@@ -49,7 +49,7 @@ Si no hay conexión con el servidor, el menú lo dice en una línea ámbar ("Sin
 ## Unirse a una sala
 
 - **5 cajitas** para el código. Se escribe con el teclado (letras y números; Borrar retrocede). Se aceptan minúsculas y se descartan los caracteres que no son del alfabeto del código.
-- **Con gamepad:** una grilla del alfabeto de códigos (6×5) que se recorre con el stick.
+- **Con gamepad:** una grilla del alfabeto de códigos (8×4: los 31 caracteres más "borrar") que se recorre con el stick. A escribe y B borra (o vuelve, si no hay nada escrito).
 - **Pegar** con Ctrl+V también funciona (dentro de try/catch).
 - Al llenar las 5 cajitas se intenta entrar solo. Errores en ámbar, sin borrar el código:
   - "No existe una sala con ese código".
@@ -60,11 +60,12 @@ Si no hay conexión con el servidor, el menú lo dice en una línea ámbar ("Sin
 
 - **Dos columnas:** la del anfitrión a la izquierda y la del invitado a la derecha, cada una con su personaje en grande (idle) y el nombre "Jugador 1" / "Jugador 2".
 - **Elegir personaje:** ← → cambia entre Choco y Tapita. No pueden elegir el mismo: si uno toma al personaje del otro, se intercambian con una animación de cambio de lugar.
-- **Listo:** confirmar marca "LISTO" con un sello verde. Volver a confirmar lo quita.
+- **Listo:** confirmar marca "LISTO" con un sello verde. Volver a confirmar, o Esc, lo quita. Cambiar de personaje también quita el "listo" de los dos.
 - **Ping** de los dos con barras de señal de colores.
 - **Código de la sala** siempre visible arriba (con C para copiarlo).
 - Cuando los dos están listos, el anfitrión ve "Enter: empezar". El invitado ve "Esperando al anfitrión…".
-- **Salir** (Esc): pide confirmación y vuelve al menú cooperativo. Si sale el anfitrión, la sala se cierra para los dos.
+- **Salir** (Esc, sin estar listo): pide confirmación y vuelve al menú cooperativo. Si sale el anfitrión, la sala se cierra para los dos.
+- **El anfitrión manda en la sala de espera:** el invitado pide (personaje, listo) y el anfitrión responde con el estado completo, así nunca quedan los dos con el mismo personaje.
 
 ## Mapa de conexiones
 

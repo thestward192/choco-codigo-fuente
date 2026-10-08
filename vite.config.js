@@ -43,6 +43,11 @@ export default defineConfig({
   },
   server: {
     watch: { ignored: ['**/.snaps/**'] },
+    // Modo cooperativo: el juego se conecta a /ws del mismo host y Vite lo pasa al servidor de
+    // salas (npm run server). Así funciona igual desde otra máquina de la red local.
+    proxy: {
+      '/ws': { target: 'ws://localhost:8787', ws: true },
+    },
   },
   test: {
     environment: 'node',

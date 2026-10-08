@@ -36,6 +36,7 @@ export function defaultOptions() {
     textSpeed: 'normal', // 'slow' | 'normal' | 'instant'
     keys: null, // null = controles por defecto
     devMode: false, // modo desarrolladora: todos los mapas abiertos y vidas infinitas
+    lastMode: 'solo', // última elección en la selección de modo ('solo' | 'coop')
   };
 }
 

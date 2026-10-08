@@ -45,6 +45,32 @@ export const UI = {
   panelBorder: '#2A2F45',
 };
 
+// Modo Sincronizado: cian = Choco, ámbar = Tapita, magenta = los dos (docs/coop/03_mecanicas_coop.md)
+export const COOP = {
+  choco: '#43D9FF',
+  chocoDark: '#1C6F8A',
+  tapita: '#FFB13B',
+  tapitaDark: '#8A5A12',
+  both: '#FF2E88',
+};
+
+// Boceto de Tapita hasta el Hito 10: Choco con los colores de la tapa de dulce y la hoja de caña
+// (docs/coop/02_tapita.md). Reemplaza solo los índices de la paleta de Choco.
+export const TAPITA_SKETCH = {
+  o: '#2A1608',
+  s: '#6B3410',
+  b: '#9C5420',
+  l: '#C8782E',
+  h: '#F2C46B',
+  W: '#5E6B2A',
+  w: '#8E9A3F',
+  y: '#C4C77A',
+  r: '#E88A6A',
+  c: '#FFB13B',
+  g: '#4A2A10',
+  G: '#7A4E2D',
+};
+
 // Nivel 0 · Pantalla de Carga (se usa en la sala de pruebas)
 export const LOADING = {
   bg: '#07070C',

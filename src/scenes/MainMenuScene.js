@@ -11,7 +11,6 @@ import { SlotSelectScene } from './SlotSelectScene.js';
 import { OptionsScene } from './OptionsScene.js';
 import { Flow } from '../game/flow.js';
 import { SONG_TITULO } from '../audio/songs/titulo.js';
-import { TitleScene } from './TitleScene.js';
 
 const PANEL = { x: 100, y: 78, w: 120, h: 72 };
 
@@ -58,7 +57,7 @@ export class MainMenuScene extends Scene {
       else g.push(new SlotSelectScene(g, 'load'));
     } else if (r === 'options') g.push(new OptionsScene(g));
     else if (r === 'credits') Flow.toCredits(g);
-    else if (r === 'cancel') g.changeScene(() => new TitleScene(g, { skipIntro: true }), { type: 'fade', duration: 0.2 });
+    else if (r === 'cancel') Flow.toModeSelect(g);
   }
 
   draw(ctx) {

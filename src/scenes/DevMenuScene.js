@@ -61,6 +61,8 @@ export class DevMenuScene extends Scene {
       else if (id === 'final') g.changeScene(() => new EndingScene(g), { type: 'fade' });
       else if (id === 'estadisticas') g.changeScene(() => new FinalStatsScene(g), { type: 'fade' });
       else if (id === 'extra') g.changeScene(() => new ExtraScene(g), { type: 'fade' });
+      else if (id === 'modo') Flow.toModeSelect(g);
+      else if (id === 'coop') Flow.toCoopMenu(g);
     }
   }
 

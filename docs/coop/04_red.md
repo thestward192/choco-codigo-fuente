@@ -60,24 +60,36 @@ tests/
 
 | Mensaje | Dirección | Datos |
 |---|---|---|
+Todos los mensajes son JSON con un campo `type`.
+
+| Mensaje | Dirección | Datos |
+|---|---|---|
 | `create` | C → S | `{ v, name? }` — crea una sala |
-| `created` | S → C | `{ code, token, role: 'host' }` |
+| `created` | S → C | `{ code, token, role: 'host', peer: 'none' }` |
 | `join` | C → S | `{ v, code, name? }` |
-| `joined` | S → C | `{ code, token, role: 'guest' }` |
+| `joined` | S → C | `{ code, token, role: 'guest', peer, peerName }` |
 | `resume` | C → S | `{ token }` — reconexión |
-| `peer` | S → C | `{ state: 'joined' \| 'left' \| 'back' }` |
+| `resumed` | S → C | `{ code, token, role, peer, peerName }` — volvió a su lugar |
+| `leave` | C → S | `{}` — salida limpia (sin guardar el lugar) |
+| `peer` | S → C | `{ state: 'joined' \| 'left' \| 'lost' \| 'back' }` |
 | `relay` | C → S → C | `{ d }` — cualquier mensaje del juego, reenviado al otro tal cual |
 | `ping` / `pong` | C ↔ S | `{ t }` — mide la latencia |
-| `error` | S → C | `{ code: 'NOT_FOUND' \| 'FULL' \| 'VERSION' \| 'RATE' \| 'SERVER' }` |
+| `closed` | S → C | `{ reason: 'host-left' \| 'host-lost' \| 'idle' \| 'expired' }` — la sala se cerró |
+| `error` | S → C | `{ code: 'NOT_FOUND' \| 'FULL' \| 'VERSION' \| 'RATE' \| 'SERVER' \| 'EXPIRED' }` |
 
 - `v` es la **versión del protocolo**. Si no coincide con la del servidor, responde `VERSION` y el menú dice "Versiones distintas: actualicen el juego los dos".
+- `peer` en `joined` y `resumed` dice cómo está el compañero: `'here'`, `'lost'` (reconectándose) o `'none'`.
+- `lost` avisa que el compañero perdió la conexión: su lugar se guarda 20 s. Si vuelve llega `back`, y si no, `left` (o `closed` si era el anfitrión).
+- `EXPIRED`: la reconexión llegó tarde y el lugar ya no existe.
 
 ### Mensajes del juego (dentro de `relay`)
 
 | Mensaje | Quién | Cuándo | Datos |
 |---|---|---|---|
-| `hello` | Los dos | Al unirse | Versión del juego, personaje elegido, controles no |
-| `pick` | Los dos | Sala de espera | Personaje (Choco/Tapita), listo/no listo |
+| `hello` | Invitado | Al unirse o al reconectarse | Versión del protocolo y personaje elegido |
+| `pick` | Invitado | Sala de espera | Personaje (Choco/Tapita) que pide y listo/no listo |
+| `lobby` | Anfitrión | Sala de espera, al cambiar algo | Estado completo: personaje y listo de cada uno (el anfitrión manda) |
+| `stat` | Los dos | Cada segundo | Ping propio con el servidor (para las barras del compañero) |
 | `start` | Anfitrión | Al empezar un mapa | Mapa, sección, semilla aleatoria |
 | `me` | Los dos | 30 veces por segundo | Estado del propio personaje (ver abajo) |
 | `act` | Los dos | Al momento | Acciones que afectan el mundo: disparo, mazo, martillazo, melcocha, interactuar, señal, golpe recibido |

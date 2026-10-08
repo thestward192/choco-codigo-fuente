@@ -37,7 +37,7 @@ export class TitleScene extends Scene {
       }
       this.leaving = true;
       playSfx(this.game.audio, 'menuConfirm');
-      Flow.toMainMenu(this.game);
+      Flow.toModeSelect(this.game);
     }
   }
 

@@ -8,7 +8,8 @@
 // ?scene=redondel, ?scene=ruinas, ?scene=torito (jefe), ?scene=lazo (práctica del lazo),
 // ?scene=level5 (El Código Puro), ?scene=push, ?scene=firewall, ?scene=fantasma, ?scene=punteros,
 // ?scene=overflow, ?scene=null (jefe final; null2, null3, null4 = fases), ?scene=parche,
-// ?scene=final (cinemática final), ?scene=estadisticas, ?scene=extra (escena de las 15 Y)
+// ?scene=final (cinemática final), ?scene=estadisticas, ?scene=extra (escena de las 15 Y),
+// ?scene=modo (selección de modo), ?scene=coop (menú cooperativo), ?scene=unirse (escribir código)
 export async function devStart(game, direct) {
   let next = null;
   if (direct === 'room') {
@@ -41,6 +42,12 @@ export async function devStart(game, direct) {
   } else if (direct === 'battle' || direct === 'rap') {
     const { DevBattleScene } = await import('../scenes/DevBattleScene.js');
     next = () => new DevBattleScene(game, direct);
+  } else if (direct === 'modo') {
+    const { ModeSelectScene } = await import('../scenes/ModeSelectScene.js');
+    next = () => new ModeSelectScene(game);
+  } else if (direct === 'coop' || direct === 'unirse') {
+    const mod = direct === 'coop' ? await import('../coop/CoopMenuScene.js') : await import('../coop/JoinScene.js');
+    next = () => (direct === 'coop' ? new mod.CoopMenuScene(game) : new mod.JoinScene(game));
   } else if (direct === 'dev') {
     const { DevMenuScene } = await import('../scenes/DevMenuScene.js');
     next = () => new DevMenuScene(game);

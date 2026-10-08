@@ -44,6 +44,7 @@ export class Game {
     this._fpsFrames = 0;
     this.options = save.loadOptions();
     this.session = null; // partida en curso (ranura + datos)
+    this.coop = null; // sesión de red del modo cooperativo (src/net/session.js)
     this.toasts = []; // avisos discretos abajo a la derecha
     this.applyOptions();
     if (!save.canPersist) this.notify(TEXTS.system.cantSave, 5);
@@ -116,6 +117,8 @@ export class Game {
 
   suspend() {
     if (this.suspended) return;
+    // Las pantallas en línea no se pausan al perder el foco (se juega con otra ventana al lado)
+    if (this.top?.online) return;
     this.suspended = true;
     this.audio.suspend();
     const top = this.top;

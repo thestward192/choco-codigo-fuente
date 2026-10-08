@@ -538,3 +538,38 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Arreglo:**
   - Cada toro se anuncia `REDONDEL.SPAWN_WARN` (0.8 s) antes, con polvo y bufido en su puerta.
   - Si Choco está a menos de `REDONDEL.SPAWN_SAFE` (96 px) de esa puerta, el toro entra por la otra.
+
+## Hito 9 · Coop: selección de modo, servidor y salas
+
+### Flujo
+
+- **Esc en el menú principal** vuelve a la selección de modo, no al título. La selección de modo quedó entre los dos, y Esc siempre retrocede una pantalla.
+- **Última elección:** se guarda en las opciones (`lastMode`). El cursor arranca en esa tarjeta, pero la pantalla nunca se salta.
+- **Pantallas en línea sin pausa al perder el foco:** el menú cooperativo, unirse y la sala de espera no muestran "EN PAUSA" al cambiar de ventana, porque para probar se juega con dos ventanas lado a lado. Las escenas lo piden con `online = true`. El modo solo se pausa igual que antes.
+
+### Servidor y protocolo
+
+- **WebSocket a mano, sin dependencias** (`server/ws.js`), como proponía el diseño. No hizo falta el paquete `ws`.
+- **El juego reutiliza la lógica de salas del servidor:** `src/net/loopTransport.js` usa el mismo `server/rooms.js` en memoria. Así las pruebas del cliente ejercitan las salas reales.
+- **Mensajes que no estaban en el diseño** (agregados a `docs/coop/04_red.md`):
+  - `leave`: salida limpia. Sin él, cerrar la sala esperaría los 20 s de reconexión.
+  - `resumed`: respuesta a una reconexión.
+  - `closed`: la sala se cerró (el anfitrión salió o se cayó, o la sala expiró).
+  - `peer: 'lost'`: el compañero perdió la conexión y está dentro de sus 20 s.
+  - Dentro de `relay`: `lobby` (estado de la sala de espera) y `stat` (ping propio, para las barras del compañero).
+- **El anfitrión manda en la sala de espera:** el invitado pide y el anfitrión responde con el estado completo. Si los dos cambian de personaje a la vez, gana el anfitrión y nunca quedan iguales.
+- **Sala vacía:** como los lugares se guardan 20 s y si se va el anfitrión la sala se cierra, en la práctica una sala queda vacía muy poco tiempo. El límite de 2 min queda como red de seguridad.
+- **Sin lista de orígenes (`ORIGINS`), el servidor acepta cualquiera.** Así funciona en desarrollo y en la red local; al desplegar se configura (ver `server/README.md`).
+- **`?server=ws://…`** en la URL cambia el servidor sin recompilar (útil en la red local o para probar uno desplegado).
+- **`?lag=150`** retrasa cada mensaje 150 ms (±20) en cada sentido, así que el ping mostrado ronda los 300 ms.
+- **`npm run dev:coop` abre Vite con `--host`** para que otra máquina de la red local pueda entrar con la dirección `Network`. Vite redirige `/ws` al servidor, así que el juego no necesita saber la IP.
+
+### Menús
+
+- **Grilla del gamepad de 8×4** en vez de 6×5: el alfabeto tiene 31 caracteres y no cabía. Sobra un lugar, que es "borrar".
+- **Teclado en "Unirse":** las letras se leen directo del teclado, no por acciones. Si no, escribir Z, X, W, A, S o D confirmaría, cancelaría o movería el cursor. La grilla y los botones A/B solo responden al gamepad.
+- **Letras que no existen en los códigos** (I, L, O, 0, 1): la cajita tiembla y no se escriben.
+- **En la sala de espera, Esc primero quita el "listo"** y, si no estabas listo, pregunta si querés salir. Para el anfitrión, Enter con los dos listos empieza (no quita su "listo").
+- **Empezar todavía no lleva a ningún mapa:** los dos ven "¡Sincronizados!" y vuelven a la sala sin "listo". El mapa de conexiones llega en el Hito 11.
+- **Tapita es un boceto:** en la selección de modo y en la sala de espera se dibuja a Choco con la paleta de Tapita (tapa de dulce y hoja de caña), con la etiqueta "boceto" en la sala de espera. El diseño final llega en el Hito 10.
+- **"C: copiar"** usa la acción Borrar ranura (C, Supr o Y del gamepad), que ya existía en los menús y no se reasigna.

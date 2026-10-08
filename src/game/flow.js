@@ -1,5 +1,7 @@
-// Flujo entre pantallas — docs/06_menus_ui.md
-//   Presentación → Título → Menú principal → (Nueva partida → Ranura → Prólogo | Continuar → Mapa)
+// Flujo entre pantallas — docs/06_menus_ui.md y docs/coop/05_menus_coop.md
+//   Presentación → Título → Selección de modo
+//     Modo solo → Menú principal → (Nueva partida → Ranura → Prólogo | Continuar → Mapa)
+//     Cooperativo → Menú cooperativo → (Crear sala | Unirse) → Sala de espera
 //   Mapa → Tarjeta de título → Nivel → Resultados → Mapa
 //   Nivel → Pausa / Game Over
 import { Session } from './session.js';
@@ -23,6 +25,10 @@ import { Level3Scene } from '../levels/level3_novacomp/Level3Scene.js';
 import { Level4Scene } from '../levels/level4_santacruz/Level4Scene.js';
 import { Level5Scene } from '../levels/level5_codigo/Level5Scene.js';
 import { EndingScene } from '../scenes/EndingScene.js';
+import { ModeSelectScene } from '../scenes/ModeSelectScene.js';
+import { CoopMenuScene } from '../coop/CoopMenuScene.js';
+import { JoinScene } from '../coop/JoinScene.js';
+import { LobbyScene } from '../coop/LobbyScene.js';
 
 export const Flow = {
   toTitle(game, { type = 'fade' } = {}) {
@@ -31,6 +37,23 @@ export const Flow = {
 
   toMainMenu(game) {
     game.changeScene(() => new MainMenuScene(game), { type: 'fade', duration: 0.2 });
+  },
+
+  toModeSelect(game) {
+    game.changeScene(() => new ModeSelectScene(game), { type: 'fade', duration: 0.2 });
+  },
+
+  // ---------- Modo Sincronizado (cooperativo) ----------
+  toCoopMenu(game, { message = null } = {}) {
+    game.changeScene(() => new CoopMenuScene(game, { message }), { type: 'fade', duration: 0.2 });
+  },
+
+  toCoopJoin(game) {
+    game.changeScene(() => new JoinScene(game), { type: 'fade', duration: 0.2 });
+  },
+
+  toCoopLobby(game) {
+    game.changeScene(() => new LobbyScene(game), { type: 'glitch' });
   },
 
   toCredits(game, opts = {}) {
