@@ -99,6 +99,10 @@ Todos los mensajes son JSON con un campo `type`.
 | `menu` | Los dos | Al abrir o cerrar la pausa | Para mostrar el ícono "en el menú" |
 | `bye` | Los dos | Al salir | Salida limpia |
 
+**Acciones (`act`, sin confirmación) del Hito 10:** `shot` (disparo, para dibujarlo), `hit` y `stomp` (golpe del invitado a un enemigo; los aplica el anfitrión), `stick` (enemigo pegado con melcocha), `pound` (martillazo: el anfitrión aturde enemigos y Choco salta si está cerca), `mel` (melcocha lanzada) y `signal` (señal "¡Aquí!").
+
+**Eventos (`ev`, confiables) del Hito 10:** `kill` y `squash` (enemigo vencido), `melStick` y `melPop` (dónde se pegó o se deshizo una melcocha), `cp` (checkpoint de los dos), `take` (objeto tomado), `reset` (cayeron los dos), `full` (estado completo al volver de una desconexión) y `end` (los dos en la salida).
+
 **Estado del personaje (`me`):** posición, velocidad, dirección, animación y frame, vida, flags (en el suelo, montado, plantado, escudo, Vista Debug, sombrilla, buceando) y puntería.
 
 ## Modelo de autoridad

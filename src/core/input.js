@@ -5,9 +5,12 @@ import { ACTIONS, DEFAULT_KEYS, DEFAULT_PAD, PREVENT_DEFAULT } from '../config/c
 import { INPUT } from '../config/balance.js';
 
 export class Input {
-  constructor(target = window) {
-    this.keys = structuredClone(DEFAULT_KEYS);
+  // opts (solo ?coop=local): keys = asignación completa propia; usePad = false para ignorar el gamepad
+  constructor(target = window, { keys = null, usePad = true } = {}) {
+    this.keys = keys ? structuredClone(keys) : structuredClone(DEFAULT_KEYS);
     this.pad = structuredClone(DEFAULT_PAD);
+    this.usePad = usePad;
+    this.target = target;
     this.keyDown = new Set();
     this.latchedPress = new Set(); // teclas presionadas entre pasos (toques muy cortos)
     this.latchedRelease = new Set();
@@ -85,10 +88,23 @@ export class Input {
     };
     target.addEventListener('mousedown', this._onMouseDown);
     target.addEventListener('mouseup', this._onMouseUp);
+    this._removers = [
+      () => target.removeEventListener('keydown', this._onKeyDown),
+      () => target.removeEventListener('keyup', this._onKeyUp),
+      () => window.removeEventListener('blur', this._onBlur),
+      () => target.removeEventListener('mousedown', this._onMouseDown),
+      () => target.removeEventListener('mouseup', this._onMouseUp),
+    ];
     // Clic derecho asignado (o reasignando): sin menú contextual
     target.addEventListener('contextmenu', (e) => {
       if (this.captureCallback || this.isBound('Mouse2')) e.preventDefault?.();
     });
+  }
+
+  // Deja de escuchar el teclado (controles extra de ?coop=local)
+  dispose() {
+    for (const r of this._removers || []) r();
+    this._removers = [];
   }
 
   // ¿La tecla (o botón del mouse) está asignada a alguna acción?
@@ -132,6 +148,7 @@ export class Input {
     const pressed = new Set();
     let ax = 0;
     let ay = 0;
+    if (!this.usePad) return { pressed, ax, ay };
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (const gp of pads) {
       if (!gp || !gp.connected) continue;

@@ -32,7 +32,10 @@ async function start() {
   // Atajos de desarrollo (?scene=…): solo existen con npm run dev, el build no los incluye.
   if (import.meta.env.DEV) {
     const { devStart } = await import('./dev/shortcuts.js');
-    next = (await devStart(game, new URLSearchParams(location.search).get('scene'))) || next;
+    const params = new URLSearchParams(location.search);
+    // ?coop=local: las dos vistas del cooperativo en la misma página (solo para depurar)
+    const direct = params.get('coop') === 'local' ? 'coop-local' : params.get('scene');
+    next = (await devStart(game, direct)) || next;
   }
   game.start(new BootScene(game, next));
 }

@@ -19,6 +19,7 @@ export const ACTIONS = [
   'cancel',
   'skip',
   'erase',
+  'signal',
 ];
 
 export const DEFAULT_KEYS = {
@@ -41,6 +42,8 @@ export const DEFAULT_KEYS = {
   skip: ['Escape'],
   // Borrar una ranura en los menús
   erase: ['Delete', 'KeyC'],
+  // Modo Sincronizado: marcador "¡Aquí!" para el compañero
+  signal: ['KeyT'],
 };
 
 // Botones del gamepad (standard mapping)
@@ -78,6 +81,7 @@ export const DEFAULT_PAD = {
   cancel: [PAD.B],
   skip: [PAD.START],
   erase: [PAD.Y],
+  signal: [PAD.BACK],
 };
 
 // Teclas que no deben hacer scroll ni acciones del navegador
@@ -93,7 +97,13 @@ export const PREVENT_DEFAULT = new Set([
 ]);
 
 // Acciones que aparecen en la pantalla de controles (las de menú no se reasignan)
-export const REMAPPABLE = ['left', 'right', 'up', 'down', 'jump', 'shoot', 'shield', 'lasso', 'debug', 'interact', 'pause', 'sneak'];
+export const REMAPPABLE = ['left', 'right', 'up', 'down', 'jump', 'shoot', 'shield', 'lasso', 'debug', 'interact', 'pause', 'sneak', 'signal'];
+
+// Filas de la pantalla de controles: el modo solo no muestra la Señal; el cooperativo no usa el sigilo.
+export const CONTROL_ROWS = {
+  solo: REMAPPABLE.filter((a) => a !== 'signal'),
+  coop: REMAPPABLE.filter((a) => a !== 'sneak'),
+};
 
 // Asigna `code` a la ranura `slot` de `action`. Si otra acción remapeable ya la usaba,
 // intercambia: esa acción recibe la tecla que tenía `action` en esa ranura.

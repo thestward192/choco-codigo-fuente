@@ -6,7 +6,7 @@ import { SCREEN } from '../config/balance.js';
 import { drawText } from '../art/font.js';
 import { TEXTS } from '../data/dialogues.js';
 import { UI } from '../art/palettes.js';
-import { REMAPPABLE, DEFAULT_KEYS, assignKey } from '../config/controls.js';
+import { CONTROL_ROWS, DEFAULT_KEYS, assignKey } from '../config/controls.js';
 import { prettyKey } from '../core/input.js';
 import { drawTerminalPanel, drawBraceCursor } from '../ui/widgets.js';
 import { playSfx } from '../audio/sfx.js';
@@ -15,7 +15,8 @@ const T = TEXTS.controls;
 const PANEL = { x: 12, y: 6, w: 296, h: 150 };
 
 export class ControlsScene extends Scene {
-  constructor(game, { readOnly = false } = {}) {
+  // coop: muestra la Señal y los nombres de las habilidades de Tapita
+  constructor(game, { readOnly = false, coop = false } = {}) {
     super(game);
     this.drawBelow = true;
     this.readOnly = readOnly;
@@ -24,7 +25,9 @@ export class ControlsScene extends Scene {
     this.t = 0;
     this.capturing = false;
     this.msg = null;
-    this.rows = readOnly ? REMAPPABLE : [...REMAPPABLE, 'reset'];
+    this.coop = coop;
+    const rows = CONTROL_ROWS[coop ? 'coop' : 'solo'];
+    this.rows = readOnly ? rows : [...rows, 'reset'];
   }
 
   update(dt) {
@@ -95,7 +98,7 @@ export class ControlsScene extends Scene {
         drawText(ctx, T.reset, x, y + 2, { color: active ? UI.yellow : UI.textDim });
         return;
       }
-      drawText(ctx, T.actions[action], x, y, { color: active ? UI.text : UI.textDim });
+      drawText(ctx, (this.coop && T.actionsCoop[action]) || T.actions[action], x, y, { color: active ? UI.text : UI.textDim });
       [c1, c2].forEach((cx, col) => {
         const code = keys[action]?.[col];
         const sel = active && this.col === col;

@@ -544,6 +544,55 @@ Object.assign(SFX, {
   cry: (a) => [0, 0.2, 0.4].forEach((t) => a.tone({ wave: 'triangle', f0: N(79), f1: N(74), dur: 0.16, vol: 0.06, at: t })),
 });
 
+// --- Modo Sincronizado: Tapita y la sala cooperativa (docs/coop/06_arte_audio_coop.md) ---
+Object.assign(SFX, {
+  // Mazo de madera: zumbido de aire y golpe seco
+  swing: (a) => a.noise({ dur: 0.09, vol: 0.12, type: 'bandpass', freq: a.vary(900), freq1: 400, q: 1.2 }),
+  mazoHit: (a) => {
+    a.noise({ dur: 0.08, vol: 0.3, type: 'lowpass', freq: 900, freq1: 200 });
+    a.tone({ wave: 'triangle', f0: a.vary(180), f1: 90, dur: 0.1, vol: 0.22 });
+  },
+  spin: (a) => a.tone({ wave: 'pulse12', f0: 500, f1: 1100, dur: 0.12, vol: 0.06 }),
+  dive: (a) => a.tone({ wave: 'pulse25', f0: 900, f1: 260, dur: 0.18, vol: 0.08 }),
+  // Martillazo: golpe grave con onda
+  pound: (a) => {
+    a.noise({ dur: 0.35, vol: 0.4, type: 'lowpass', freq: 700, freq1: 80 });
+    a.tone({ wave: 'sine', f0: 120, f1: 40, dur: 0.3, vol: 0.4 });
+    a.tone({ wave: 'triangle', f0: 240, f1: 120, dur: 0.12, vol: 0.12, at: 0.02 });
+  },
+  plant: (a) => {
+    a.noise({ dur: 0.12, vol: 0.25, type: 'lowpass', freq: 600, freq1: 150 });
+    a.tone({ wave: 'triangle', f0: N(52), dur: 0.12, vol: 0.12 });
+  },
+  unplant: (a) => a.tone({ wave: 'triangle', f0: N(55), f1: N(60), dur: 0.06, vol: 0.06 }),
+  // Pegarse a la pared (pegajosa)
+  stick: (a) => a.tone({ wave: 'sine', f0: a.vary(500), f1: 220, dur: 0.07, vol: 0.08 }),
+  // Melcocha: lanzar, pegarse y endurecerse
+  throw: (a) => a.tone({ wave: 'triangle', f0: 400, f1: 700, dur: 0.08, vol: 0.1 }),
+  melcochaStick: (a) => {
+    a.tone({ wave: 'sine', f0: a.vary(300), f1: 140, dur: 0.1, vol: 0.12 });
+    a.noise({ dur: 0.05, vol: 0.08, type: 'lowpass', freq: 800 });
+  },
+  melcochaHard: (a) => a.tone({ wave: 'triangle', f0: N(76), dur: 0.05, vol: 0.07 }),
+  melcochaPop: (a) => a.tone({ wave: 'sine', f0: 600, f1: 200, dur: 0.08, vol: 0.06 }),
+  // Hoja sombrilla
+  leafOpen: (a) => a.noise({ dur: 0.12, vol: 0.08, type: 'highpass', freq: 2500, freq1: 1200 }),
+  leafClose: (a) => a.noise({ dur: 0.08, vol: 0.05, type: 'highpass', freq: 1500, freq1: 2500 }),
+  // Señal "¡Aquí!" (la escuchan los dos)
+  signal: (a) => {
+    a.tone({ wave: 'pulse25', f0: N(84), dur: 0.06, vol: 0.12 });
+    a.tone({ wave: 'pulse25', f0: N(91), dur: 0.1, vol: 0.12, at: 0.07 });
+  },
+  // Se cayó la conexión (el personaje se pixela) y reaparece
+  disconnect: (a) => {
+    for (let i = 0; i < 4; i++) a.tone({ wave: 'pulse12', f0: 1200 - i * 250, dur: 0.05, vol: 0.07, at: i * 0.06 });
+    a.noise({ dur: 0.25, vol: 0.08, type: 'bandpass', freq: 2500, q: 3 });
+  },
+  respawn: (a) => [N(72), N(79), N(84)].forEach((f, i) => a.tone({ wave: 'pulse25', f0: f, dur: 0.07, vol: 0.09, at: i * 0.05 })),
+  // Choco sale impulsado por la onda del martillazo
+  boost: (a) => a.tone({ wave: 'pulse25', f0: a.vary(300), f1: 900, dur: 0.12, vol: 0.12 }),
+});
+
 // Zumbido suave mientras la Vista Debug está activa. Recibe el zumbido actual (o null) y devuelve
 // el que queda sonando.
 export function debugHum(audio, hum, active) {

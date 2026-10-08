@@ -573,3 +573,35 @@ Decisiones tomadas durante el desarrollo que no estaban definidas en los documen
 - **Empezar todavía no lleva a ningún mapa:** los dos ven "¡Sincronizados!" y vuelven a la sala sin "listo". El mapa de conexiones llega en el Hito 11.
 - **Tapita es un boceto:** en la selección de modo y en la sala de espera se dibuja a Choco con la paleta de Tapita (tapa de dulce y hoja de caña), con la etiqueta "boceto" en la sala de espera. El diseño final llega en el Hito 10.
 - **"C: copiar"** usa la acción Borrar ranura (C, Supr o Y del gamepad), que ya existía en los menús y no se reasigna.
+
+## Hito 10 · Coop: Tapita y la sincronización
+
+### Tapita
+
+- **Lienzo de 36×32 en vez de 24×22:** el mazo de frente, el martillazo en picada y la hoja sombrilla no cabían. El cuerpo sigue siendo de 16×16 y la hitbox de 14×14; los pies quedan en la fila 27 y las 4 filas de abajo dejan que el mazo baje del piso.
+- **Física:** salta ≈ 40 px (2.5 tiles), cae un poco más rápido que Choco (es pesada) y no tiene doble salto. Pegada a la pared resbala a 30 px/s hasta 1.2 s; el salto de pared la aleja 0.16 s sin control horizontal para que llegue a la pared de enfrente.
+- **Se pega sola** al tocar una pared cayendo, salvo que esté empujando hacia el otro lado. Se suelta al empujar en contra, al terminarse la pared o a los 1.2 s.
+- **Plantarse** se activa al presionar Escudo en el suelo y dura mientras se mantiene. Plantada recibe el daño pero no la empujan.
+- **Martillazo:** se queda 0.14 s en el aire girando (anticipación) y después cae a 300 px/s. Aturde a los enemigos a 2 tiles; no les hace daño.
+- **Melcocha:** la simula quien la lanza y le avisa al compañero dónde se pegó (`melStick`). El diseño decía que el mundo es del anfitrión, pero la melcocha es parte de la habilidad de Tapita: así se siente inmediata para quien la lanza y queda igual en las dos pantallas.
+- **Caramelizarse y disolverse:** los frames y el efecto existen, pero se usan desde el Hito 11 (agua) y el Hito 14 (calor extremo).
+- **Sonidos nuevos:** mazo, martillazo, plantarse, pegarse a la pared, melcocha, hoja sombrilla, señal, "se cayó la conexión" y reaparecer.
+
+### Sincronización
+
+- **Reloj del compañero:** cada estado lleva la hora de quien lo manda; la diferencia de relojes se estima con la latencia mínima de los últimos 2 s. Así la interpolación de 100 ms no depende de que los relojes coincidan.
+- **Saltos grandes** (reaparecer) no se interpolan: el personaje aparece directo en su lugar.
+- **Montarse:** el compañero es una plataforma (sólida por arriba) que se mueve con su posición interpolada. Quien está arriba manda su distancia al de abajo (`ride`), y el de abajo lo dibuja pegado a su propio personaje, sin el atraso de la red.
+- **Golpes del invitado:** se calculan con lo que ve el invitado (enemigos interpolados) y el anfitrión los aplica sin volver a revisar la posición. En un juego cooperativo no hay quién haga trampa, y así el golpe se siente justo.
+- **Pisotones del invitado:** el enemigo se aplasta de una vez en su pantalla (para que se sienta) y el anfitrión lo confirma.
+- **Si caen los dos**, lo decide el anfitrión cuando ve a los dos caídos. Con mucha latencia el reinicio llega al invitado unos 0.5 s después.
+- **Desconexión:** el juego se congela para los dos (cuenta regresiva de 20 s). Si no vuelve, los dos van al menú cooperativo y el anfitrión cierra la sala.
+- **Pausa en línea:** el personaje se queda quieto mientras el menú está abierto, pero el mundo sigue. Con una confirmación abierta encima de la pausa (salir de la sala), la sala sí se detiene un momento en esa computadora.
+
+### Sala de pruebas cooperativa y herramientas
+
+- **Empezar en la sala de espera** lleva a la sala de pruebas cooperativa; al llegar los dos a la salida vuelven a la sala de espera. El mapa de conexiones llega en el Hito 11.
+- **Bits y cristales:** cada uno ve los del compañero apagados y solo junta los suyos.
+- **Vista Debug compartida** ya funciona en la sala de pruebas (para el puente fantasma), aunque el plan la ponía en el Hito 11.
+- **`?coop=local`:** las dos vistas en una página, con el lienzo interno de 640×180 y un teclado para cada uno (sin gamepad). **`?scene=sala`** abre la sala con un solo personaje (`&pj=tapita`). Las dos son solo para depurar.
+- **Señal en el gamepad:** Back/Select. En la pantalla de controles del modo solo no aparece; en la del cooperativo reemplaza a "Caminar sigiloso", que no se usa.

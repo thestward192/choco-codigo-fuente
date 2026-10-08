@@ -739,6 +739,79 @@ export const PATCH = {
 // Modo Hotfix (se desbloquea al terminar el juego): 1 cuadrito fijo, sin cacao, la mitad de los
 // checkpoints. Lista de checkpoints que se apagan por nivel.
 // Modo desarrolladora (solo npm run dev): vuelo libre con J para probar los niveles
+// Modo Sincronizado (cooperativo) — docs/coop/02_tapita.md y docs/coop/03_mecanicas_coop.md
+export const COOP = {
+  // Física de Tapita (lo que no está aquí es igual a PLATFORMER)
+  TAPITA: {
+    MAX_SPEED: 85,
+    ACCEL_GROUND: 800,
+    DECEL_GROUND: 1300,
+    ACCEL_AIR: 520,
+    DECEL_AIR: 520,
+    GRAVITY_DOWN: 1250, // es pesada: cae un poco más rápido que Choco
+    JUMP_SPEED: -270, // ≈ 40 px (2.5 tiles)
+    JUMP_CUT: 0.5,
+    HITBOX_W: 14,
+    HITBOX_H: 14, // cabe por túneles de 1 tile; Choco (20 px) no
+    WEIGHT: 2,
+    WEIGHT_PLANTED: 3,
+    HP: 4, // trozos de dulce
+    // Pegajosa: se queda pegada a la pared en el aire y resbala
+    CLING_TIME: 1.2,
+    CLING_SLIDE: 30, // px/s
+    WALL_JUMP_X: 120,
+    WALL_JUMP_Y: -260,
+    WALL_JUMP_LOCK: 0.16, // s sin control horizontal tras el salto de pared (para que se aleje)
+    // Mazo de trapiche
+    MAZO_RANGE: 14,
+    MAZO_DAMAGE: 2,
+    MAZO_COOLDOWN: 0.35,
+    MAZO_HIT_FRAME: 2, // frame de la animación en que pega
+    // Martillazo
+    POUND_HOVER: 0.14, // se queda un instante en el aire girando (anticipación)
+    POUND_SPEED: 300,
+    POUND_RADIUS: 32, // 2 tiles a cada lado
+    POUND_STUN: 1.5,
+    POUND_DAMAGE: 1,
+    POUND_HITSTOP: 5,
+    POUND_SHAKE: 0.35,
+    POUND_BOOST: -230, // salto que le da a Choco si está cerca (≈ 0.5 tile extra sobre su salto)
+    POUND_RECOVER: 0.25, // pose de impacto
+    // Melcocha
+    MELCOCHA_COOLDOWN: 0.6,
+    MELCOCHA_MAX: 2,
+    MELCOCHA_SPEED_X: 150,
+    MELCOCHA_SPEED_Y: -120,
+    MELCOCHA_SPEED_Y_UP: -230, // con ↑, más alta
+    MELCOCHA_GRAVITY: 520,
+    MELCOCHA_HARDEN: 0.5,
+    MELCOCHA_LIFE: 6,
+    MELCOCHA_BLINK: 1, // parpadea el último segundo
+    MELCOCHA_W: 32, // plataforma de 2×1 tiles (se ve de 32×8)
+    MELCOCHA_H: 8,
+    MELCOCHA_STICK_ENEMY: 2.5,
+    MELCOCHA_RANGE: 260, // se deshace si vuela más que esto sin pegar
+    // Hoja sombrilla
+    UMBRELLA_SPEED_MULT: 0.6,
+    UMBRELLA_SHADE: 16, // px de sombra a cada lado (1 tile)
+  },
+  // Choco cargando a Tapita
+  CARRY_SPEED_MULT: 0.85,
+  CARRY_JUMP: -240,
+  // Reaparición
+  RESPAWN_TIME: 3,
+  DISCONNECT_FX_TIME: 0.6, // el personaje se pixela y desaparece
+  // Señal
+  SIGNAL_TIME: 3,
+  SIGNAL_RANGE: 80, // 5 tiles
+  SIGNAL_MOVE_SPEED: 120,
+  SIGNAL_HOLD: 0.2, // mantener más que esto deja mover el marcador
+  // Flecha del compañero fuera de pantalla
+  ARROW_MARGIN: 10,
+  // Parpadeo de los enemigos aturdidos por el martillazo
+  STUN_BLINK: 0.12,
+};
+
 export const DEV = {
   NOCLIP_SPEED: 180, // px/s volando y atravesando paredes
   NOCLIP_FAST: 2.5, // multiplicador manteniendo salto

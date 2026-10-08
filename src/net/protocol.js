@@ -31,6 +31,11 @@ export const GAME = {
   LOBBY: 'lobby', // anfitrión → invitado: estado completo de la sala de espera
   STAT: 'stat', // los dos, cada segundo: ping propio con el servidor
   START: 'start', // anfitrión: empezar
+  ME: 'me', // los dos, 30 Hz: estado del propio personaje
+  WORLD: 'world', // anfitrión, 20 Hz: enemigos y objetos del mundo
+  ACT: 'act', // los dos, al momento: acciones (disparo, golpe, señal…), sin confirmación
+  EV: 'ev', // los dos, al momento: eventos confiables con número de secuencia
+  ACK: 'ack', // confirmación de un ev
   MENU: 'menu', // los dos: abrió o cerró la pausa
   BYE: 'bye', // los dos: salida limpia
 };

@@ -9,7 +9,8 @@
 // ?scene=level5 (El Código Puro), ?scene=push, ?scene=firewall, ?scene=fantasma, ?scene=punteros,
 // ?scene=overflow, ?scene=null (jefe final; null2, null3, null4 = fases), ?scene=parche,
 // ?scene=final (cinemática final), ?scene=estadisticas, ?scene=extra (escena de las 15 Y),
-// ?scene=modo (selección de modo), ?scene=coop (menú cooperativo), ?scene=unirse (escribir código)
+// ?scene=modo (selección de modo), ?scene=coop (menú cooperativo), ?scene=unirse (escribir código),
+// ?scene=sala (sala de pruebas cooperativa sola, sin compañero) y ?coop=local (dos vistas, un teclado)
 export async function devStart(game, direct) {
   let next = null;
   if (direct === 'room') {
@@ -48,6 +49,12 @@ export async function devStart(game, direct) {
   } else if (direct === 'coop' || direct === 'unirse') {
     const mod = direct === 'coop' ? await import('../coop/CoopMenuScene.js') : await import('../coop/JoinScene.js');
     next = () => (direct === 'coop' ? new mod.CoopMenuScene(game) : new mod.JoinScene(game));
+  } else if (direct === 'coop-local') {
+    const { LocalCoopScene } = await import('../coop/LocalCoopScene.js');
+    next = () => new LocalCoopScene(game);
+  } else if (direct === 'sala') {
+    const { LocalCoopScene } = await import('../coop/LocalCoopScene.js');
+    next = () => new LocalCoopScene(game, { solo: true });
   } else if (direct === 'dev') {
     const { DevMenuScene } = await import('../scenes/DevMenuScene.js');
     next = () => new DevMenuScene(game);

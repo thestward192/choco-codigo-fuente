@@ -100,7 +100,6 @@ export const TEXTS = {
     leaveGuest: '¿Salir de la sala?',
     peerLost: (s) => `Reconectando… ${s}`,
     reconnecting: 'Se cayó la conexión. Reconectando…',
-    started: '¡Sincronizados! Los mapas cooperativos llegan en los próximos hitos.',
     closed: {
       'host-left': 'El anfitrión cerró la sala',
       'host-lost': 'El anfitrión se desconectó',
@@ -110,6 +109,49 @@ export const TEXTS = {
       closed: 'La sala se cerró',
     },
     debugNet: (ping, msgs, kbs) => `RED ${ping} ms · ${msgs} msj/s · ${kbs} KB/s`,
+
+    // HUD en el juego
+    hud: {
+      debug: 'DEBUG',
+      planted: 'ANCLA',
+      umbrella: 'SOMBRILLA',
+      status: { menu: 'en el menú', lost: 'desconectado', respawn: 'reapareciendo' },
+    },
+
+    // Sala de pruebas cooperativa (Hito 10)
+    room: {
+      title: 'Sala de pruebas cooperativa',
+      here: '¡Aquí!',
+      fell: 'Se cayó la conexión',
+      respawnIn: (s) => `Reconectando en ${s}…`,
+      waitPartner: (s) => `Esperando a tu compañero… ${s}`,
+      reconnecting: 'Se cayó tu conexión. Reconectando…',
+      partnerLeft: 'Tu compañero salió de la sala',
+      reset: '¡Se cayeron los dos! La sala vuelve a empezar.',
+      done: '¡Sala de pruebas completada!',
+      exitWait: 'Falta tu compañero en la salida',
+      signs: {
+        welcome: 'Sala de pruebas cooperativa. T pone una señal "¡Aquí!" para tu compañero; mantenela y movela con las flechas.',
+        steps: 'Tapita salta menos que Choco. Para el escalón alto, parate encima de tu compañero y saltá desde ahí.',
+        wall: 'Pared de 6 tiles: Choco sube parado sobre Tapita. Tapita trepa la chimenea saltando de pared en pared.',
+        tunnel: 'Túnel bajo: solo Tapita cabe. Choco pasa por arriba.',
+        enemies: 'Tapita: disparar es el mazo; en el aire, ↓ + disparar es el martillazo, que aturde. Choco pisa o dispara.',
+        melcocha: 'La melcocha de Tapita (tecla del lazo) se pega en la pared y se endurece como escalón por 6 s.',
+        void: 'Choco cruza con el lazo. Con su Vista Debug, el puente fantasma aguanta a los dos.',
+        exit: 'Salida: entren los dos para volver a la sala de espera.',
+      },
+    },
+
+    // Pausa en línea (el juego no se detiene)
+    pause: {
+      title: 'choco@chc:~$ ./pausa',
+      resume: 'Continuar',
+      controls: 'Controles',
+      options: 'Opciones',
+      leave: 'Salir de la sala',
+      leaveConfirm: '¿Salir de la sala? Tu compañero vuelve al menú.',
+      running: 'El juego sigue corriendo',
+    },
   },
 
   slots: {
@@ -265,6 +307,14 @@ export const TEXTS = {
       interact: 'Interactuar',
       pause: 'Pausa',
       sneak: 'Caminar sigiloso',
+      signal: 'Señal (¡Aquí!)',
+    },
+    // En el cooperativo: lo que hace cada acción con Choco · con Tapita
+    actionsCoop: {
+      shoot: 'Báculo · Mazo y martillazo',
+      shield: 'Escudo · Plantarse',
+      lasso: 'Lazo · Melcocha',
+      debug: 'Vista Debug · Hoja sombrilla',
     },
   },
 
@@ -911,6 +961,8 @@ export const TEXTS = {
       { id: 'extra', label: 'Hito 7 · Escena extra (15 Y)' },
       { id: 'modo', label: 'Hito 9 · Selección de modo' },
       { id: 'coop', label: 'Hito 9 · Menú cooperativo (salas)' },
+      { id: 'coopLocal', label: 'Hito 10 · Sala cooperativa con dos vistas en un teclado' },
+      { id: 'sala', label: 'Hito 10 · Sala cooperativa con Tapita sola' },
     ],
     hint: '↑ ↓ elegir · ESPACIO / ENTER confirmar',
   },

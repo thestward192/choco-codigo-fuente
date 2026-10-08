@@ -167,7 +167,8 @@ export class Choco {
     const control = this.hurtT <= 0;
     let moveX = control ? inp.moveX() : 0;
     this.moveInput = moveX;
-    this.js.hasBoots = this.items.boots;
+    // Cooperativo: cargando a Tapita no hay doble salto (en el modo solo noDoubleJump nunca se usa)
+    this.js.hasBoots = this.items.boots && !this.noDoubleJump;
 
     // Lazo: lanzar, columpiarse y soltar (mientras se columpia no corre la física normal)
     if (this.updateLasso(dt, inp, control)) {
@@ -192,11 +193,12 @@ export class Choco {
         jumpBuffered: control && !tied && inp.buffered('jump'),
         jumpHeld: inp.down('jump'),
         down: inp.down('down'),
-        speedMult,
+        speedMult: speedMult * (this.extraSpeedMult ?? 1),
         keepMomentum: this.launchT > 0,
       },
       dt,
       this.scene.map,
+      this.physics || PLATFORMER,
     );
     if (ev.consumedJump) inp.consume('jump');
 
@@ -800,6 +802,77 @@ export class Choco {
     if (this.coating && R.chance(0.12)) {
       this.particles.spawn({ x: this.cx + R.range(-7, 7), y: this.cy + R.range(-10, 10), vy: -12, life: 0.4, colors: ['#FFFFFF', '#FFD27A'] });
     }
+  }
+
+  // ---------- Modo Sincronizado: estado para el compañero (docs/coop/04_red.md) ----------
+  // Lo que el compañero necesita para dibujar a Choco igual que acá (campos cortos: viaja 30 veces por segundo).
+  netState() {
+    const b = this.body;
+    const r = (v) => Math.round(v * 10) / 10;
+    const s = {
+      x: r(this.footX),
+      y: r(this.footY),
+      vx: Math.round(b.vx),
+      vy: Math.round(b.vy),
+      f: this.facing,
+      a: this.anim.name,
+      at: Math.round(this.anim.t * 1000) / 1000,
+      st: this.state,
+      hp: this.hp,
+      g: b.onGround ? 1 : 0,
+      sq: [Math.round(this.squash.x * 100) / 100, Math.round(this.squash.y * 100) / 100],
+    };
+    if (this.invuln > 0) s.inv = 1;
+    if (this.flashT > 0) s.fl = 1;
+    if (this.hurtT > 0) s.hu = 1;
+    if (this.spinT > 0) s.sp = 1;
+    if (this.poseT > 0) s.po = Math.round(this.poseT * 1000) / 1000;
+    if (this.aim !== 'h') s.aim = this.aim;
+    if (this.charging && this.chargeT > STAFF.CHARGE_VISIBLE_AFTER) s.ch = Math.round(this.chargeT * 100) / 100;
+    if (shieldOn(this.shield)) s.sh = 1;
+    if (this.parryFlash > 0) s.pa = 1;
+    if (this.coating) s.co = 1;
+    if (this.lasso) {
+      const L = this.lasso;
+      const end = L.phase === 'throw' ? L.tip : L.node;
+      s.la = [Math.round(end.x), Math.round(end.y), L.phase === 'swing' ? 1 : 0];
+    }
+    return s;
+  }
+
+  // Dibuja a Choco como compañero: aplica un estado recibido (ya interpolado) sin correr la física.
+  applyNet(s, dt) {
+    const b = this.body;
+    this.t += dt;
+    b.x = s.x - b.w / 2;
+    b.y = s.y - b.h;
+    b.vx = s.vx || 0;
+    b.vy = s.vy || 0;
+    b.onGround = !!s.g;
+    this.facing = s.f || 1;
+    this.state = s.st || 'play';
+    this.hp = s.hp ?? this.hp;
+    if (this.anim.name !== s.a) this.anim.name = s.a;
+    this.anim.t = s.at || 0;
+    if (s.sq) {
+      this.squash.x = s.sq[0];
+      this.squash.y = s.sq[1];
+    }
+    this.invuln = s.inv ? Math.max(this.invuln - dt, 0.5) : 0;
+    this.flashT = s.fl ? 0.03 : 0;
+    this.hurtT = s.hu ? 0.1 : 0;
+    this.spinT = s.sp ? 0.1 : 0;
+    this.poseT = s.po || 0;
+    this.aim = s.aim || 'h';
+    this.charging = !!s.ch;
+    this.chargeT = s.ch || 0;
+    this.chargeReady = (s.ch || 0) >= STAFF.CHARGE_TIME;
+    this.shield.active = s.sh ? Math.max(this.shield.active, 0.2) : 0;
+    this.parryFlash = s.pa ? 1 : 0;
+    this.coating = !!s.co;
+    this.lasso = s.la ? (s.la[2] ? { phase: 'swing', node: { x: s.la[0], y: s.la[1] } } : { phase: 'throw', tip: { x: s.la[0], y: s.la[1] }, node: { x: s.la[0], y: s.la[1] } }) : null;
+    this.updateFace(dt);
+    this.updateScarf(dt);
   }
 
   // ---------- Dibujo ----------

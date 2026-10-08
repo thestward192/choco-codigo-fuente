@@ -11,8 +11,8 @@ export function createCanvas(w, h) {
 }
 
 // Escala entera más grande que cabe en la ventana (en píxeles físicos).
-export function computeScale(availW, availH, fixed = 0) {
-  const auto = Math.max(1, Math.floor(Math.min(availW / SCREEN.W, availH / SCREEN.H)));
+export function computeScale(availW, availH, fixed = 0, w = SCREEN.W, h = SCREEN.H) {
+  const auto = Math.max(1, Math.floor(Math.min(availW / w, availH / h)));
   if (fixed > 0) return Math.min(fixed, auto);
   return auto;
 }
@@ -21,6 +21,8 @@ export class Renderer {
   constructor(displayCanvas) {
     this.display = displayCanvas;
     this.dctx = displayCanvas.getContext('2d', { alpha: false });
+    this.w = SCREEN.W;
+    this.h = SCREEN.H;
     this.canvas = createCanvas(SCREEN.W, SCREEN.H);
     this.ctx = this.canvas.getContext('2d');
     this.snapCanvas = createCanvas(SCREEN.W, SCREEN.H);
@@ -34,6 +36,16 @@ export class Renderer {
     window.addEventListener('resize', () => this.resize());
   }
 
+  // Tamaño interno distinto (solo ?coop=local: dos vistas de 320×180 una al lado de la otra)
+  setSize(w, h) {
+    if (w === this.w && h === this.h) return;
+    this.w = w;
+    this.h = h;
+    this.canvas = createCanvas(w, h);
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+  }
+
   setFixedScale(s) {
     this.fixedScale = s;
     this.resize();
@@ -43,9 +55,9 @@ export class Renderer {
     const dpr = window.devicePixelRatio || 1;
     const availW = Math.floor(window.innerWidth * dpr);
     const availH = Math.floor(window.innerHeight * dpr);
-    this.scale = computeScale(availW, availH, this.fixedScale);
-    const w = SCREEN.W * this.scale;
-    const h = SCREEN.H * this.scale;
+    this.scale = computeScale(availW, availH, this.fixedScale, this.w, this.h);
+    const w = this.w * this.scale;
+    const h = this.h * this.scale;
     this.display.width = w;
     this.display.height = h;
     // Tamaño CSS en píxeles lógicos para que cada píxel interno sea un bloque entero de píxeles físicos
@@ -62,7 +74,7 @@ export class Renderer {
     ctx.globalCompositeOperation = 'source-over';
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, SCREEN.W, SCREEN.H);
+    ctx.fillRect(0, 0, this.w, this.h);
     return ctx;
   }
 

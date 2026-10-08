@@ -89,7 +89,7 @@ export class CoopMenuScene extends Scene {
     const r = this.menu.update(dt, g);
     if (r === 'create') this.create();
     else if (r === 'join') Flow.toCoopJoin(g);
-    else if (r === 'controls') g.push(new ControlsScene(g));
+    else if (r === 'controls') g.push(new ControlsScene(g, { coop: true }));
     else if (r === 'back' || r === 'cancel') {
       closeSession(g);
       Flow.toModeSelect(g);

@@ -120,7 +120,11 @@ export class LobbyScene extends Scene {
       if (!next) return;
       if (next.host.ready !== this.lobby.host.ready) playSfx(this.game.audio, next.host.ready ? 'checkpoint' : 'menuCancel');
       this.setLobby(next);
-    } else if (d.type === GAME.START) this.started();
+    } else if (d.type === GAME.START) {
+      // El anfitrión dice quién es quién (por si el último estado no llegó)
+      const mine = d.guest === 'choco' || d.guest === 'tapita' ? d.guest : this.lobby.guest.char;
+      this.started(mine);
+    }
   }
 
   onPeer(p) {
@@ -159,17 +163,18 @@ export class LobbyScene extends Scene {
     else this.session.sendGame({ type: GAME.PICK, char: next.guest.char, ready: next.guest.ready });
   }
 
+  // Hito 10: los dos van a la sala de pruebas cooperativa (el mapa de conexiones llega en el Hito 11)
   start() {
-    // Hito 9: todavía no hay mapas. Se avisa a los dos y se vuelve a la sala.
-    this.session.sendGame({ type: GAME.START, seed: Math.floor(Math.random() * 2 ** 31) });
-    this.started();
-    this.setLobby({ host: { ...this.lobby.host, ready: false }, guest: { ...this.lobby.guest, ready: false } });
-    this.broadcast();
+    const l = this.lobby;
+    this.session.sendGame({ type: GAME.START, map: 'test', seed: Math.floor(Math.random() * 2 ** 31), host: l.host.char, guest: l.guest.char });
+    this.started(l.host.char);
   }
 
-  started() {
+  started(mine) {
+    if (!this.alive) return;
+    this.alive = false;
     playSfx(this.game.audio, 'portalEnter');
-    this.showBanner(T.started, COOP.both);
+    Flow.toCoopRoom(this.game, { mine });
   }
 
   showBanner(text, color) {

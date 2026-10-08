@@ -43,6 +43,16 @@ export const NET = {
   PING_GOOD: 80,
   PING_OK: 160,
 
+  // Sincronización del juego (docs/coop/04_red.md)
+  ME_RATE: 30, // estados del propio personaje por segundo
+  WORLD_RATE: 20, // estados del mundo (anfitrión) por segundo
+  INTERP_DELAY: 100, // ms: el compañero y el mundo se dibujan esto atrás
+  EXTRAPOLATE_MAX: 150, // ms: si faltan datos se extrapola hasta acá y después se congela
+  SNAPSHOT_KEEP: 1000, // ms de historia que se guarda
+  ACK_RESEND: 500, // ms: un evento confiable sin confirmar se reenvía
+  RIDE_CORRECT: 100, // ms: corrección suave del de arriba al montarse
+  BUTTON_RELEASE: 150, // ms que el personaje debe estar fuera de un botón para soltarlo
+
   // Latencia simulada (?lag=): variación aleatoria alrededor del valor pedido (ms)
   LAG_JITTER: 20,
 };

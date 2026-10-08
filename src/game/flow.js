@@ -29,6 +29,7 @@ import { ModeSelectScene } from '../scenes/ModeSelectScene.js';
 import { CoopMenuScene } from '../coop/CoopMenuScene.js';
 import { JoinScene } from '../coop/JoinScene.js';
 import { LobbyScene } from '../coop/LobbyScene.js';
+import { CoopTestRoom } from '../coop/CoopTestRoom.js';
 
 export const Flow = {
   toTitle(game, { type = 'fade' } = {}) {
@@ -54,6 +55,11 @@ export const Flow = {
 
   toCoopLobby(game) {
     game.changeScene(() => new LobbyScene(game), { type: 'glitch' });
+  },
+
+  // Sala cooperativa. mine: el personaje de esta computadora ('choco' | 'tapita')
+  toCoopRoom(game, { mine }) {
+    game.changeScene(() => new CoopTestRoom(game, { session: game.coop, mine }), { type: 'iris' });
   },
 
   toCredits(game, opts = {}) {

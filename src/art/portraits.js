@@ -46,6 +46,19 @@ export const PORTRAIT_PAL = {
   d: '#3A2A20',
   i: '#C87A3A',
   Q: '#E8E0D0',
+  // Tapita (tapa de dulce y hoja de caña) — docs/coop/02_tapita.md
+  D: '#2A1608',
+  S: '#6B3410',
+  B: '#9C5420',
+  L: '#C8782E',
+  C: '#F2C46B',
+  X: '#FFF1C2',
+  H: '#5E6B2A',
+  I: '#8E9A3F',
+  J: '#C4C77A',
+  O: '#7A4E2D',
+  Z: '#A8743F',
+  0: '#E88A6A',
 };
 
 export const EXPRESSIONS = ['normal', 'happy', 'worried', 'surprised', 'angry'];
@@ -322,6 +335,114 @@ function choco(g, face) {
   g.set(29, 21, 'c').set(2, 21, 'M');
 }
 
+// ---------- Tapita (Modo Sincronizado) ----------
+// Expresiones: normal, happy, worried (agua cerca) y determined (frente a un jefe).
+
+function tapita(g, face) {
+  // Bloque de tapa de dulce en trapecio (más ancho abajo)
+  for (let y = 9; y <= 30; y++) {
+    const hw = Math.round(10 + (y - 9) * 0.26);
+    const x0 = 16 - hw;
+    const x1 = 15 + hw;
+    g.hline(x0, x1, y, 'B');
+    g.set(x0, y, 'D').set(x1, y, 'D');
+    g.set(x0 + 1, y, 'L').set(x1 - 1, y, 'S');
+  }
+  g.hline(6, 25, 29, 'S').hline(5, 26, 30, 'D');
+  // Cristales de azúcar
+  for (const [x, y] of [
+    [8, 27],
+    [12, 28],
+    [21, 27],
+    [24, 21],
+    [7, 20],
+    [19, 28],
+  ])
+    g.set(x, y, 'C');
+  g.set(24, 20, 'X').set(8, 26, 'X');
+  // Capucha de hoja de caña
+  for (let y = 2; y <= 11; y++) {
+    const hw = Math.round(7 + (y - 2) * 0.75);
+    g.hline(16 - hw, 15 + hw, y, 'I');
+    g.set(16 - hw, y, 'D').set(15 + hw, y, 'D');
+  }
+  g.hline(10, 21, 1, 'D');
+  g.hline(10, 16, 2, 'J').hline(8, 12, 3, 'J').set(7, 4, 'J').set(7, 5, 'J');
+  g.hline(8, 23, 11, 'H').hline(7, 24, 12, 'D');
+  // Nervaduras de la hoja
+  g.line(12, 3, 17, 9, 'H').line(19, 3, 22, 8, 'H');
+  // Punta de la hoja que cuelga atrás (a la izquierda)
+  g.rect(2, 9, 5, 16, 'I').vline(1, 9, 16, 'D').vline(6, 13, 17, 'D').hline(2, 5, 17, 'D');
+  g.vline(3, 10, 16, 'H').set(2, 9, 'J');
+  // Ojos grandes (sin lentes)
+  const eye = (x) => {
+    if (face === 'happy') {
+      g.pts(
+        [
+          [x, 18],
+          [x + 1, 17],
+          [x + 2, 16],
+          [x + 3, 17],
+          [x + 4, 18],
+        ],
+        'D',
+      );
+      return;
+    }
+    g.rect(x, 14, x + 4, 19, 'e');
+    g.frame(x - 1, 13, x + 5, 20, 'D');
+    if (face === 'worried') {
+      g.rect(x + 1, 14, x + 3, 16, 'k').set(x + 1, 14, 'E');
+      g.line(x - 1, 12, x + 4, 11, 'D');
+      return;
+    }
+    if (face === 'determined') {
+      g.hline(x, x + 4, 14, 'D').hline(x, x + 4, 15, 'B');
+      g.rect(x + 2, 16, x + 4, 18, 'k').set(x + 2, 16, 'E');
+      return;
+    }
+    g.rect(x + 2, 15, x + 4, 18, 'k');
+    g.set(x + 2, 15, 'E').set(x + 3, 15, 'E');
+  };
+  eye(8);
+  eye(19);
+  // Mejillas
+  g.hline(6, 8, 22, '0').hline(23, 25, 22, '0');
+  // Boca
+  if (face === 'happy') {
+    g.hline(13, 18, 22, 'D').hline(14, 17, 23, 'r').set(13, 23, 'D').set(18, 23, 'D').hline(14, 17, 24, 'D');
+  } else if (face === 'worried') {
+    g.pts(
+      [
+        [13, 24],
+        [14, 23],
+        [15, 24],
+        [16, 23],
+        [17, 24],
+        [18, 23],
+      ],
+      'D',
+    );
+  } else if (face === 'determined') {
+    g.hline(13, 18, 23, 'D').set(12, 22, 'D');
+  } else {
+    g.pts(
+      [
+        [13, 22],
+        [14, 23],
+        [15, 23],
+        [16, 23],
+        [17, 23],
+        [18, 22],
+      ],
+      'D',
+    );
+  }
+  // Mango del mazo asomando al hombro
+  g.line(27, 20, 30, 13, 'O').line(28, 20, 31, 13, 'Z');
+  g.rect(27, 8, 31, 12, 'Z').frame(27, 8, 31, 12, 'D').set(28, 9, 'J');
+}
+
 // ---------- N.U.L.L. ----------
 
 function nullPortrait(g, face) {
@@ -480,7 +601,7 @@ function deadlinePortrait(g, face) {
   g.outline('o');
 }
 
-const BUILDERS = { oscar, stward, hezron, fabiola, choco, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait, office, deadline: deadlinePortrait };
+const BUILDERS = { oscar, stward, hezron, fabiola, choco, tapita, null: nullPortrait, system: systemPortrait, profe, student, senora, stack: stackPortrait, office, deadline: deadlinePortrait };
 
 export function buildPortraitRows(key) {
   const [who, face] = key.split(':');
