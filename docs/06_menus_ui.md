@@ -5,11 +5,13 @@ Todas las pantallas se navegan con teclado y gamepad (flechas/stick para moverse
 ## Flujo general
 
 ```
-Presentación CHC Studio → Pantalla de título → Menú principal
-   ├── Nueva partida → Selección de ranura → Prólogo
-   ├── Continuar → Mapa de mundos
-   ├── Opciones
-   └── Créditos
+Presentación CHC Studio → Pantalla de título → Selección de modo
+   ├── Cooperativo → Menú cooperativo (ver docs/coop/05_menus_coop.md)
+   └── Modo solo → Menú principal
+                     ├── Nueva partida → Selección de ranura → Prólogo
+                     ├── Continuar → Mapa de mundos
+                     ├── Opciones
+                     └── Créditos
 
 Mapa de mundos → Tarjeta de título del nivel → Nivel → Resultados → Mapa de mundos
 Nivel → Pausa → (Continuar / Reiniciar desde checkpoint / Opciones / Salir al mapa)

@@ -8,6 +8,7 @@
 - **Vite** solo como servidor de desarrollo y empaquetador (`npm run dev`, `npm run build`). El build final es una carpeta estática (`dist/`) que se puede subir a cualquier hosting o abrir con un servidor local.
 - **Vitest** para pruebas unitarias de la lógica pura (física, colisiones, batallas, guardado, puzzles).
 - Sin dependencias en tiempo de ejecución.
+- **Modo cooperativo:** WebSocket nativo del navegador y un servidor de salas en Node sin dependencias (`server/`). Detalle en `docs/coop/04_red.md`.
 
 ## Estructura de carpetas
 

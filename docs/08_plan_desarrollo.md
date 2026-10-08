@@ -71,6 +71,19 @@ El juego se construye **por hitos**. Al terminar cada hito, el juego debe poder 
 - Pruebas en Chrome, Firefox y Edge; con teclado y gamepad.
 - Build de producción limpio sin herramientas de debug.
 
+## Hitos 9 a 16 · Modo cooperativo (Modo Sincronizado)
+
+El plan del modo cooperativo continúa la numeración en `docs/coop/08_plan_coop.md`:
+
+- Hito 9: selección de modo, servidor y salas.
+- Hito 10: Tapita y la sincronización.
+- Hito 11: elementos de puzzle y estructura cooperativa.
+- Hito 12: C1 Puntarenas.
+- Hito 13: C2 La casa de Juan Carlos.
+- Hito 14: C3 La Chicharronera.
+- Hito 15: C4 La Sala y el final cooperativo.
+- Hito 16: pulido cooperativo y despliegue.
+
 ## Definición de "terminado" para cada hito
 
 - Se puede jugar de principio a fin lo que corresponde al hito sin errores en la consola.

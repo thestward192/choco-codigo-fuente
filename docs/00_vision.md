@@ -34,9 +34,13 @@ Una barra de chocolate ingeniera entra a su consola para detener a la IA que ell
 | 4 | Santa Cruz, Guanacaste | Plataformas de acción con calor | Fabiola | Lazo de Fibra Óptica |
 | 5 | El Código Puro | Gauntlet + jefe de 4 fases | (todos) | Trofeo del Código Fuente |
 
+## Modo cooperativo
+
+Además del modo solo, el juego tiene un **modo cooperativo en línea para 2 jugadores** (Modo Sincronizado). Se elige desde la primera pantalla, después del título. Tiene un personaje nuevo, Tapita, 3 mapas nuevos con puzzles cooperativos y un nivel final, cada uno con su jefe. Todo su diseño está en `docs/coop/` (empezando por `docs/coop/00_vision_coop.md`). El modo solo no cambia.
+
 ## Fuera de alcance (por ahora)
 
-- Multijugador, online, tablas de puntuación en línea
+- Multijugador competitivo, más de 2 jugadores, cooperativo local en el mismo teclado, tablas de puntuación en línea
 - Versión móvil táctil (se puede evaluar después)
 - Editor de niveles
 

@@ -16,12 +16,17 @@ Todo el diseño está en `docs/`. Antes de implementar cualquier parte, leé el 
 - Arquitectura: `docs/07_arquitectura.md`
 - Plan por hitos: `docs/08_plan_desarrollo.md`
 - Niveles: `docs/niveles/nivel_0_prologo.md` a `docs/niveles/nivel_5_codigo_puro.md`
+- **Modo cooperativo (Modo Sincronizado):** todo en `docs/coop/`
+  - Visión: `docs/coop/00_vision_coop.md` · Historia: `docs/coop/01_historia_coop.md` · Tapita: `docs/coop/02_tapita.md`
+  - Mecánicas: `docs/coop/03_mecanicas_coop.md` · Red y servidor: `docs/coop/04_red.md` · Menús: `docs/coop/05_menus_coop.md`
+  - Arte y audio: `docs/coop/06_arte_audio_coop.md` · Plan (hitos 9–16): `docs/coop/08_plan_coop.md`
+  - Niveles: `docs/coop/niveles/c1_puntarenas.md` a `docs/coop/niveles/c4_la_sala.md`
 
 Si algo no está definido en los documentos, tomá la decisión más razonable, anotala en `docs/DECISIONES.md` (crealo si no existe) y mencionala al terminar el hito. Si algo en los documentos se contradice, preguntá antes de construir sobre eso.
 
 ## Reglas
 
-1. **Trabajar por hitos** (`docs/08_plan_desarrollo.md`). Al terminar cada uno: correr `npm test`, verificar que el juego arranca sin errores en consola, y parar para que Stward lo pruebe. Entregar una lista breve de qué probar.
+1. **Trabajar por hitos** (`docs/08_plan_desarrollo.md`; los hitos 9–16 del cooperativo están en `docs/coop/08_plan_coop.md`). Al terminar cada uno: correr `npm test`, verificar que el juego arranca sin errores en consola, y parar para que Stward lo pruebe. Entregar una lista breve de qué probar.
 2. **Sin motores ni frameworks de juego.** Solo JavaScript, Canvas 2D y Web Audio. Vite y Vitest como herramientas de desarrollo.
 3. **Todo el arte y el audio se generan en código.** El único archivo de imagen es `assets/logo_chc_studio.png`, y se usa solo en la presentación y los créditos. No influye en el diseño de Choco.
 4. **Originalidad:** nada de personajes, sprites, sonidos, melodías, nombres ni logos de juegos o compañías existentes (Nintendo, Game Freak, Sony, etc.), ni logos oficiales de la UNA o Novacomp. Los niveles se inspiran en géneros, no en juegos concretos.
@@ -44,3 +49,5 @@ npm test         # pruebas unitarias (Vitest)
 ```
 
 Modo depuración: agregar `?debug=1` a la URL.
+
+Modo cooperativo (desde el Hito 9): `npm run server` levanta el servidor de salas y `npm run dev:coop` levanta juego y servidor juntos. El modo solo no debe cambiar nunca por culpa del cooperativo.
